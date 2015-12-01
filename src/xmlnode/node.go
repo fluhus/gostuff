@@ -23,7 +23,7 @@ import (
 // method returns nil for non Tag or Root nodes. The Attr() method returns nil
 // for non Tag nodes.
 //
-// Parent node is nil only in the root node.
+// Parent node is nil only in Root.
 type Node interface {
 	Parent() Node
 	TagName() string
