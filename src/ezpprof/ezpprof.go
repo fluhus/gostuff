@@ -27,11 +27,11 @@ func Start(file string) {
 	pprof.StartCPUProfile(bout)
 }
 
-// Stops CPU profiling and closes the output file. If called without calling
-// Start, does nothing.
+// Stops CPU profiling and closes the output file. Panics if called without
+// calling Start.
 func Stop() {
 	if fout == nil {
-		return
+		panic("Stop called without calling Start.")
 	}
 
 	pprof.StopCPUProfile()
