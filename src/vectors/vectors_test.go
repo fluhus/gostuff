@@ -5,10 +5,10 @@ import (
 )
 
 func TestL1(t *testing.T) {
-	v1 := []float64 { 0, 0, 0 }
-	v2 := []float64 { 1, 0, 0 }
-	v3 := []float64 { 0, 1, 1 }
-	v4 := []float64 { 1, 1, 1 }
+	v1 := []float64{0, 0, 0}
+	v2 := []float64{1, 0, 0}
+	v3 := []float64{0, 1, 1}
+	v4 := []float64{1, 1, 1}
 
 	assertEqualFloats(L1(v1, v1), 0.0, t)
 	assertEqualFloats(L1(v1, v2), 1.0, t)
@@ -19,9 +19,9 @@ func TestL1(t *testing.T) {
 }
 
 func TestL2(t *testing.T) {
-	v1 := []float64 { 0, 0 }
-	v2 := []float64 { 0, 1 }
-	v3 := []float64 { 4, 4 }
+	v1 := []float64{0, 0}
+	v2 := []float64{0, 1}
+	v3 := []float64{4, 4}
 
 	assertEqualFloats(L2(v1, v1), 0.0, t)
 	assertEqualFloats(L2(v1, v2), 1.0, t)

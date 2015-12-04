@@ -2,8 +2,8 @@
 package vectors
 
 import (
-	"math"
 	"fmt"
+	"math"
 )
 
 // L1 (Manhattan) distance. Equivalent to Lp(1) but more efficient.
@@ -40,12 +40,12 @@ func Lp(p int) func([]float64, []float64) float64 {
 	if p < 1 {
 		panic(fmt.Sprintf("Invalid p: %d", p))
 	}
-	
+
 	// Prepared functions.
 	if p == 1 {
 		return L1
 	}
-	
+
 	if p == 2 {
 		return L2
 	}
@@ -56,7 +56,7 @@ func Lp(p int) func([]float64, []float64) float64 {
 		fp := float64(p)
 		sum := 0.0
 		for i := range a {
-			sum += math.Pow(math.Abs(a[i] - b[i]), fp)
+			sum += math.Pow(math.Abs(a[i]-b[i]), fp)
 		}
 
 		return math.Pow(sum, 1/fp)
@@ -89,7 +89,7 @@ func Mul(a []float64, m float64) {
 // Returns the dot product of the input vectors.
 func Dot(a, b []float64) float64 {
 	assertMatchingLengths(a, b)
-	
+
 	sum := 0.0
 	for i := range a {
 		sum += a[i] * b[i]
@@ -101,7 +101,7 @@ func Dot(a, b []float64) float64 {
 func Norm(a []float64) float64 {
 	norm := 0.0
 	for _, v := range a {
-		norm += v*v
+		norm += v * v
 	}
 	return math.Sqrt(norm)
 }
