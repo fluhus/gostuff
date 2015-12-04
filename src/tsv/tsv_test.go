@@ -116,3 +116,5 @@ func TestDecoder_stringSlice(t *testing.T) {
 		}
 	}
 }
+
+// TODO(amit): Add tests for bad input.
