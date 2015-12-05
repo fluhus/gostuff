@@ -2,16 +2,16 @@
 package tsv
 
 import (
-	"bufio"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"reflect"
-	"strings"
 )
 
-// Reads TSV lines and converts them to data objects.
+// Reads TSV lines and converts them to data objects. Embeds a csv.Reader,
+// so it can be used the same way. The default comma is '\t'.
 type Decoder struct {
-	scanner  *bufio.Scanner
+	*csv.Reader
 	skipCols int
 }
 
@@ -23,12 +23,13 @@ func NewDecoder(r io.Reader, skipRows, skipCols int) *Decoder {
 			"(skipRows=%d skipCols=%d)", skipRows, skipCols))
 	}
 
-	scanner := bufio.NewScanner(r)
+	reader := csv.NewReader(r)
+	reader.Comma = '\t'
 	for i := 0; i < skipRows; i++ {
-		scanner.Scan()
+		reader.Read()
 	}
 
-	return &Decoder{scanner, skipCols}
+	return &Decoder{reader, skipCols}
 }
 
 // Reads the next TSV line and populates the given object with parsed values.
@@ -45,12 +46,10 @@ func NewDecoder(r io.Reader, skipRows, skipCols int) *Decoder {
 //
 // Any other type will cause a panic.
 func (d *Decoder) Decode(a interface{}) error {
-	if !d.scanner.Scan() {
-		return io.EOF
+	fields, err := d.Read()
+	if err != nil {
+		return err
 	}
-
-	// TODO(amit): Split according to TSV rules - take quoted fields in account.
-	fields := strings.Split(d.scanner.Text(), "\t")
 
 	// Skip given number of columns.
 	if len(fields) < d.skipCols {
