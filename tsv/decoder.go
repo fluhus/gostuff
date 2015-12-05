@@ -34,9 +34,10 @@ func NewDecoder(r io.Reader, skipRows, skipCols int) *Decoder {
 // Reads the next TSV line and populates the given object with parsed values.
 // Accepted input types are:
 //
-// Struct pointer: all fields must be exported. Fields will be populated by
-// order of appearance. Too few fields in the TSV line will result in an error.
-// Excess fields in the TSV line will be ignored.
+// Struct pointer: all fields must be exported and of type int*, uint* float*
+// or string. Fields will be populated by order of appearance. Too few fields in
+// the TSV line will result in an error. Excess fields in the TSV line will be
+// ignored.
 //
 // Slice pointer of type int*, uint*, float*, string: the pointer will be
 // populated with a slice of parsed values, according to the length of the TSV
