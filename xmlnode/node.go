@@ -16,6 +16,10 @@ import (
 // You can, of course, check node types (returned by Kind()) if you still need
 // to.
 
+// DESIGN NOTE (2):
+// The Kind() function is used instead of exported types to avoid cluttering
+// the package's godoc.
+
 // Represents a single XML node. Can be one of: Root, Tag, Text, Comment,
 // ProcInst or Directive.
 //
