@@ -66,7 +66,7 @@ func fillStruct(value reflect.Value, s []string) error {
 	return nil
 }
 
-// Populates the given int slice pointer with values parsed from fields.
+// Populates the given int slice with values parsed from fields.
 // Returns an error if parsing fails.
 func fillIntSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
@@ -92,7 +92,7 @@ func fillIntSlice(value reflect.Value, fields []string) error {
 	return nil
 }
 
-// Populates the given uint slice pointer with values parsed from fields.
+// Populates the given uint slice with values parsed from fields.
 // Returns an error if parsing fails.
 func fillUintSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
@@ -118,7 +118,7 @@ func fillUintSlice(value reflect.Value, fields []string) error {
 	return nil
 }
 
-// Populates the given float slice pointer with values parsed from fields.
+// Populates the given float slice with values parsed from fields.
 // Returns an error if parsing fails.
 func fillFloatSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
@@ -144,7 +144,7 @@ func fillFloatSlice(value reflect.Value, fields []string) error {
 	return nil
 }
 
-// Populates the given string slice pointer with values parsed from fields.
+// Populates the given string slice with values parsed from fields.
 // Returns an error if parsing fails.
 func fillStringSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
