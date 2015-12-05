@@ -26,15 +26,40 @@ import (
 //
 // Parent node is nil only in Root.
 type Node interface {
+	// Parent of the current node. Nil for root node.
 	Parent() Node
+	
+	// Tag name of tag nodes of the form <tagname>...</tagname>. Empty for
+	// other node types.
 	TagName() string
+	
+	// Attributes of tag nodes. Nil for other node types.
 	Attr() []*xml.Attr
+	
+	// Child nodes of root and tag nodes. Nil for other node types.
 	Children() []Node
+	
+	// Text data of text nodes. Empty for other node types.
 	Text() string
+	
+	// Comment data of comments of the form <!--comment-->. Does not include the
+	// <!-- and --> markers. Empty for other node types.
 	Comment() string
+	
+	// Target of processing instructions of the form <?target inst?>.
+	// Empty for other node types.
 	Target() string
+	
+	// Instruction of processing instructions of the form <?target inst?>.
+	// Empty for other node types.
 	Inst() string
+	
+	// Directive of the form <!directive>. Does not include the <! and >
+	// markers. Empty for other node types.
 	Directive() string
+	
+	// Kind of this node. Returns one of: Root, Tag, Text, Comment, ProcInst
+	// or Directive.
 	Kind() int
 }
 
