@@ -15,7 +15,7 @@ func ReadAll(r io.Reader) (Node, error) {
 	// Starting with Tag instead of Root, to eliminate type checks when refering
 	// to parent nodes during reading. Will be replaced with a Root node at the
 	// end.
-	result := &Tag{
+	result := &tag{
 		nil,
 		"",
 		nil,
@@ -38,7 +38,7 @@ func ReadAll(r io.Reader) (Node, error) {
 			}
 
 			// Create child node.
-			child := &Tag{
+			child := &tag{
 				current,
 				t.Name.Local,
 				attrs,
@@ -49,10 +49,10 @@ func ReadAll(r io.Reader) (Node, error) {
 			current = child
 
 		case xml.EndElement:
-			current = current.Parent().(*Tag)
+			current = current.Parent().(*tag)
 
 		case xml.CharData:
-			child := &Text{
+			child := &text{
 				current,
 				string(t),
 			}
@@ -60,7 +60,7 @@ func ReadAll(r io.Reader) (Node, error) {
 			current.children = append(current.children, child)
 
 		case xml.Comment:
-			child := &Comment{
+			child := &comment{
 				current,
 				string(t),
 			}
@@ -68,7 +68,7 @@ func ReadAll(r io.Reader) (Node, error) {
 			current.children = append(current.children, child)
 
 		case xml.ProcInst:
-			child := &ProcInst{
+			child := &procInst{
 				current,
 				string(t.Target),
 				string(t.Inst),
@@ -77,7 +77,7 @@ func ReadAll(r io.Reader) (Node, error) {
 			current.children = append(current.children, child)
 
 		case xml.Directive:
-			child := &Directive{
+			child := &directive{
 				current,
 				string(t),
 			}
@@ -91,5 +91,5 @@ func ReadAll(r io.Reader) (Node, error) {
 		return nil, err
 	}
 
-	return &Root{result.children}, nil
+	return &root{result.children}, nil
 }

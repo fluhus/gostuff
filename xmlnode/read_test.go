@@ -22,14 +22,14 @@ func TestReadAll(t *testing.T) {
 // Inefficient stringifier for testing.
 func nodeToString(n Node) string {
 	switch n := n.(type) {
-	case *Root:
+	case *root:
 		result := ""
 		for _, child := range n.children {
 			result += nodeToString(child)
 		}
 		return result
 
-	case *Tag:
+	case *tag:
 		result := "<" + n.tagName
 		for _, attr := range n.attr {
 			result += " " + attr.Name.Local + "=\"" + attr.Value + "\""
@@ -41,16 +41,16 @@ func nodeToString(n Node) string {
 		result += "</" + n.tagName + ">"
 		return result
 
-	case *Text:
+	case *text:
 		return n.text
 
-	case *Comment:
+	case *comment:
 		return "<!--" + n.comment + "-->"
 
-	case *ProcInst:
+	case *procInst:
 		return "<?" + n.target + " " + n.inst + "?>"
 
-	case *Directive:
+	case *directive:
 		return "<!" + n.directive + ">"
 
 	default:

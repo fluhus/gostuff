@@ -13,7 +13,8 @@ import (
 // search for a specific text, you don't need to check which nodes are actually
 // text nodes.
 //
-// You can, of course, check node types if you still need to.
+// You can, of course, check node types (returned by Kind()) if you still need
+// to.
 
 // Represents a single XML node. Can be one of: Root, Tag, Text, Comment,
 // ProcInst or Directive.
@@ -34,106 +35,123 @@ type Node interface {
 	Target() string
 	Inst() string
 	Directive() string
+	Kind() int
 }
 
 // Represents the root node of an XML tree. Only has children, no other
 // properties.
-type Root struct {
+type root struct {
 	children []Node
 }
 
-func (n *Root) Parent() Node      { return nil }
-func (n *Root) TagName() string   { return "" }
-func (n *Root) Attr() []*xml.Attr { return nil }
-func (n *Root) Children() []Node  { return n.children }
-func (n *Root) Text() string      { return "" }
-func (n *Root) Comment() string   { return "" }
-func (n *Root) Target() string    { return "" }
-func (n *Root) Inst() string      { return "" }
-func (n *Root) Directive() string { return "" }
+func (n *root) Parent() Node      { return nil }
+func (n *root) TagName() string   { return "" }
+func (n *root) Attr() []*xml.Attr { return nil }
+func (n *root) Children() []Node  { return n.children }
+func (n *root) Text() string      { return "" }
+func (n *root) Comment() string   { return "" }
+func (n *root) Target() string    { return "" }
+func (n *root) Inst() string      { return "" }
+func (n *root) Directive() string { return "" }
+func (n *root) Kind() int         { return Root }
 
 // Represents a start-end element, along with its children.
-type Tag struct {
+type tag struct {
 	parent   Node
 	tagName  string
 	attr     []*xml.Attr
 	children []Node
 }
 
-func (n *Tag) Parent() Node      { return n.parent }
-func (n *Tag) TagName() string   { return n.tagName }
-func (n *Tag) Attr() []*xml.Attr { return n.attr }
-func (n *Tag) Children() []Node  { return n.children }
-func (n *Tag) Text() string      { return "" }
-func (n *Tag) Comment() string   { return "" }
-func (n *Tag) Target() string    { return "" }
-func (n *Tag) Inst() string      { return "" }
-func (n *Tag) Directive() string { return "" }
+func (n *tag) Parent() Node      { return n.parent }
+func (n *tag) TagName() string   { return n.tagName }
+func (n *tag) Attr() []*xml.Attr { return n.attr }
+func (n *tag) Children() []Node  { return n.children }
+func (n *tag) Text() string      { return "" }
+func (n *tag) Comment() string   { return "" }
+func (n *tag) Target() string    { return "" }
+func (n *tag) Inst() string      { return "" }
+func (n *tag) Directive() string { return "" }
+func (n *tag) Kind() int         { return Tag }
 
 // Represents raw text data, in which XML escape sequences have been replaced
 // by the characters they represent.
-type Text struct {
+type text struct {
 	parent Node
 	text   string
 }
 
-func (n *Text) Parent() Node      { return n.parent }
-func (n *Text) TagName() string   { return "" }
-func (n *Text) Attr() []*xml.Attr { return nil }
-func (n *Text) Children() []Node  { return nil }
-func (n *Text) Text() string      { return n.text }
-func (n *Text) Comment() string   { return "" }
-func (n *Text) Target() string    { return "" }
-func (n *Text) Inst() string      { return "" }
-func (n *Text) Directive() string { return "" }
+func (n *text) Parent() Node      { return n.parent }
+func (n *text) TagName() string   { return "" }
+func (n *text) Attr() []*xml.Attr { return nil }
+func (n *text) Children() []Node  { return nil }
+func (n *text) Text() string      { return n.text }
+func (n *text) Comment() string   { return "" }
+func (n *text) Target() string    { return "" }
+func (n *text) Inst() string      { return "" }
+func (n *text) Directive() string { return "" }
+func (n *text) Kind() int         { return Text }
 
 // A Comment represents an XML comment of the form <!--comment-->. The string
 // does not include the <!-- and --> comment markers.
-type Comment struct {
+type comment struct {
 	parent  Node
 	comment string
 }
 
-func (n *Comment) Parent() Node      { return n.parent }
-func (n *Comment) TagName() string   { return "" }
-func (n *Comment) Attr() []*xml.Attr { return nil }
-func (n *Comment) Children() []Node  { return nil }
-func (n *Comment) Text() string      { return "" }
-func (n *Comment) Comment() string   { return n.comment }
-func (n *Comment) Target() string    { return "" }
-func (n *Comment) Inst() string      { return "" }
-func (n *Comment) Directive() string { return "" }
+func (n *comment) Parent() Node      { return n.parent }
+func (n *comment) TagName() string   { return "" }
+func (n *comment) Attr() []*xml.Attr { return nil }
+func (n *comment) Children() []Node  { return nil }
+func (n *comment) Text() string      { return "" }
+func (n *comment) Comment() string   { return n.comment }
+func (n *comment) Target() string    { return "" }
+func (n *comment) Inst() string      { return "" }
+func (n *comment) Directive() string { return "" }
+func (n *comment) Kind() int         { return Comment }
 
 // Represents an XML processing instruction of the form <?target inst?>.
-type ProcInst struct {
+type procInst struct {
 	parent Node
 	target string
 	inst   string
 }
 
-func (n *ProcInst) Parent() Node      { return n.parent }
-func (n *ProcInst) TagName() string   { return "" }
-func (n *ProcInst) Attr() []*xml.Attr { return nil }
-func (n *ProcInst) Children() []Node  { return nil }
-func (n *ProcInst) Text() string      { return "" }
-func (n *ProcInst) Comment() string   { return "" }
-func (n *ProcInst) Target() string    { return n.target }
-func (n *ProcInst) Inst() string      { return n.inst }
-func (n *ProcInst) Directive() string { return "" }
+func (n *procInst) Parent() Node      { return n.parent }
+func (n *procInst) TagName() string   { return "" }
+func (n *procInst) Attr() []*xml.Attr { return nil }
+func (n *procInst) Children() []Node  { return nil }
+func (n *procInst) Text() string      { return "" }
+func (n *procInst) Comment() string   { return "" }
+func (n *procInst) Target() string    { return n.target }
+func (n *procInst) Inst() string      { return n.inst }
+func (n *procInst) Directive() string { return "" }
+func (n *procInst) Kind() int         { return ProcInst }
 
 // Represents an XML directive of the form <!text>. The string does not include
 // the <! and > markers.
-type Directive struct {
+type directive struct {
 	parent    Node
 	directive string
 }
 
-func (n *Directive) Parent() Node      { return n.parent }
-func (n *Directive) TagName() string   { return "" }
-func (n *Directive) Attr() []*xml.Attr { return nil }
-func (n *Directive) Children() []Node  { return nil }
-func (n *Directive) Text() string      { return "" }
-func (n *Directive) Comment() string   { return "" }
-func (n *Directive) Target() string    { return "" }
-func (n *Directive) Inst() string      { return "" }
-func (n *Directive) Directive() string { return n.directive }
+func (n *directive) Parent() Node      { return n.parent }
+func (n *directive) TagName() string   { return "" }
+func (n *directive) Attr() []*xml.Attr { return nil }
+func (n *directive) Children() []Node  { return nil }
+func (n *directive) Text() string      { return "" }
+func (n *directive) Comment() string   { return "" }
+func (n *directive) Target() string    { return "" }
+func (n *directive) Inst() string      { return "" }
+func (n *directive) Directive() string { return n.directive }
+func (n *directive) Kind() int         { return Directive }
+
+// Possible return values of Kind()
+const (
+	Root = iota
+	Tag
+	Text
+	Comment
+	ProcInst
+	Directive
+)
