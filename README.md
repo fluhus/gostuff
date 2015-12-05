@@ -13,7 +13,7 @@ Available Packages
 * **ezpprof**  
   A simple wrapper for runtime/pprof for one-liner profiling.
 * **gobz**  
-  A simple wrapper for gobz for simple data serialization.
+  A simple wrapper for encoding/gob for simple data serialization.
 * **stats**  
   Common statistic functions.
 * **tsv**  
