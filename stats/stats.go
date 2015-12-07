@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-// Returns the sum of the values in a sample.
+// Returns the sum of values in a sample.
 func Sum(a []float64) float64 {
 	sum := 0.0
 	for _, v := range a {
@@ -45,7 +45,7 @@ func Std(a []float64) float64 {
 	return math.Sqrt(Var(a))
 }
 
-// Returns the correlation between the samples.
+// Returns the correlation between the samples. Panics if lengths don't match.
 func Corr(a, b []float64) float64 {
 	return Cov(a, b) / Std(a) / Std(b)
 }

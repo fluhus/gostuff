@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-// L1 (Manhattan) distance. Equivalent to Lp(1) but more efficient.
+// L1 (Manhattan) distance. Equivalent to Lp(1).
 func L1(a, b []float64) float64 {
 	assertMatchingLengths(a, b)
 
@@ -18,7 +18,7 @@ func L1(a, b []float64) float64 {
 	return sum
 }
 
-// L2 (Euclidean) distance. Equivalent to Lp(2) but more efficient.
+// L2 (Euclidean) distance. Equivalent to Lp(2).
 func L2(a, b []float64) float64 {
 	assertMatchingLengths(a, b)
 
