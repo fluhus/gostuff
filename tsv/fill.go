@@ -72,7 +72,7 @@ func fillIntSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
 	typ := value.Type().Elem()
 
-	size := int(typ.Size())
+	size := int(typ.Size()) * 8
 	slice := reflect.MakeSlice(reflect.SliceOf(typ), 0, len(fields))
 	target := reflect.New(typ).Elem()
 
@@ -98,7 +98,7 @@ func fillUintSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
 	typ := value.Type().Elem()
 
-	size := int(typ.Size())
+	size := int(typ.Size()) * 8
 	slice := reflect.MakeSlice(reflect.SliceOf(typ), 0, len(fields))
 	target := reflect.New(typ).Elem()
 
@@ -124,7 +124,7 @@ func fillFloatSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
 	typ := value.Type().Elem()
 
-	size := int(typ.Size())
+	size := int(typ.Size()) * 8
 	slice := reflect.MakeSlice(reflect.SliceOf(typ), 0, len(fields))
 	target := reflect.New(typ).Elem()
 
