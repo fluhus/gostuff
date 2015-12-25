@@ -63,27 +63,34 @@ func Lp(p int) func([]float64, []float64) float64 {
 	}
 }
 
-// Adds b to a. b is unchanged.
-func Add(a, b []float64) {
-	assertMatchingLengths(a, b)
-	for i := range a {
-		a[i] += b[i]
+// Adds b to a and returns a. b is unchanged.
+func Add(a []float64, b ...[]float64) []float64 {
+	for i := range b {
+		assertMatchingLengths(a, b[i])
+		for j := range a {
+			a[j] += b[i][j]
+		}
 	}
+	return a
 }
 
-// Subtracts b from a. b is unchanged.
-func Sub(a, b []float64) {
-	assertMatchingLengths(a, b)
-	for i := range a {
-		a[i] -= b[i]
+// Subtracts b from a and returns a. b is unchanged.
+func Sub(a []float64, b ...[]float64) []float64 {
+	for i := range b {
+		assertMatchingLengths(a, b[i])
+		for j := range a {
+			a[j] -= b[i][j]
+		}
 	}
+	return a
 }
 
-// Multiplies the values of a by m.
-func Mul(a []float64, m float64) {
+// Multiplies the values of a by m and returns a.
+func Mul(a []float64, m float64) []float64 {
 	for i := range a {
 		a[i] *= m
 	}
+	return a
 }
 
 // Returns the dot product of the input vectors.
@@ -104,6 +111,18 @@ func Norm(a []float64) float64 {
 		norm += v * v
 	}
 	return math.Sqrt(norm)
+}
+
+// Returns a slice of ones, of length n. Panics if n is negative.
+func Ones(n int) []float64 {
+	if n < 0 {
+		panic(fmt.Sprintf("Bad vector length: %d", n))
+	}
+	a := make([]float64, n)
+	for i := range a {
+		a[i] = 1
+	}
+	return a
 }
 
 // Returns a copy of the given vector.
