@@ -4,6 +4,7 @@ package stats
 import (
 	"fmt"
 	"math"
+	"sort"
 )
 
 // Returns the sum of values in a sample.
@@ -115,6 +116,48 @@ func Ent(distribution []float64) float64 {
 	}
 
 	return result
+}
+
+// Creates a histogram of counts of values in the given slice. 'counts' maps
+// a unique value from 'a' to its count. 'byValue' holds uniqe values sorted.
+// 'byCount' holds unique values sorted by their counts, most common first.
+func Hist(a []float64) (counts map[float64]int, byValue []float64,
+	byCount []float64) {
+	// Create raw counts.
+	counts = map[float64]int{}
+	for _, value := range a {
+		counts[value]++
+	}
+
+	// Take unique values.
+	byValue = make([]float64, 0, len(counts))
+	for value := range counts {
+		byValue = append(byValue, value)
+	}
+	sort.Sort(sort.Float64Slice(byValue))
+
+	// Sort by counts.
+	byCount = make([]float64, len(byValue))
+	copy(byCount, byValue)
+	sort.Sort(&histSorter{counts, byCount})
+
+	return
+}
+
+// Type for histogram sorting.
+type histSorter struct {
+	counts map[float64]int
+	values []float64
+}
+
+func (h *histSorter) Len() int {
+	return len(h.values)
+}
+func (h *histSorter) Less(i, j int) bool {
+	return h.counts[h.values[i]] > h.counts[h.values[j]]
+}
+func (h *histSorter) Swap(i, j int) {
+	h.values[i], h.values[j] = h.values[j], h.values[i]
 }
 
 // Panics if 2 vectors are of inequal lengths.

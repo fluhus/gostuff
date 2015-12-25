@@ -36,8 +36,32 @@ func TestEnt(t *testing.T) {
 	assertEqualFloats(Ent([]float64{1, 1, 1, 1, 1, 1, 1, 1}), 3, t)
 }
 
+func TestHist(t *testing.T) {
+	a := []float64{1, 2, 3, 2, 3, 2, 1, 3, 3, 3, 3, 3, 3, 2, 1, 1, 1}
+	x, y, z := Hist(a)
+
+	if len(x) != 3 || x[1] != 5 || x[2] != 4 || x[3] != 8 {
+		t.Fatal("Bad value returned. Expected:", map[float64]int{1: 5, 2: 4, 3: 8},
+			"Actual:", x)
+	}
+
+	assertEqualFloatSlices(y, []float64{1, 2, 3}, t)
+	assertEqualFloatSlices(z, []float64{3, 1, 2}, t)
+}
+
 func assertEqualFloats(actual, expected float64, t *testing.T) {
 	if actual != expected {
 		t.Fatal("Bad value returned. Expected:", expected, "Actual:", actual)
+	}
+}
+
+func assertEqualFloatSlices(actual, expected []float64, t *testing.T) {
+	if len(actual) != len(expected) {
+		t.Fatal("Bad value returned. Expected:", expected, "Actual:", actual)
+	}
+	for i := range actual {
+		if actual[i] != expected[i] {
+			t.Fatal("Bad value returned. Expected:", expected, "Actual:", actual)
+		}
 	}
 }
