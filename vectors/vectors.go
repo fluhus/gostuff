@@ -1,4 +1,11 @@
-// Handles basic vector operations.
+// Basic vector operations.
+//
+// Example 1 - distance between the sums of two pairs of vectors:
+//  a, b, c, d := {some vectors}
+//  dist := L2(Sum(nil, a, b), Sum(nil, c, d))
+//
+// Example 2 - create a vector of -1's of length 10:
+//  v := Mul(Ones(10), -1)
 package vectors
 
 import (
@@ -63,8 +70,16 @@ func Lp(p int) func([]float64, []float64) float64 {
 	}
 }
 
-// Adds b to a and returns a. b is unchanged.
+// Adds b to a and returns a. b is unchanged. If a is nil, creates a new vector.
 func Add(a []float64, b ...[]float64) []float64 {
+	if a == nil {
+		if len(b) == 0 {
+			return nil
+		} else {
+			a = make([]float64, len(b[0]))
+		}
+	}
+
 	for i := range b {
 		assertMatchingLengths(a, b[i])
 		for j := range a {
@@ -74,8 +89,17 @@ func Add(a []float64, b ...[]float64) []float64 {
 	return a
 }
 
-// Subtracts b from a and returns a. b is unchanged.
+// Subtracts b from a and returns a. b is unchanged. If a is nil, creates a new
+// vector.
 func Sub(a []float64, b ...[]float64) []float64 {
+	if a == nil {
+		if len(b) == 0 {
+			return nil
+		} else {
+			a = make([]float64, len(b[0]))
+		}
+	}
+
 	for i := range b {
 		assertMatchingLengths(a, b[i])
 		for j := range a {
