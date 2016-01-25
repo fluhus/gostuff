@@ -8,7 +8,7 @@ import (
 
 // ----- INTERFACE FUNCTION ----------------------------------------------------
 
-func Lda(docTokens [][]string, k int) {
+func Lda(docTokens [][]string, k int) ([][]float32, [][]int, []string) {
 	// Check input.
 	if k < 1 {
 		panic(fmt.Sprintf("k must be positive. Got %d.", k))
@@ -96,17 +96,18 @@ func Lda(docTokens [][]string, k int) {
 		lastChange = len(changeMap)
 	}
 
-	// TODO(amit): Remove this.
+	// Make return values.
 	sdrow := make([]string, len(words))
 	for word, i := range words {
 		sdrow[i] = word
 	}
-	for i := range topics {
-		for _, word := range topics[i].top(10) {
-			fmt.Printf("%s, ", sdrow[word])
-		}
-		fmt.Println()
+
+	topicDists := make([][]float32, len(topics))
+	for i := range topicDists {
+		topicDists[i] = topics[i].dist()
 	}
+
+	return topicDists, doct, sdrow
 }
 
 // ----- HELPERS ---------------------------------------------------------------
@@ -155,6 +156,15 @@ func (d *dist) sub(i int) {
 	if d.count[i] < 0 {
 		panic(fmt.Sprintf("Reached negative count for i=%d.", i))
 	}
+}
+
+// Returns the counts of this distribution, normalized by its sum.
+func (d *dist) dist() []float32 {
+	result := make([]float32, len(d.count))
+	for i := range result {
+		result[i] = d.count[i] / d.sum
+	}
+	return result
 }
 
 // Returns the n most likely items in the distribution.
