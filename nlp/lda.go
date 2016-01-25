@@ -59,7 +59,7 @@ func Lda(docTokens [][]string, k int) ([][]float32, [][]int, []string) {
 	ts := make([]float32, k) // Reusable slice for randomly picking topics.
 	lastChange := len(words)
 	breakSignals := 0
-	for iter := 0; iter > -1; iter++ {
+	for {
 		changeMap := map[int]bool{}
 		for i := range doct {
 			// Create distribution of profiles.
@@ -93,6 +93,159 @@ func Lda(docTokens [][]string, k int) ([][]float32, [][]int, []string) {
 			}
 		}
 
+		if len(changeMap) >= lastChange {
+			breakSignals++
+			if breakSignals == 5 {
+				break
+			}
+		}
+		lastChange = len(changeMap)
+	}
+
+	// Make return values.
+	sdrow := make([]string, len(words))
+	for word, i := range words {
+		sdrow[i] = word
+	}
+
+	topicDists := make([][]float32, len(topics))
+	for i := range topicDists {
+		topicDists[i] = topics[i].dist()
+	}
+
+	return topicDists, doct, sdrow
+}
+
+func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
+	[]string) {
+	// Check input.
+	if k < 1 {
+		panic(fmt.Sprintf("k must be positive. Got %d.", k))
+	}
+
+	// Create word map.
+	words := map[string]int{}
+	for _, doc := range docTokens {
+		for _, word := range doc {
+			if _, ok := words[word]; !ok {
+				words[word] = len(words)
+			}
+		}
+	}
+	if len(words) == 0 {
+		panic("Found 0 words in documents.")
+	}
+
+	// Convert tokens to indexes.
+	docs := make([][]int, len(docTokens))
+	for i := range docs {
+		docs[i] = make([]int, len(docTokens[i]))
+		for j := range docs[i] {
+			docs[i][j] = words[docTokens[i][j]]
+		}
+	}
+
+	topics := newDists(k, len(words), 0.1/float32(len(words)))
+
+	// Initial assignment.
+	doct := make([][]int, len(docs))
+	for i := range docs {
+		doct[i] = make([]int, len(docs[i]))
+		for j := range doct[i] {
+			t := rand.Intn(k)
+			doct[i][j] = t
+			topics[t].add(docs[i][j])
+		}
+	}
+
+	// Fun part.
+	lastChange := len(words)
+	breakSignals := 0
+	yikes := 0
+	for {
+		fmt.Println(yikes)
+		yikes++
+		changeMap := map[int]bool{}
+		push := make(chan int, numThreads)
+		done := make(chan int, numThreads)
+		change := make(chan int, numThreads)
+
+		// Pusher thread.
+		go func() {
+			for i := range docs {
+				push <- i
+			}
+			close(push)
+		}()
+
+		// changeMap thread.
+		go func() {
+			for i := range change {
+				changeMap[i] = true
+			}
+			done <- 0
+		}()
+
+		// Worker threads.
+		for thread := 0; thread < numThreads; thread++ {
+			go func() {
+				// Make a local copy of topics.
+				myTopics := copyDists(topics)
+				ts := make([]float32, k) // Reusable slice for randomly picking topics.
+
+				// For each document.
+				for i := range push {
+					// Create distribution of profiles.
+					d := newDist(k, 0.1/float32(k))
+					for j := range doct[i] {
+						d.add(doct[i][j])
+					}
+
+					// Reassign each word.
+					for j := range doct[i] {
+						t := doct[i][j]
+						word := docs[i][j]
+
+						// Unassign.
+						d.sub(t)
+						myTopics[t].sub(word)
+
+						// Pick new topic.
+						for k := range ts {
+							ts[k] = myTopics[k].p(word) * d.p(k)
+						}
+						t = pickRandom(ts)
+						if t != doct[i][j] {
+							change <- word
+						}
+
+						// Assign.
+						doct[i][j] = t
+						d.add(t)
+						myTopics[t].add(word)
+					}
+				}
+
+				done <- 0
+			}()
+		}
+
+		// Wait for threads.
+		for i := 0; i < numThreads; i++ {
+			<-done
+		}
+		close(change)
+		<-done
+
+		// Update topics.
+		topics = newDists(k, len(words), 0.1/float32(len(words)))
+		for i := range doct {
+			for j := range doct[i] {
+				topics[doct[i][j]].add(docs[i][j])
+			}
+		}
+
+		// Check halting condition.
 		if len(changeMap) >= lastChange {
 			breakSignals++
 			if breakSignals == 5 {
@@ -169,6 +322,24 @@ func (d *dist) dist() []float32 {
 	result := make([]float32, len(d.count))
 	for i := range result {
 		result[i] = d.count[i] / d.sum
+	}
+	return result
+}
+
+// Deep-copies a distribution.
+func (d *dist) copy() *dist {
+	count := make([]float32, len(d.count))
+	for i := range count {
+		count[i] = d.count[i]
+	}
+	return &dist{d.sum, count, d.alpha, d.alphas}
+}
+
+// Deep-copies a slice of distributions.
+func copyDists(dists []*dist) []*dist {
+	result := make([]*dist, len(dists))
+	for i := range result {
+		result[i] = dists[i].copy()
 	}
 	return result
 }
