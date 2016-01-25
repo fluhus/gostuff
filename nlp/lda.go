@@ -9,7 +9,8 @@ import (
 // ----- INTERFACE FUNCTION ----------------------------------------------------
 
 // Performs LDA on the given data. docTokens should contain tokenized documents,
-// such that docTokens[i][j] is the j'th token in the i'th document.
+// such that docTokens[i][j] is the j'th token in the i'th document. k is the
+// number of topics.
 //
 // Returns the topics (distributions), token-topic assignment, and list of words
 // such that the i'th position in the topics refers to the i'th word.
