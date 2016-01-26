@@ -1,7 +1,17 @@
-// Implements a hierarchical representation of XML structures.
+// A hierarchical node representation of XML documents. This package wraps
+// encoding/xml and can be used instead of it.
 //
-// Interaction should typically be done through the Node interface, rather than
-// the concrete types.
+// Each node has an underlying concrete type, but calling all functions is
+// legal. For example, here is how you can traverse the node tree:
+//  func traverse(n Node) {
+//    // Text() returns an empty string for non-text nodes.
+//    doSomeTextSearch(n.Text())
+//
+//    // Children() returns nil for non-parent nodes.
+//    for _, child := range n.Children() {
+//      traverse(child)
+//    }
+//  }
 package xmlnode
 
 import (

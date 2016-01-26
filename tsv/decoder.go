@@ -1,4 +1,5 @@
-// A generic TSV parser.
+// Generic TSV decoder. Wraps the encoding/csv package with a decoder that
+// can populate structs and slices.
 package tsv
 
 import (

@@ -1,4 +1,4 @@
-// A convenience package for serializing data. A gobz is simply a gzipped gob.
+// Convenience package for serializing data. A gobz is simply a gzipped gob.
 // This package provides simple functions for handling them.
 package gobz
 

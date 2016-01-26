@@ -3,6 +3,19 @@
 // Sometimes you just want to profile a piece of code, without the mess of
 // opening files and checking errors. This package will help you profile your
 // code while keeping it clean.
+//
+// A typical use of this package looks like:
+//  ezpprof.Start("myfile.pprof")
+//  {... some complicated code ...}
+//  ezpprof.Stop()
+//
+// Or alternatively:
+//  const profile = true
+//
+//  if profile {
+//    ezpprof.Start("myfile.pprof")
+//    defer ezpprof.Stop()
+//  }
 package ezpprof
 
 import (

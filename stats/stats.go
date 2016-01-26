@@ -1,4 +1,4 @@
-// Provides statistic functions.
+// Basic statistic functions.
 package stats
 
 import (
