@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"time"
 )
 
-// ----- INTERFACE FUNCTION ----------------------------------------------------
+// ----- INTERFACE FUNCTIONS ---------------------------------------------------
 
 // Performs LDA on the given data. docTokens should contain tokenized documents,
 // such that docTokens[i][j] is the j'th token in the i'th document. k is the
@@ -15,113 +16,21 @@ import (
 // Returns the topics (distributions), token-topic assignment, and list of words
 // such that the i'th position in the topics refers to the i'th word.
 func Lda(docTokens [][]string, k int) ([][]float32, [][]int, []string) {
-	// Check input.
-	if k < 1 {
-		panic(fmt.Sprintf("k must be positive. Got %d.", k))
-	}
-
-	// Create word map.
-	words := map[string]int{}
-	for _, doc := range docTokens {
-		for _, word := range doc {
-			if _, ok := words[word]; !ok {
-				words[word] = len(words)
-			}
-		}
-	}
-	if len(words) == 0 {
-		panic("Found 0 words in documents.")
-	}
-
-	// Convert tokens to indexes.
-	docs := make([][]int, len(docTokens))
-	for i := range docs {
-		docs[i] = make([]int, len(docTokens[i]))
-		for j := range docs[i] {
-			docs[i][j] = words[docTokens[i][j]]
-		}
-	}
-
-	topics := newDists(k, len(words), 0.1/float32(len(words)))
-
-	// Initial assignment.
-	doct := make([][]int, len(docs))
-	for i := range docs {
-		doct[i] = make([]int, len(docs[i]))
-		for j := range doct[i] {
-			t := rand.Intn(k)
-			doct[i][j] = t
-			topics[t].add(docs[i][j])
-		}
-	}
-
-	// Fun part.
-	ts := make([]float32, k) // Reusable slice for randomly picking topics.
-	lastChange := len(words)
-	breakSignals := 0
-	for {
-		changeMap := map[int]bool{}
-		for i := range doct {
-			// Create distribution of profiles.
-			d := newDist(k, 0.1/float32(k))
-			for j := range doct[i] {
-				d.add(doct[i][j])
-			}
-
-			// Reassign each word.
-			for j := range doct[i] {
-				t := doct[i][j]
-				word := docs[i][j]
-
-				// Unassign.
-				d.sub(t)
-				topics[t].sub(word)
-
-				// Pick new topic.
-				for k := range ts {
-					ts[k] = topics[k].p(word) * d.p(k)
-				}
-				t = pickRandom(ts)
-				if t != doct[i][j] {
-					changeMap[word] = true
-				}
-
-				// Assign.
-				doct[i][j] = t
-				d.add(t)
-				topics[t].add(word)
-			}
-		}
-
-		if len(changeMap) >= lastChange {
-			breakSignals++
-			if breakSignals == 5 {
-				break
-			}
-		}
-		lastChange = len(changeMap)
-	}
-
-	// Make return values.
-	sdrow := make([]string, len(words))
-	for word, i := range words {
-		sdrow[i] = word
-	}
-
-	topicDists := make([][]float32, len(topics))
-	for i := range topicDists {
-		topicDists[i] = topics[i].dist()
-	}
-
-	return topicDists, doct, sdrow
+	return LdaThreads(docTokens, k, 1)
 }
 
+// Like the function Lda but runs on multiple subroutines. Calling this function
+// with 1 thread is equivalent to calling Lda.
 func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 	[]string) {
 	// Check input.
 	if k < 1 {
 		panic(fmt.Sprintf("k must be positive. Got %d.", k))
 	}
+	if numThreads < 1 {
+		panic(fmt.Sprintf("Number of threads must be positive. Got %d.",
+			numThreads))
+	}
 
 	// Create word map.
 	words := map[string]int{}
@@ -158,30 +67,44 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 		}
 	}
 
-	// Fun part.
+	// Fun part!
 	lastChange := len(words)
 	breakSignals := 0
-	yikes := 0
 	for {
-		fmt.Println(yikes)
-		yikes++
 		changeMap := map[int]bool{}
-		push := make(chan int, numThreads)
+		newTopics := newDists(k, len(words), 0.1/float32(len(words)))
+		
+		// Big buffers for speed.
+		push := make(chan int, numThreads * 1000)
+		pull := make(chan int, numThreads * 1000)
+		change := make(chan map[int]bool, numThreads)
 		done := make(chan int, numThreads)
-		change := make(chan int, numThreads)
 
-		// Pusher thread.
+		// Pusher thread - pushes documnet index to threads.
 		go func() {
 			for i := range docs {
 				push <- i
 			}
 			close(push)
 		}()
-
-		// changeMap thread.
+		
+		// Puller thread - updates new topics with done documents.
 		go func() {
-			for i := range change {
-				changeMap[i] = true
+			for i := range pull {
+				for j := range doct[i] {
+					newTopics[doct[i][j]].add(docs[i][j])
+				}
+			}
+			done <- 0
+		}()
+
+		// changeMap thread - collects words that were changed in this
+		// iteration.
+		go func() {
+			for m := range change {
+				for i := range m {
+					changeMap[i] = true
+				}
 			}
 			done <- 0
 		}()
@@ -191,6 +114,8 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 			go func() {
 				// Make a local copy of topics.
 				myTopics := copyDists(topics)
+				myChangeMap := map[int]bool{}
+				myRand := newRand() // Thread-local random to prevent waiting on rand's default source.
 				ts := make([]float32, k) // Reusable slice for randomly picking topics.
 
 				// For each document.
@@ -212,20 +137,24 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 
 						// Pick new topic.
 						for k := range ts {
-							ts[k] = myTopics[k].p(word) * d.p(k)
+							ts[k] = d.p(k) * myTopics[k].p(word)
 						}
-						t = pickRandom(ts)
-						if t != doct[i][j] {
-							change <- word
+						t2 := pickRandom(ts, myRand)
+						if t2 != doct[i][j] {
+							myChangeMap[word] = true
 						}
 
 						// Assign.
-						doct[i][j] = t
-						d.add(t)
-						myTopics[t].add(word)
+						doct[i][j] = t2
+						d.add(t2)
+						myTopics[t2].add(word)
 					}
+					
+					// Report this doc is done.
+					pull <- i
 				}
 
+				change <- myChangeMap
 				done <- 0
 			}()
 		}
@@ -234,16 +163,13 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 		for i := 0; i < numThreads; i++ {
 			<-done
 		}
+		close(pull)
 		close(change)
+		<-done
 		<-done
 
 		// Update topics.
-		topics = newDists(k, len(words), 0.1/float32(len(words)))
-		for i := range doct {
-			for j := range doct[i] {
-				topics[doct[i][j]].add(docs[i][j])
-			}
-		}
+		topics = newTopics
 
 		// Check halting condition.
 		if len(changeMap) >= lastChange {
@@ -380,8 +306,14 @@ func (d *distSorter) Swap(i, j int) {
 	d.perm[i], d.perm[j] = d.perm[j], d.perm[i]
 }
 
+// Creates a new random generator.
+func newRand() *rand.Rand {
+	return rand.New(rand.NewSource(time.Now().UnixNano()))
+}
+
 // Picks a random index from a, with a probability proportional to its value.
-func pickRandom(a []float32) int {
+// Using a local random-generator to prevent waiting on rand's default source.
+func pickRandom(a []float32, rnd *rand.Rand) int {
 	if len(a) == 0 {
 		panic("Cannot pick element from an empty distribution.")
 	}
@@ -394,10 +326,10 @@ func pickRandom(a []float32) int {
 		sum += a[i]
 	}
 	if sum == 0 {
-		return rand.Intn(len(a))
+		return rnd.Intn(len(a))
 	}
 
-	r := rand.Float32() * sum
+	r := rnd.Float32() * sum
 	i := 0
 	for i < len(a) && r > a[i] {
 		r -= a[i]
