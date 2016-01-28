@@ -7,14 +7,4 @@ This is a collection of packages I wrote for my personal work, and may help
 others as well. The emphasis is on simplicity and minimalism, to keep code
 readable and clean.
 
-Available Packages
-------------------
-
-name | description
-:--|:--
-ezpprof | A simple wrapper for runtime/pprof for one-liner profiling.
-gobz | A simple wrapper for encoding/gob for quick data serialization and deserialization.
-stats | Common statistic functions.
-tsv | A simple TSV decoder for quick table parsing.
-vectors | Common vector operations.
-xmlnode | A DOM-node representation of XML data.
+Godoc: [https://godoc.org/github.com/fluhus/gostuff](https://godoc.org/github.com/fluhus/gostuff)
