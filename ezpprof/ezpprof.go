@@ -1,4 +1,4 @@
-// Convinience wrapper for the runtime/pprof package.
+// Convenience wrapper for the runtime/pprof package.
 //
 // Sometimes you just want to profile a piece of code, without the mess of
 // opening files and checking errors. This package will help you profile your
