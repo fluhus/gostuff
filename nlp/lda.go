@@ -73,10 +73,10 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 	for {
 		changeMap := map[int]bool{}
 		newTopics := newDists(k, len(words), 0.1/float32(len(words)))
-		
+
 		// Big buffers for speed.
-		push := make(chan int, numThreads * 1000)
-		pull := make(chan int, numThreads * 1000)
+		push := make(chan int, numThreads*1000)
+		pull := make(chan int, numThreads*1000)
 		change := make(chan map[int]bool, numThreads)
 		done := make(chan int, numThreads)
 
@@ -87,7 +87,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 			}
 			close(push)
 		}()
-		
+
 		// Puller thread - updates new topics with done documents.
 		go func() {
 			for i := range pull {
@@ -115,7 +115,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 				// Make a local copy of topics.
 				myTopics := copyDists(topics)
 				myChangeMap := map[int]bool{}
-				myRand := newRand() // Thread-local random to prevent waiting on rand's default source.
+				myRand := newRand()      // Thread-local random to prevent waiting on rand's default source.
 				ts := make([]float32, k) // Reusable slice for randomly picking topics.
 
 				// For each document.
@@ -149,7 +149,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 						d.add(t2)
 						myTopics[t2].add(word)
 					}
-					
+
 					// Report this doc is done.
 					pull <- i
 				}
