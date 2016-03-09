@@ -1,3 +1,6 @@
+// Provides a parser for wordnet's data and basic search operations.
+//
+// !!! UNDER CONSTRUCTION !!!
 package wordnet
 
 // Parses an entire wordnet directory. Path is the root of the directory.
@@ -8,11 +11,15 @@ func Parse(path string) (*Wordnet, error) {
 	result := &Wordnet{}
 	var err error
 
-	result.Data, err = parseDataFiles(path)
+	result.Synset, err = parseDataFiles(path)
 	if err != nil {
 		return nil, err
 	}
-	
+
+	result.Lemma, err = parseIndexFiles(path)
+	if err != nil {
+		return nil, err
+	}
+
 	return result, nil
 }
-

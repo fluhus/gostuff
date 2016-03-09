@@ -3,7 +3,16 @@ package wordnet
 // TODO(amit): Document exported types.
 
 type Wordnet struct {
-	Data map[string]*Synset
+	Synset map[string]*Synset
+	Lemma  map[string]*Lemma
+}
+
+type Synset struct {
+	SsType string
+	Word   []*DataWord
+	Ptr    []*DataPtr
+	Frame  []*DataFrame
+	Gloss  string
 }
 
 type DataFrame struct {
@@ -16,14 +25,6 @@ type DataWord struct {
 	LexId int
 }
 
-type Synset struct {
-	SsType string
-	Word   []*DataWord
-	Ptr    []*DataPtr
-	Frame  []*DataFrame
-	Gloss  string
-}
-
 type DataPtr struct {
 	Symbol string
 	Synset string
@@ -31,4 +32,7 @@ type DataPtr struct {
 	Target int // 1-based.
 }
 
-
+type Lemma struct {
+	PtrSymbol []string
+	Synset    []string
+}

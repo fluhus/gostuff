@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+// TODO(amit): Make parsers work with readers instead of file paths, for
+// testability.
+
+// TODO(amit): Write tests for parsers.
+
 // ----- FILE LISTS -----------------------------------------------------------
 
 var dataFiles = map[string]string{
@@ -18,17 +23,134 @@ var dataFiles = map[string]string{
 	"data.verb": "v",
 }
 
+var indexFiles = []string{
+	"index.adj",
+	"index.adv",
+	"index.noun",
+	"index.verb",
+}
+
 // ----- INDEX PARSING --------------------------------------------------------
 
-//type lemma struct {
+// Parses all the index files and returns the 'Lemma' field for the Wordnet
+// object. Path is data root directory.
+func parseIndexFiles(path string) (map[string]*Lemma, error) {
+	result := map[string]*Lemma{}
+	for _, file := range indexFiles {
+		err := parseIndexFile(filepath.Join(path, file), result)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %v", file, err)
+		}
+	}
+	return result, nil
+}
 
-//}
+// Parses a single index file. Path is the data file. Updates out with parsed
+// data.
+func parseIndexFile(path string, out map[string]*Lemma) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	scanner := bufio.NewScanner(f)
 
-// ----- HIGH-LEVEL DATA PARSING ----------------------------------------------
+	// For each line.
+	lineNum := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+		lineNum++
+		if strings.HasPrefix(line, "  ") { // Copyright line.
+			continue
+		}
+
+		raw, err := parseIndexLine(line)
+		if err != nil {
+			return fmt.Errorf("Line %d: %v", lineNum, err)
+		}
+
+		key := raw.pos + "." + raw.lemma
+		out[key] = rawLemmaToNiceLemma(raw)
+	}
+
+	return scanner.Err()
+}
+
+// Converts a raw lemma to an exported lemma.
+func rawLemmaToNiceLemma(raw *rawLemma) *Lemma {
+	result := &Lemma{
+		raw.ptrSymbol,
+		make([]string, len(raw.synset)),
+	}
+	for i := range result.Synset {
+		result.Synset[i] = raw.pos + "." + raw.synset[i]
+	}
+	return result
+}
+
+// Corresponds to a single line in an index file.
+type rawLemma struct {
+	lemma     string
+	pos       string
+	ptrSymbol []string
+	synset    []string
+}
+
+// Parses a single line in an index file.
+func parseIndexLine(line string) (*rawLemma, error) {
+	result := &rawLemma{}
+	var err error
+	parts := strings.Split(strings.Trim(line, " "), " ")
+	if len(parts) < 7 {
+		return nil, fmt.Errorf("Too few fields: %d, expected at least 7.",
+			len(parts))
+	}
+
+	result.lemma = parts[0]
+	result.pos = parts[1]
+	synsetCount, err := parseDeciUint(parts[2])
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse pointers.
+	ptrCount, err := parseDeciUint(parts[3])
+	if err != nil {
+		return nil, err
+	}
+	parts = parts[4:]
+	if len(parts) < ptrCount+3 {
+		return nil, fmt.Errorf("Too few fields for pointers: %d, expected at"+
+			" least %d.", len(parts), ptrCount+3)
+	}
+
+	result.ptrSymbol = make([]string, ptrCount)
+	for i := range result.ptrSymbol {
+		result.ptrSymbol[i] = parts[0]
+		parts = parts[1:]
+	}
+
+	// Parse synsets.
+	parts = parts[2:]
+	if len(parts) != synsetCount {
+		return nil, fmt.Errorf("Bad number of synsets: %d, expected %d. %v",
+			len(parts), synsetCount, parts)
+	}
+
+	result.synset = make([]string, synsetCount)
+	for i := range result.synset {
+		result.synset[i] = parts[0]
+		parts = parts[1:]
+	}
+
+	return result, nil
+}
+
+// ----- DATA PARSING ---------------------------------------------------------
 
 // TODO(amit): Convert symbols to actual meaningful words?
 
-// Parses all the data files and returns the 'Data' field for the Wordnet
+// Parses all the data files and returns the 'Synset' field for the Wordnet
 // object. Path is data root directory.
 func parseDataFiles(path string) (map[string]*Synset, error) {
 	result := map[string]*Synset{}
@@ -94,8 +216,7 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 	return result
 }
 
-// ----- RAW DATA PARSING -----------------------------------------------------
-
+// Corresponds to a single line in a data file.
 type rawSynset struct {
 	synsetOffset string
 	lexFilenum   int
@@ -114,7 +235,7 @@ type rawDataPtr struct {
 	target       int // 1-based.
 }
 
-// Accepted POS types.
+// Accepted synset types.
 var ssTypes = map[string]bool{
 	"n": true,
 	"v": true,
@@ -130,7 +251,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	var err error
 	parts := strings.Split(line, " ")
 	if len(parts) < 6 {
-		return nil, fmt.Errorf("Line is too short: %d fields, expected at "+
+		return nil, fmt.Errorf("Too few fields: %d, expected at "+
 			"least 6.", len(parts))
 	}
 
@@ -242,10 +363,8 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 
 // ----- UTILS ----------------------------------------------------------------
 
-// WTF who uses hexa and decimal in the same data format??
-// Who uses hexadecimal in textual data at all??
-// Who let those academics write code??
-// Ugh, man. Ugh.
+// Now what the hell were those drunkards thinking when they put hexa and
+// decimal in the same format? Academics and code. -_-
 
 func parseHexaUint(s string) (int, error) {
 	i, err := strconv.ParseUint(s, 16, 0)
