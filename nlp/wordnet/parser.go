@@ -3,14 +3,12 @@ package wordnet
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
-
-// TODO(amit): Make parsers work with readers instead of file paths, for
-// testability.
 
 // TODO(amit): Write tests for parsers.
 
@@ -37,7 +35,12 @@ var indexFiles = []string{
 func parseIndexFiles(path string) (map[string]*Lemma, error) {
 	result := map[string]*Lemma{}
 	for _, file := range indexFiles {
-		err := parseIndexFile(filepath.Join(path, file), result)
+		f, err := os.Open(filepath.Join(path, file))
+		if err != nil {
+			return nil, fmt.Errorf("%s: %v", file, err)
+		}
+		err = parseIndexFile(f, result)
+		f.Close()
 		if err != nil {
 			return nil, fmt.Errorf("%s: %v", file, err)
 		}
@@ -45,15 +48,9 @@ func parseIndexFiles(path string) (map[string]*Lemma, error) {
 	return result, nil
 }
 
-// Parses a single index file. Path is the data file. Updates out with parsed
-// data.
-func parseIndexFile(path string, out map[string]*Lemma) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
+// Parses a single index file. Updates out with parsed data.
+func parseIndexFile(in io.Reader, out map[string]*Lemma) error {
+	scanner := bufio.NewScanner(in)
 
 	// For each line.
 	lineNum := 0
@@ -155,7 +152,11 @@ func parseIndexLine(line string) (*rawLemma, error) {
 func parseDataFiles(path string) (map[string]*Synset, error) {
 	result := map[string]*Synset{}
 	for file, pos := range dataFiles {
-		err := parseDataFile(filepath.Join(path, file), pos, result)
+		f, err := os.Open(filepath.Join(path, file))
+		if err != nil {
+			return nil, fmt.Errorf("%s: %v", file, err)
+		}
+		err = parseDataFile(f, pos, result)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %v", file, err)
 		}
@@ -165,13 +166,8 @@ func parseDataFiles(path string) (map[string]*Synset, error) {
 
 // Parses a single data file. Path is the data file. Pos is the POS that this
 // file represents. Updates out with parsed data.
-func parseDataFile(path, pos string, out map[string]*Synset) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	scanner := bufio.NewScanner(f)
+func parseDataFile(in io.Reader, pos string, out map[string]*Synset) error {
+	scanner := bufio.NewScanner(in)
 
 	// For each line.
 	lineNum := 0
