@@ -26,7 +26,7 @@ var indexFiles = []string{
 	"index.verb",
 }
 
-var exceptionFiles = map[string]string {
+var exceptionFiles = map[string]string{
 	"adj.exc":  "a",
 	"adv.exc":  "r",
 	"noun.exc": "n",
@@ -54,9 +54,9 @@ func parseExceptionFiles(path string) (map[string][]string, error) {
 // Parses a single exception file. Adds keys to out that point to already
 // existing values.
 func parseExceptionFile(in io.Reader, pos string, out map[string][]string,
-		) error {
+) error {
 	scanner := bufio.NewScanner(in)
-	
+
 	// For each line.
 	lineNum := 0
 	for scanner.Scan() {
@@ -67,13 +67,13 @@ func parseExceptionFile(in io.Reader, pos string, out map[string][]string,
 			return fmt.Errorf("Line %d: Bad number of fields: %d, expected 2.",
 				lineNum, len(parts))
 		}
-		
+
 		for i := range parts {
 			parts[i] = pos + "." + parts[i]
 		}
 		out[parts[0]] = parts[1:]
 	}
-	
+
 	return scanner.Err()
 }
 

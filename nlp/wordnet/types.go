@@ -3,8 +3,8 @@ package wordnet
 // TODO(amit): Document exported types.
 
 type Wordnet struct {
-	Synset map[string]*Synset
-	Lemma  map[string]*Lemma
+	Synset    map[string]*Synset
+	Lemma     map[string]*Lemma
 	Exception map[string][]string
 }
 

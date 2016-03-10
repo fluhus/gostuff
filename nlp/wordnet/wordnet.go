@@ -20,11 +20,11 @@ func Parse(path string) (*Wordnet, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	result.Exception, err = parseExceptionFiles(path)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return result, nil
 }
