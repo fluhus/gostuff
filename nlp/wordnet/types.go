@@ -5,13 +5,13 @@ package wordnet
 // An entire wordnet database.
 type Wordnet struct {
 	Synset    map[string]*Synset  // Maps from synset ID to synset.
-	Lemma     map[string]*Lemma   // Maps from lemma to lemma object.
+	Lemma     map[string]*Lemma   // Maps from pos.lemma to lemma object. Pos is {a,n,r,v}.
 	Exception map[string][]string // Maps from exceptional word to its forms.
 }
 
 // A single synset.
 type Synset struct {
-	SsType string       // Part of speech.
+	SsType string       // Part of speech, including 's' for adjective satellite.
 	Word   []*DataWord  // Words in this synset.
 	Ptr    []*DataPtr   // Pointers to other synsets.
 	Frame  []*DataFrame // ???
@@ -32,8 +32,8 @@ type DataWord struct {
 
 // A pointer from one synset word to another.
 type DataPtr struct {
-	Symbol string // Relation between the 2 synsets.
-	Synset string // Pointed-to synset.
+	Symbol string // Relation between the 2 words.
+	Synset string // Target synset.
 	Source int    // 1-based index of word in source synset (0 for entire synset).
 	Target int    // 1-based index of word in target synset (0 for entire synset).
 }
