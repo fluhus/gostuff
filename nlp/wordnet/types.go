@@ -5,7 +5,7 @@ package wordnet
 // An entire wordnet database.
 type Wordnet struct {
 	Synset    map[string]*Synset  // Maps from synset ID to synset.
-	Lemma     map[string]*Lemma   // Maps from pos.lemma to lemma object. Pos is {a,n,r,v}.
+	Lemma     map[string][]string // Maps from pos.lemma to synset IDs that contain it.
 	Exception map[string][]string // Maps from exceptional word to its forms.
 }
 

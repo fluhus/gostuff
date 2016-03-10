@@ -79,6 +79,8 @@ func parseExceptionFile(in io.Reader, pos string, out map[string][]string,
 
 // ----- INDEX PARSING --------------------------------------------------------
 
+// TODO(amit): Remove index parser.
+
 // Parses all the index files and returns the 'Lemma' field for the Wordnet
 // object. Path is data root directory.
 func parseIndexFiles(path string) (map[string]*Lemma, error) {
