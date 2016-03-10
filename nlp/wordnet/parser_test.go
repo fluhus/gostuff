@@ -40,26 +40,6 @@ func TestDataParser(t *testing.T) {
 	}
 }
 
-func TestIndexParser(t *testing.T) {
-	expected := map[string]*Lemma{
-		"n.yoink": &Lemma{
-			[]string{"#", "$"},
-			[]string{"n.123", "n.456", "n.789"},
-		},
-	}
-
-	actual := map[string]*Lemma{}
-	err := parseIndexFile(strings.NewReader(testIndex), actual)
-	if err != nil {
-		t.Fatal("Parsing error:", err)
-	}
-	if !reflect.DeepEqual(expected, actual) {
-		t.Error("Non-equal values:")
-		t.Error(stringify(expected))
-		t.Error(stringify(actual))
-	}
-}
-
 func TestExceptionParser(t *testing.T) {
 	expected := map[string][]string{
 		"n.foo": []string{"n.bar"},
@@ -85,9 +65,6 @@ func stringify(a interface{}) string {
 
 var testData = `  copyright line
 111 1 v 3 foo 1 bar 3 baz 5 2 ! 123 n 0000 @ 321 a 0102 2 + 4 5 + 6 7 | hello world`
-
-var testIndex = `  copyright line
-yoink n 3 2 # $ 3 1 123 456 789`
 
 var testException = `foo bar
 baz bla blu
