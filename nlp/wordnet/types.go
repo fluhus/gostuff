@@ -5,6 +5,7 @@ package wordnet
 type Wordnet struct {
 	Synset map[string]*Synset
 	Lemma  map[string]*Lemma
+	Exception map[string][]string
 }
 
 type Synset struct {

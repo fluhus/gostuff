@@ -60,6 +60,24 @@ func TestIndexParser(t *testing.T) {
 	}
 }
 
+func TestExceptionParser(t *testing.T) {
+	expected := map[string][]string {
+		"n.foo": []string{"n.bar"},
+		"n.baz": []string{"n.bla", "n.blu"},
+	}
+	
+	actual := map[string][]string{}
+	err := parseExceptionFile(strings.NewReader(testException), "n", actual)
+	if err != nil {
+		t.Fatal("Parsing error:", err)
+	}
+	if !reflect.DeepEqual(expected, actual) {
+		t.Error("Non-equal values:")
+		t.Error(stringify(expected))
+		t.Error(stringify(actual))
+	}
+}
+
 func stringify(a interface{}) string {
 	j, _ := json.Marshal(a)
 	return string(j)
@@ -73,5 +91,8 @@ var testIndex =
 `  copyright line
 yoink n 3 2 # $ 3 1 123 456 789`
 
-
+var testException =
+`foo bar
+baz bla blu
+`
 

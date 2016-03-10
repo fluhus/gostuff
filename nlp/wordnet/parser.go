@@ -26,6 +26,57 @@ var indexFiles = []string{
 	"index.verb",
 }
 
+var exceptionFiles = map[string]string {
+	"adj.exc":  "a",
+	"adv.exc":  "r",
+	"noun.exc": "n",
+	"verb.exc": "v",
+}
+
+// ----- EXCEPTION PARSING ----------------------------------------------------
+
+func parseExceptionFiles(path string) (map[string][]string, error) {
+	result := map[string][]string{}
+	for file, pos := range exceptionFiles {
+		f, err := os.Open(filepath.Join(path, file))
+		if err != nil {
+			return nil, fmt.Errorf("%s: %v", file, err)
+		}
+		err = parseExceptionFile(f, pos, result)
+		f.Close()
+		if err != nil {
+			return nil, fmt.Errorf("%s: %v", file, err)
+		}
+	}
+	return result, nil
+}
+
+// Parses a single exception file. Adds keys to out that point to already
+// existing values.
+func parseExceptionFile(in io.Reader, pos string, out map[string][]string,
+		) error {
+	scanner := bufio.NewScanner(in)
+	
+	// For each line.
+	lineNum := 0
+	for scanner.Scan() {
+		lineNum++
+		line := scanner.Text()
+		parts := strings.Split(line, " ")
+		if len(parts) < 2 {
+			return fmt.Errorf("Line %d: Bad number of fields: %d, expected 2.",
+				lineNum, len(parts))
+		}
+		
+		for i := range parts {
+			parts[i] = pos + "." + parts[i]
+		}
+		out[parts[0]] = parts[1:]
+	}
+	
+	return scanner.Err()
+}
+
 // ----- INDEX PARSING --------------------------------------------------------
 
 // Parses all the index files and returns the 'Lemma' field for the Wordnet
