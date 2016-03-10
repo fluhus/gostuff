@@ -194,7 +194,7 @@ func parseIndexLine(line string) (*rawLemma, error) {
 
 // ----- DATA PARSING ---------------------------------------------------------
 
-// TODO(amit): Convert symbols to actual meaningful words?
+// TODO(amit): Convert pointer symbols to actual meaningful words?
 
 // Parses all the data files and returns the 'Synset' field for the Wordnet
 // object. Path is data root directory.

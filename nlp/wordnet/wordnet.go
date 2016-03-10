@@ -1,4 +1,4 @@
-// Provides a parser for wordnet's data and basic search operations.
+// Wordnet parser and interface.
 //
 // !!! UNDER CONSTRUCTION !!!
 package wordnet
