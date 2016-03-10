@@ -10,8 +10,6 @@ import (
 	"strings"
 )
 
-// TODO(amit): Write tests for parsers.
-
 // ----- FILE LISTS -----------------------------------------------------------
 
 var dataFiles = map[string]string{
