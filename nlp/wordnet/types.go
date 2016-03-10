@@ -37,11 +37,3 @@ type DataPtr struct {
 	Source int    // 1-based index of word in source synset (0 for entire synset).
 	Target int    // 1-based index of word in target synset (0 for entire synset).
 }
-
-// TODO(amit): Consider removing Lemma.PtrSymbol, as it may be redundant.
-
-// A single lemma (word) in the glossary.
-type Lemma struct {
-	PtrSymbol []string // Symbols of pointers this lemma has in all synsets containing it.
-	Synset    []string // IDs of synsets containing this lemma, as they appear in Wordnet.Synset.
-}
