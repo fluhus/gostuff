@@ -286,8 +286,8 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 
 // ----- UTILS ----------------------------------------------------------------
 
-// Now what the hell were those drunkards thinking when they put hexa and
-// decimal in the same format? Academics and code. -_-
+// Now what the hell were they thinking when they put hexa and decimal in the
+// same format? Academics and code. -_-
 
 func parseHexaUint(s string) (int, error) {
 	i, err := strconv.ParseUint(s, 16, 0)
