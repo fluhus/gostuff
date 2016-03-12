@@ -172,7 +172,7 @@ var ssTypes = map[string]bool{
 func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	result := &rawSynset{}
 	var err error
-	parts := strings.Split(line, " ")
+	parts := strings.Split(strings.Trim(line, " "), " ")
 	if len(parts) < 6 {
 		return nil, fmt.Errorf("Too few fields: %d, expected at "+
 			"least 6.", len(parts))
