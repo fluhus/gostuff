@@ -5,12 +5,17 @@
 // Basic usage
 //
 // The main entry point is the Wordnet type. It holds all the data of a
-// wordnet dictionary.
+// wordnet dictionary, and provides search methods.
+//
+// For example, to search for the noun meanings of 'cat':
+//  wn, _ := wordnet.Parse(...)
+//  catNouns := wn.Search("cat")["n"]
+// Will return the synsets that contain the word "cat" and are nouns.
 //
 // Parts of speech
 //
-// Some data refers to parts of speech (POS). Everywhere a POS is expected,
-// it is a single letter as follows:
+// Some data refers to parts of speech (POS). Everywhere a part of speech is
+// expected, it is a single letter as follows:
 //  a: adjective
 //  n: noun
 //  r: adverb
