@@ -16,7 +16,7 @@ func TestDataParser(t *testing.T) {
 				{"bar", 3},
 				{"baz", 5},
 			},
-			[]*DataPtr{
+			[]*Pointer{
 				{"!", "n.123", 0, 0},
 				{"@", "a.321", 1, 2},
 			},

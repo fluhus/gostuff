@@ -122,13 +122,13 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 	result := &Synset{
 		raw.ssType,
 		raw.word,
-		make([]*DataPtr, len(raw.ptr)),
+		make([]*Pointer, len(raw.ptr)),
 		raw.frame,
 		raw.gloss,
 	}
 
 	for i, rawPtr := range raw.ptr {
-		result.Ptr[i] = &DataPtr{
+		result.Ptr[i] = &Pointer{
 			rawPtr.symbol,
 			rawPtr.pos + "." + rawPtr.synsetOffset,
 			rawPtr.source,
@@ -145,12 +145,12 @@ type rawSynset struct {
 	lexFilenum   int
 	ssType       string
 	word         []*SynsetWord
-	ptr          []*rawDataPtr
+	ptr          []*rawPointer
 	frame        []*Frame
 	gloss        string
 }
 
-type rawDataPtr struct {
+type rawPointer struct {
 	symbol       string
 	synsetOffset string
 	pos          string
@@ -222,10 +222,10 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 		return nil, fmt.Errorf("Too few fields for pointers: %d, expected "+
 			"at least %d.", len(parts), 4*ptrCount+1)
 	}
-	result.ptr = make([]*rawDataPtr, ptrCount)
+	result.ptr = make([]*rawPointer, ptrCount)
 
 	for i := 0; i < ptrCount; i++ {
-		ptr := &rawDataPtr{}
+		ptr := &rawPointer{}
 		ptr.symbol = parts[0]
 		ptr.synsetOffset = parts[1]
 		ptr.pos = parts[2]
