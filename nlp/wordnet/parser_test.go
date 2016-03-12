@@ -12,17 +12,17 @@ func TestDataParser(t *testing.T) {
 		"v.111": &Synset{
 			"v",
 			[]*DataWord{
-				&DataWord{"foo", 1},
-				&DataWord{"bar", 3},
-				&DataWord{"baz", 5},
+				{"foo", 1},
+				{"bar", 3},
+				{"baz", 5},
 			},
 			[]*DataPtr{
-				&DataPtr{"!", "n.123", 0, 0},
-				&DataPtr{"@", "a.321", 1, 2},
+				{"!", "n.123", 0, 0},
+				{"@", "a.321", 1, 2},
 			},
 			[]*Frame{
-				&Frame{4, 5},
-				&Frame{6, 7},
+				{4, 5},
+				{6, 7},
 			},
 			"hello world",
 		},
