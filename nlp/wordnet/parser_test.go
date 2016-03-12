@@ -20,9 +20,9 @@ func TestDataParser(t *testing.T) {
 				&DataPtr{"!", "n.123", 0, 0},
 				&DataPtr{"@", "a.321", 1, 2},
 			},
-			[]*DataFrame{
-				&DataFrame{4, 5},
-				&DataFrame{6, 7},
+			[]*Frame{
+				&Frame{4, 5},
+				&Frame{6, 7},
 			},
 			"hello world",
 		},

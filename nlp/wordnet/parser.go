@@ -146,7 +146,7 @@ type rawSynset struct {
 	ssType       string
 	word         []*DataWord
 	ptr          []*rawDataPtr
-	frame        []*DataFrame
+	frame        []*Frame
 	gloss        string
 }
 
@@ -259,7 +259,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 				"at least %d.", len(parts), 3*frameCount+1)
 		}
 
-		result.frame = make([]*DataFrame, frameCount)
+		result.frame = make([]*Frame, frameCount)
 		for i := range result.frame {
 			f, err := parseDeciUint(parts[1])
 			if err != nil {
@@ -269,7 +269,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 			if err != nil {
 				return nil, err
 			}
-			result.frame[i] = &DataFrame{f, w}
+			result.frame[i] = &Frame{f, w}
 			parts = parts[3:]
 		}
 	}

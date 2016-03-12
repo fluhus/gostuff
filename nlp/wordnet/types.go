@@ -14,12 +14,12 @@ type Synset struct {
 	SsType string       // Part of speech, including 's' for adjective satellite.
 	Word   []*DataWord  // Words in this synset.
 	Ptr    []*DataPtr   // Pointers to other synsets.
-	Frame  []*DataFrame // ???
+	Frame  []*Frame     // ???
 	Gloss  string       // Word definition and usage examples.
 }
 
 // ???
-type DataFrame struct {
+type Frame struct {
 	FrameNumber int
 	WordNumber  int
 }
