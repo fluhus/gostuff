@@ -30,7 +30,7 @@ type Synset struct {
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect4
 type Frame struct {
 	FrameNumber int // Frame number on the WordNet site.
-	WordNumber  int // 1-based index of word in the containing synset, 0 for entire synset.
+	WordNumber  int // Index of word in the containing synset, -1 for entire synset.
 }
 
 // A word in a synset.
@@ -46,6 +46,6 @@ type SynsetWord struct {
 type Pointer struct {
 	Symbol string // Relation between the 2 words. Target is <symbol> to source.
 	Synset string // Target synset.
-	Source int    // 1-based index of word in source synset, 0 for entire synset.
-	Target int    // 1-based index of word in target synset, 0 for entire synset.
+	Source int    // Index of word in source synset, -1 for entire synset.
+	Target int    // Index of word in target synset, -1 for entire synset.
 }

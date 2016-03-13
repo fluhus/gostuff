@@ -130,13 +130,16 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 		raw.frame,
 		raw.gloss,
 	}
+	for _, frame := range result.Frame {
+		frame.WordNumber-- // Switch from 1-based to 0-based.
+	}
 
 	for i, rawPtr := range raw.ptr {
 		result.Pointer[i] = &Pointer{
 			rawPtr.symbol,
 			rawPtr.pos + "." + rawPtr.synsetOffset,
-			rawPtr.source,
-			rawPtr.target,
+			rawPtr.source - 1, // Switch from 1-based to 0-based.
+			rawPtr.target - 1, // Switch from 1-based to 0-based.
 		}
 	}
 
@@ -290,7 +293,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 
 // ----- UTILS ----------------------------------------------------------------
 
-// Now what the hell were they thinking when they put hexa and decimal in the
+// Now what the heck were they thinking when they put hexa and decimal in the
 // same format? Academics and code. -_-
 
 func parseHexaUint(s string) (int, error) {
