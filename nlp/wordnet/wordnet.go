@@ -1,11 +1,11 @@
-// Wordnet parser and interface.
+// WordNet parser and interface.
 //
 // !!! UNDER CONSTRUCTION !!!
 //
 // Basic usage
 //
-// The main entry point is the Wordnet type. It holds all the data of a
-// wordnet dictionary, and provides search methods.
+// The main entry point is the WordNet type. It holds all the data of a
+// WordNet dictionary, and provides search methods.
 //
 // To search for the noun meanings of 'cat':
 //  wn, _ := wordnet.Parse(...)
@@ -34,11 +34,11 @@ import (
 	"sort"
 )
 
-// Parses an entire wordnet directory. Path is the root of the directory.
+// Parses an entire WordNet directory. Path is the root of the directory.
 // The parser will trverse it and parse the required files, assuming
 // directory structure is as published.
-func Parse(path string) (*Wordnet, error) {
-	result := &Wordnet{}
+func Parse(path string) (*WordNet, error) {
+	result := &WordNet{}
 	var err error
 
 	result.Synset, err = parseDataFiles(path)
@@ -58,7 +58,7 @@ func Parse(path string) (*Wordnet, error) {
 
 // Searches for a word in the dictionary. Returns a map from part of speech
 // (a, n, r, v) to all synsets that contain that word.
-func (wn *Wordnet) Search(word string) map[string][]*Synset {
+func (wn *WordNet) Search(word string) map[string][]*Synset {
 	result := map[string][]*Synset{}
 	for _, pos := range [...]string{"a", "n", "r", "v"} {
 		ids := wn.Lemma[pos+"."+word]
@@ -80,7 +80,7 @@ func (wn *Wordnet) Search(word string) map[string][]*Synset {
 // synset's hierarchy if no common ancestor was found.
 //
 // Based on NLTK's path_similarity function.
-func (wn *Wordnet) PathSimilarity(from, to *Synset, simulateRoot bool) float64 {
+func (wn *WordNet) PathSimilarity(from, to *Synset, simulateRoot bool) float64 {
 	hypFrom := wn.hypernyms(from)
 	hypTo := wn.hypernyms(to)
 	shortest := math.MaxInt32
@@ -117,7 +117,7 @@ func (wn *Wordnet) PathSimilarity(from, to *Synset, simulateRoot bool) float64 {
 // synset's hierarchy if no common ancestor was found.
 //
 // Based on NLTK's wup_similarity function.
-func (wn *Wordnet) WupSimilarity(from, to *Synset, simulateRoot bool) float64 {
+func (wn *WordNet) WupSimilarity(from, to *Synset, simulateRoot bool) float64 {
 	hypFrom := wn.hypernyms(from)
 	hypTo := wn.hypernyms(to)
 	var ancestor *Synset
@@ -153,7 +153,7 @@ func (wn *Wordnet) WupSimilarity(from, to *Synset, simulateRoot bool) float64 {
 
 // Returns the hypernym hierarchy of the synset, with their distance from the
 // input synset.
-func (wn *Wordnet) hypernyms(ss *Synset) map[*Synset]int {
+func (wn *WordNet) hypernyms(ss *Synset) map[*Synset]int {
 	result := map[*Synset]int{}
 	next := map[*Synset]struct{}{ss: struct{}{}}
 	level := 0
@@ -186,7 +186,7 @@ func maxSynsetDistance(m map[*Synset]int) int {
 }
 
 // Indexes all words in the data.
-func (wn *Wordnet) indexLemma() {
+func (wn *WordNet) indexLemma() {
 	wn.Lemma = map[string][]string{}
 
 	// Sort synsets to keep index stable.

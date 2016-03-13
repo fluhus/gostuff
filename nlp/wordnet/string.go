@@ -9,10 +9,10 @@ import (
 
 // TODO(amit): Consider removing String() functions to simplify the API.
 
-// Returns a compact string representation of the wordnet data collection, for
+// Returns a compact string representation of the WordNet data collection, for
 // debugging.
-func (w *Wordnet) String() string {
-	return fmt.Sprintf("Wordnet[%d lemmas, %d synsets, %d exceptions]",
+func (w *WordNet) String() string {
+	return fmt.Sprintf("WordNet[%d lemmas, %d synsets, %d exceptions]",
 		len(w.Lemma), len(w.Synset), len(w.Exception))
 }
 

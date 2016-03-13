@@ -9,7 +9,7 @@ package wordnet
 // blindly for matching lemmas to synsets.
 //
 // Keys in Exception field are plain words.
-type Wordnet struct {
+type WordNet struct {
 	Synset    map[string]*Synset  // Maps from synset ID to synset.
 	Lemma     map[string][]string // Maps from pos.lemma to synset IDs that contain it.
 	Exception map[string][]string // Maps from exceptional word to its forms.
