@@ -4,8 +4,6 @@ import (
 	"sort"
 )
 
-// TODO(amit): Add pointer to/from indexes.
-
 // Indexes all words in the data.
 func (wn *Wordnet) indexLemma() {
 	wn.Lemma = map[string][]string{}

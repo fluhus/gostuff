@@ -1,7 +1,5 @@
 package wordnet
 
-// TODO(amit): Complete documentation.
-
 // An entire wordnet database.
 type Wordnet struct {
 	Synset    map[string]*Synset  // Maps from synset ID to synset.

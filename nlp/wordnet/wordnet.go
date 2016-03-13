@@ -72,7 +72,7 @@ func (wn *Wordnet) Search(word string) map[string][]*Synset {
 			result[pos][i] = wn.Synset[id]
 		}
 	}
-	// TODO(amit): Search in exceptions too.
+	// TODO(amit): Search in exceptions too?
 	return result
 }
 

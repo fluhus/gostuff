@@ -10,6 +10,10 @@ import (
 	"strings"
 )
 
+// TODO(amit): Parse verb example sentences.
+
+// TODO(amit): Interface for pointers?
+
 // ----- FILE LISTS -----------------------------------------------------------
 
 var dataFiles = map[string]string{
