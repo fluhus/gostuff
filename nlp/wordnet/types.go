@@ -14,14 +14,17 @@ type Synset struct {
 	SsType string        // Part of speech, including 's' for adjective satellite.
 	Word   []*SynsetWord // Words in this synset.
 	Ptr    []*Pointer    // Pointers to other synsets.
-	Frame  []*Frame      // ???
+	Frame  []*Frame      // Sentence frames for verbs.
 	Gloss  string        // Word definition and usage examples.
 }
 
-// ???
+// A frame is a generic phrase that illustrates how to use a verb.
+//
+// See the list of frames here:
+// https://wordnet.princeton.edu/man/wninput.5WN.html#sect4
 type Frame struct {
-	FrameNumber int
-	WordNumber  int
+	FrameNumber int // Frame number on the WordNet site.
+	WordNumber  int // 1-based word number in the containing synset, 0 for entire synset.
 }
 
 // A word in a synset.
