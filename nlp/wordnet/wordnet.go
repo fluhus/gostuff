@@ -81,26 +81,47 @@ func (wn *Wordnet) Search(word string) map[string][]*Synset {
 // taxonomy. The score is in the range 0 to 1, where 1 means identity and 0
 // means completely disjoint.
 //
+// If simulateRoot is true, will create a common fake root for the top of each
+// synset's hierarchy if no common ancestor was found.
+//
 // Should be equivalent to NLTK's path_similarity function.
-func (wn *Wordnet) PathSimilarity(from, to *Synset) float64 {
+func (wn *Wordnet) PathSimilarity(from, to *Synset, simulateRoot bool) float64 {
 	hypFrom := wn.hypernyms(from)
 	hypTo := wn.hypernyms(to)
-	best := math.MaxInt32
+	shortest := math.MaxInt32
 
+	// Find common ancestor that gives the shortest path.
 	for s := range hypFrom {
 		if _, ok := hypTo[s]; ok {
 			distance := hypFrom[s] + hypTo[s]
-			if distance < best {
-				best = distance
+			if distance < shortest {
+				shortest = distance
 			}
 		}
 	}
 
-	if best == math.MaxInt32 { // Found no common ancestor.
-		return 0
+	// If no common ancestor, make a fake root.
+	if shortest == math.MaxInt32 {
+		if simulateRoot {
+			depthFrom := 0
+			depthTo := 0
+			for _, d := range hypFrom {
+				if d > depthFrom {
+					depthFrom = d
+				}
+			}
+			for _, d := range hypTo {
+				if d > depthTo {
+					depthTo = d
+				}
+			}
+			shortest = depthFrom + depthTo + 2 // 2 for fake root.
+		} else {
+			return 0
+		}
 	}
 
-	return 1.0 / (float64(best) + 1.0)
+	return 1.0 / (float64(shortest) + 1.0)
 }
 
 // Returns the hypernym hierarchy of the synset, with their distance from the
