@@ -38,7 +38,7 @@ type SynsetWord struct {
 // See list of pointer symbols here:
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect3
 type Pointer struct {
-	Symbol string // Relation between the 2 words. Target is <symbol> to sourse.
+	Symbol string // Relation between the 2 words. Target is <symbol> to source.
 	Synset string // Target synset.
 	Source int    // 1-based index of word in source synset, 0 for entire synset.
 	Target int    // 1-based index of word in target synset, 0 for entire synset.

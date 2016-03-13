@@ -19,6 +19,12 @@ func (wn *Wordnet) Search(word string) map[string][]*Synset {
 	return result
 }
 
+// Returns a score denoting how similar two word senses are, based on the
+// shortest path that connects the senses in the is-a (hypernym/hypnoym)
+// taxonomy. The score is in the range 0 to 1, where 1 means identity and 0
+// means completely disjoint.
+//
+// Should be equivalent to NLTK's path_similarity function.
 func (wn *Wordnet) PathSimilarity(from, to *Synset) float64 {
 	hypFrom := wn.hypernyms(from)
 	hypTo := wn.hypernyms(to)
@@ -41,7 +47,7 @@ func (wn *Wordnet) PathSimilarity(from, to *Synset) float64 {
 }
 
 // Returns the hypernym hierarchy of the synset, with their distance from the
-// synset.
+// input synset.
 func (wn *Wordnet) hypernyms(ss *Synset) map[*Synset]int {
 	result := map[*Synset]int{}
 	next := map[*Synset]struct{}{ss:struct{}{}}
@@ -62,4 +68,3 @@ func (wn *Wordnet) hypernyms(ss *Synset) map[*Synset]int {
 	
 	return result
 }
-
