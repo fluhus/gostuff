@@ -128,7 +128,7 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 	}
 
 	for i, rawPtr := range raw.ptr {
-		result.Ptr[i] = &Pointer{
+		result.Pointer[i] = &Pointer{
 			rawPtr.symbol,
 			rawPtr.pos + "." + rawPtr.synsetOffset,
 			rawPtr.source,

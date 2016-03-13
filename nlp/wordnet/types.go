@@ -11,11 +11,11 @@ type Wordnet struct {
 
 // A single synset.
 type Synset struct {
-	SsType string        // Part of speech, including 's' for adjective satellite.
-	Word   []*SynsetWord // Words in this synset.
-	Ptr    []*Pointer    // Pointers to other synsets.
-	Frame  []*Frame      // Sentence frames for verbs.
-	Gloss  string        // Word definition and usage examples.
+	SsType  string        // Part of speech, including 's' for adjective satellite.
+	Word    []*SynsetWord // Words in this synset.
+	Pointer []*Pointer    // Pointers to other synsets.
+	Frame   []*Frame      // Sentence frames for verbs.
+	Gloss   string        // Word definition and usage examples.
 }
 
 // A frame is a generic phrase that illustrates how to use a verb.
@@ -38,7 +38,7 @@ type SynsetWord struct {
 // See list of pointer symbols here:
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect3
 type Pointer struct {
-	Symbol string // Relation between the 2 words.
+	Symbol string // Relation between the 2 words. Target is <symbol> to sourse.
 	Synset string // Target synset.
 	Source int    // 1-based index of word in source synset, 0 for entire synset.
 	Target int    // 1-based index of word in target synset, 0 for entire synset.
