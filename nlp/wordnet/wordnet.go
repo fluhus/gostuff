@@ -7,10 +7,17 @@
 // The main entry point is the Wordnet type. It holds all the data of a
 // wordnet dictionary, and provides search methods.
 //
-// For example, to search for the noun meanings of 'cat':
+// To search for the noun meanings of 'cat':
 //  wn, _ := wordnet.Parse(...)
 //  catNouns := wn.Search("cat")["n"]
-// Will return the synsets that contain the word "cat" and are nouns.
+//  // = slice of all synsets that contain the word "cat" and are nouns.
+//
+// To calculate similarity between words:
+//  wn, _ := wordnet.Parse(...)
+//  cat := wn.Search("cat")["n"][0]
+//  dog := wn.Search("dog")["n"][0]
+//  similarity := wn.PathSimilarity(cat, dog, false)
+//  // = 0.2
 //
 // Parts of speech
 //
