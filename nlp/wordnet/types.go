@@ -17,11 +17,11 @@ type Wordnet struct {
 
 // A single synset.
 type Synset struct {
-	Pos     string        // Part of speech, including 's' for adjective satellite.
-	Word    []string      // Words in this synset.
-	Pointer []*Pointer    // Pointers to other synsets.
-	Frame   []*Frame      // Sentence frames for verbs.
-	Gloss   string        // Word definition and usage examples.
+	Pos     string     // Part of speech, including 's' for adjective satellite.
+	Word    []string   // Words in this synset.
+	Pointer []*Pointer // Pointers to other synsets.
+	Frame   []*Frame   // Sentence frames for verbs.
+	Gloss   string     // Word definition and usage examples.
 }
 
 // A frame is a generic phrase that illustrates how to use a verb.

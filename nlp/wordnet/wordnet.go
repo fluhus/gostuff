@@ -105,7 +105,7 @@ func (wn *Wordnet) PathSimilarity(from, to *Synset, simulateRoot bool) float64 {
 		}
 	}
 
-	return 1.0 / float64(shortest + 1)
+	return 1.0 / float64(shortest+1)
 }
 
 // Wu-Palmer Similarity. Returns a score denoting how similar two word senses
@@ -129,7 +129,7 @@ func (wn *Wordnet) WupSimilarity(from, to *Synset, simulateRoot bool) float64 {
 			}
 		}
 	}
-	
+
 	var depthFrom, depthTo, depthAncestor int
 
 	if ancestor != nil {
@@ -147,7 +147,7 @@ func (wn *Wordnet) WupSimilarity(from, to *Synset, simulateRoot bool) float64 {
 		}
 	}
 
-	return 2.0 * float64(depthAncestor)/ float64(depthFrom + depthTo)
+	return 2.0 * float64(depthAncestor) / float64(depthFrom+depthTo)
 }
 
 // Returns the hypernym hierarchy of the synset, with their distance from the
