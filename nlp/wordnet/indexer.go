@@ -19,7 +19,7 @@ func (wn *Wordnet) indexLemma() {
 		ss := wn.Synset[id]
 		pos := id[0:1]
 		for _, word := range ss.Word {
-			w := pos + "." + word.Word
+			w := pos + "." + word
 			wn.Lemma[w] = append(wn.Lemma[w], id)
 		}
 	}

@@ -45,12 +45,12 @@ func Parse(path string) (*Wordnet, error) {
 		return nil, err
 	}
 
-	result.indexLemma()
-
 	result.Exception, err = parseExceptionFiles(path)
 	if err != nil {
 		return nil, err
 	}
+
+	result.indexLemma()
 
 	return result, nil
 }

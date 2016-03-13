@@ -18,7 +18,7 @@ type Wordnet struct {
 // A single synset.
 type Synset struct {
 	SsType  string        // Part of speech, including 's' for adjective satellite.
-	Word    []*SynsetWord // Words in this synset.
+	Word    []string      // Words in this synset.
 	Pointer []*Pointer    // Pointers to other synsets.
 	Frame   []*Frame      // Sentence frames for verbs.
 	Gloss   string        // Word definition and usage examples.
@@ -31,12 +31,6 @@ type Synset struct {
 type Frame struct {
 	FrameNumber int // Frame number on the WordNet site.
 	WordNumber  int // Index of word in the containing synset, -1 for entire synset.
-}
-
-// A word in a synset.
-type SynsetWord struct {
-	Word  string // The actual lemma.
-	LexId int    // Index that uniquely identifies that sense of word.
 }
 
 // Denotes a semantic relation between one synset/word to another.

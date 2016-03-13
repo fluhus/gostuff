@@ -24,7 +24,3 @@ func (s *Synset) String() string {
 	fmt.Fprintf(result, ": %s]", s.Gloss)
 	return result.String()
 }
-
-func (w SynsetWord) String() string {
-	return w.Word
-}

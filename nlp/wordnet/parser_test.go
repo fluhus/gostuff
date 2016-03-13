@@ -11,10 +11,10 @@ func TestDataParser(t *testing.T) {
 	expected := map[string]*Synset{
 		"v.111": &Synset{
 			"v",
-			[]*SynsetWord{
-				{"foo", 1},
-				{"bar", 3},
-				{"baz", 5},
+			[]string{
+				"foo",
+				"bar",
+				"baz",
 			},
 			[]*Pointer{
 				{"!", "n.123", -1, -1},

@@ -151,7 +151,7 @@ type rawSynset struct {
 	synsetOffset string
 	lexFilenum   int
 	ssType       string
-	word         []*SynsetWord
+	word         []string
 	ptr          []*rawPointer
 	frame        []*Frame
 	gloss        string
@@ -207,15 +207,16 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 		return nil, fmt.Errorf("Too few fields for words: %d, expected at "+
 			"least %d.", len(parts), 2*wordCount+2)
 	}
-	result.word = make([]*SynsetWord, wordCount)
+	result.word = make([]string, wordCount)
 
 	for i := 0; i < wordCount; i++ {
 		word := parts[0]
-		lexId, err := parseHexaUint(parts[1])
+		// TODO(amit): What should I do with the lex_id?
+		_, err := parseHexaUint(parts[1])
 		if err != nil {
 			return nil, err
 		}
-		result.word[i] = &SynsetWord{word, lexId}
+		result.word[i] = word
 		parts = parts[2:]
 	}
 
