@@ -24,7 +24,7 @@ type Synset struct {
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect4
 type Frame struct {
 	FrameNumber int // Frame number on the WordNet site.
-	WordNumber  int // 1-based word number in the containing synset, 0 for entire synset.
+	WordNumber  int // 1-based index of word in the containing synset, 0 for entire synset.
 }
 
 // A word in a synset.
