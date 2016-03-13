@@ -31,7 +31,7 @@ type SynsetWord struct {
 	LexId int    // Index that uniquely identifies that sense of word.
 }
 
-// A pointer from one synset word to another.
+// Denotes a semantic relation between one synset/word to another.
 //
 // See list of pointer symbols here:
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect3
