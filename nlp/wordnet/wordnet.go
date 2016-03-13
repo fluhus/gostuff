@@ -78,7 +78,7 @@ func (wn *Wordnet) Search(word string) map[string][]*Synset {
 // If simulateRoot is true, will create a common fake root for the top of each
 // synset's hierarchy if no common ancestor was found.
 //
-// Should be equivalent to NLTK's path_similarity function.
+// Based on NLTK's path_similarity function.
 func (wn *Wordnet) PathSimilarity(from, to *Synset, simulateRoot bool) float64 {
 	hypFrom := wn.hypernyms(from)
 	hypTo := wn.hypernyms(to)
@@ -97,25 +97,57 @@ func (wn *Wordnet) PathSimilarity(from, to *Synset, simulateRoot bool) float64 {
 	// If no common ancestor, make a fake root.
 	if shortest == math.MaxInt32 {
 		if simulateRoot {
-			depthFrom := 0
-			depthTo := 0
-			for _, d := range hypFrom {
-				if d > depthFrom {
-					depthFrom = d
-				}
-			}
-			for _, d := range hypTo {
-				if d > depthTo {
-					depthTo = d
-				}
-			}
+			depthFrom := maxSynsetDistance(hypFrom)
+			depthTo := maxSynsetDistance(hypTo)
 			shortest = depthFrom + depthTo + 2 // 2 for fake root.
 		} else {
 			return 0
 		}
 	}
 
-	return 1.0 / (float64(shortest) + 1.0)
+	return 1.0 / float64(shortest + 1)
+}
+
+// Wu-Palmer Similarity. Returns a score denoting how similar two word senses
+// are, based on the depth of the two senses in the taxonomy and that of their
+// Least Common Subsumer (most specific ancestor node).
+//
+// If simulateRoot is true, will create a common fake root for the top of each
+// synset's hierarchy if no common ancestor was found.
+//
+// Based on NLTK's wup_similarity function.
+func (wn *Wordnet) WupSimilarity(from, to *Synset, simulateRoot bool) float64 {
+	hypFrom := wn.hypernyms(from)
+	hypTo := wn.hypernyms(to)
+	var ancestor *Synset
+
+	// Find deepest common ancestor.
+	for s := range hypFrom {
+		if _, ok := hypTo[s]; ok {
+			if ancestor == nil || hypFrom[s] < hypFrom[ancestor] {
+				ancestor = s
+			}
+		}
+	}
+	
+	var depthFrom, depthTo, depthAncestor int
+
+	if ancestor != nil {
+		depthAncestor = maxSynsetDistance(wn.hypernyms(ancestor)) + 1
+		depthFrom = depthAncestor + hypFrom[ancestor]
+		depthTo = depthAncestor + hypTo[ancestor]
+	} else {
+		// If no common ancestor, make a fake root.
+		if simulateRoot {
+			depthFrom = maxSynsetDistance(hypFrom) + 1
+			depthTo = maxSynsetDistance(hypTo) + 1
+			depthAncestor = 1
+		} else {
+			return 0
+		}
+	}
+
+	return 2.0 * float64(depthAncestor)/ float64(depthFrom + depthTo)
 }
 
 // Returns the hypernym hierarchy of the synset, with their distance from the
@@ -138,5 +170,16 @@ func (wn *Wordnet) hypernyms(ss *Synset) map[*Synset]int {
 		next = newNext
 	}
 
+	return result
+}
+
+// Returns the maximal value from the given map.
+func maxSynsetDistance(m map[*Synset]int) int {
+	result := 0
+	for _, d := range m {
+		if d > result {
+			result = d
+		}
+	}
 	return result
 }
