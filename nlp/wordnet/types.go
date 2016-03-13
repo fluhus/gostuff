@@ -34,6 +34,9 @@ type SynsetWord struct {
 }
 
 // A pointer from one synset word to another.
+//
+// See list of pointer symbols here:
+// https://wordnet.princeton.edu/man/wninput.5WN.html#sect3
 type Pointer struct {
 	Symbol string // Relation between the 2 words.
 	Synset string // Target synset.
