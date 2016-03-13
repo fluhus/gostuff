@@ -17,7 +17,7 @@ type Wordnet struct {
 
 // A single synset.
 type Synset struct {
-	SsType  string        // Part of speech, including 's' for adjective satellite.
+	Pos     string        // Part of speech, including 's' for adjective satellite.
 	Word    []string      // Words in this synset.
 	Pointer []*Pointer    // Pointers to other synsets.
 	Frame   []*Frame      // Sentence frames for verbs.
@@ -39,7 +39,7 @@ type Frame struct {
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect3
 type Pointer struct {
 	Symbol string // Relation between the 2 words. Target is <symbol> to source.
-	Synset string // Target synset.
+	Synset string // Target synset ID.
 	Source int    // Index of word in source synset, -1 for entire synset.
 	Target int    // Index of word in target synset, -1 for entire synset.
 }
