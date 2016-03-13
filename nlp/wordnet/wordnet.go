@@ -27,19 +27,6 @@
 //  n: noun
 //  r: adverb
 //  v: verb
-//
-// Keys in Lemma field
-//
-// Keys are "pos.lemma". For example the key "n.back" relates to the noun
-// "back", and the key "v.back" relates to the verb "back".
-//
-// Keys in Synset field
-//
-// These have no human-readable meaning, and should be used blindly for
-// matching lemmas to synsets.
-//
-// Keys are "pos.byte_offset", where byte_offset if the field from the original
-// data files. Here it has no meaning as real offset, but as a unique ID.
 package wordnet
 
 import (
