@@ -37,6 +37,6 @@ type SynsetWord struct {
 type Pointer struct {
 	Symbol string // Relation between the 2 words.
 	Synset string // Target synset.
-	Source int    // 1-based index of word in source synset (0 for entire synset).
-	Target int    // 1-based index of word in target synset (0 for entire synset).
+	Source int    // 1-based index of word in source synset, 0 for entire synset.
+	Target int    // 1-based index of word in target synset, 0 for entire synset.
 }
