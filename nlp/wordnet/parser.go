@@ -339,6 +339,8 @@ var ssTypes = map[string]bool{
 	"r": true,
 }
 
+// TODO(amit): Convert underscores in words to spaces.
+
 // Parses a single line in a data file. hasFrames is true only for the verb
 // file.
 func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
