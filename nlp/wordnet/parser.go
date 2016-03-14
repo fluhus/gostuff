@@ -30,6 +30,107 @@ var exceptionFiles = map[string]string{
 	"verb.exc": "v",
 }
 
+var exampleIndexFile = "sentidx.vrb"
+
+// ----- VERB EXAMPLE PARSING -------------------------------------------------
+
+func parseExampleIndexFile() (map[string][]int, error) {
+	f, err := os.Open(exampleIndexFile)
+	if err != nil {
+		return nil, err
+	}
+	return parseExampleIndex(f)
+}
+
+// Parses an entire lemma-example index file.
+func parseExampleIndex(r io.Reader) (map[string][]int, error) {
+	result := map[string][]int{}
+	scanner := bufio.NewScanner(r)
+
+	lineNum := 0
+	for scanner.Scan() {
+		lineNum++
+		raw, err := parseExampleIndexLine(scanner.Text())
+		if err != nil {
+			return nil, fmt.Errorf("Line %d: %v", lineNum, err)
+		}
+		key := fmt.Sprintf("%s.%d.%d", raw.lemma, raw.lexFileNum, raw.lexId)
+		result[key] = raw.exampleIds
+	}
+
+	return result, nil
+}
+
+// Represents a single line in the lemma-example index file.
+type rawExampleIndex struct {
+	lemma      string
+	pos        int
+	lexFileNum int
+	lexId      int
+	headWord   string
+	headId     int
+	exampleIds []int
+}
+
+// Parses a single line in the lemma-example index file.
+func parseExampleIndexLine(line string) (*rawExampleIndex, error) {
+	result := &rawExampleIndex{}
+	parts := strings.Split(line, " ")
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("Bad number of parts: %d, expected 2.",
+			len(parts))
+	}
+
+	// Parse sense.
+	senseParts := strings.Split(parts[0], "%")
+	if len(senseParts) != 2 {
+		return nil, fmt.Errorf("Bad number of sense-key parts: %d, expected"+
+			" 2.", len(senseParts))
+	}
+
+	result.lemma = senseParts[0]
+	lexSenseParts := strings.Split(senseParts[1], ":")
+	if len(lexSenseParts) != 5 {
+		return nil, fmt.Errorf("Bad number of lex-sense parts: %d, expected"+
+			" 5.", len(lexSenseParts))
+	}
+
+	// Parse lex-sense.
+	var err error
+	result.pos, err = parseDeciUint(lexSenseParts[0])
+	if err != nil {
+		return nil, err
+	}
+	result.lexFileNum, err = parseDeciUint(lexSenseParts[1])
+	if err != nil {
+		return nil, err
+	}
+	result.lexId, err = parseDeciUint(lexSenseParts[2])
+	if err != nil {
+		return nil, err
+	}
+	result.headWord = lexSenseParts[3]
+	if result.headWord != "" {
+		result.headId, err = parseDeciUint(lexSenseParts[4])
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Parse example numbers.
+	numParts := strings.Split(parts[1], ",")
+	nums := make([]int, len(numParts))
+	for i := range numParts {
+		nums[i], err = parseDeciUint(numParts[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	result.exampleIds = nums
+
+	return result, nil
+}
+
 // ----- EXCEPTION PARSING ----------------------------------------------------
 
 func parseExceptionFiles(path string) (map[string][]string, error) {

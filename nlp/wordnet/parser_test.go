@@ -58,6 +58,23 @@ func TestExceptionParser(t *testing.T) {
 	}
 }
 
+func TestExampleIndexParser(t *testing.T) {
+	expected := map[string][]int{
+		"abash.37.0": []int{126, 127},
+		"abhor.37.0": []int{138, 139, 15},
+	}
+
+	actual, err := parseExampleIndex(strings.NewReader(testExampleIndex))
+	if err != nil {
+		t.Fatal("Parsing error:", err)
+	}
+	if !reflect.DeepEqual(expected, actual) {
+		t.Error("Non-equal values:")
+		t.Error(stringify(expected))
+		t.Error(stringify(actual))
+	}
+}
+
 func stringify(a interface{}) string {
 	j, _ := json.Marshal(a)
 	return string(j)
@@ -67,5 +84,7 @@ var testData = `  copyright line
 111 1 v 3 foo 1 bar 3 baz 5 2 ! 123 n 0000 @ 321 a 0102 2 + 4 5 + 6 7 | hello world`
 
 var testException = `foo bar
-baz bla blu
-`
+baz bla blu`
+
+var testExampleIndex = `abash%2:37:00:: 126,127
+abhor%2:37:00:: 138,139,15`
