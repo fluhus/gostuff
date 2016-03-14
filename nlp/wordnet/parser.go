@@ -39,7 +39,7 @@ var (
 func parseExampleFile(path string) (map[int]string, error) {
 	f, err := os.Open(filepath.Join(path, exampleFile))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %v", exampleFile, err)
 	}
 	return parseExamples(f)
 }
@@ -70,7 +70,7 @@ func parseExamples(r io.Reader) (map[int]string, error) {
 func parseExampleIndexFile(path string) (map[string][]int, error) {
 	f, err := os.Open(filepath.Join(path, exampleIndexFile))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %v", exampleIndexFile, err)
 	}
 	return parseExampleIndex(f)
 }
