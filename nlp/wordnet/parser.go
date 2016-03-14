@@ -16,33 +16,66 @@ import (
 
 // ----- FILE LISTS -----------------------------------------------------------
 
-var dataFiles = map[string]string{
-	"data.adj":  "a",
-	"data.adv":  "r",
-	"data.noun": "n",
-	"data.verb": "v",
-}
-
-var exceptionFiles = map[string]string{
-	"adj.exc":  "a",
-	"adv.exc":  "r",
-	"noun.exc": "n",
-	"verb.exc": "v",
-}
-
-var exampleIndexFile = "sentidx.vrb"
+var (
+	dataFiles = map[string]string{
+		"data.adj":  "a",
+		"data.adv":  "r",
+		"data.noun": "n",
+		"data.verb": "v",
+	}
+	exceptionFiles = map[string]string{
+		"adj.exc":  "a",
+		"adv.exc":  "r",
+		"noun.exc": "n",
+		"verb.exc": "v",
+	}
+	exampleFile      = "sents.vrb"
+	exampleIndexFile = "sentidx.vrb"
+)
 
 // ----- VERB EXAMPLE PARSING -------------------------------------------------
 
-func parseExampleIndexFile() (map[string][]int, error) {
-	f, err := os.Open(exampleIndexFile)
+// Parses the verb example file.
+func parseExampleFile(path string) (map[int]string, error) {
+	f, err := os.Open(filepath.Join(path, exampleFile))
+	if err != nil {
+		return nil, err
+	}
+	return parseExamples(f)
+}
+
+// Parses a verb example file.
+func parseExamples(r io.Reader) (map[int]string, error) {
+	result := map[int]string{}
+	scanner := bufio.NewScanner(r)
+
+	lineNum := 0
+	for scanner.Scan() {
+		lineNum++
+		parts := strings.Split(scanner.Text(), " ")
+		if len(parts) == 0 {
+			return nil, fmt.Errorf("Line %d: No data to parse.", lineNum)
+		}
+		num, err := parseDeciUint(parts[0])
+		if err != nil {
+			return nil, fmt.Errorf("Line %d: %v", lineNum, err)
+		}
+		result[num] = strings.Join(parts[1:], " ")
+	}
+
+	return result, nil
+}
+
+// Parses the verb example index file.
+func parseExampleIndexFile(path string) (map[string][]int, error) {
+	f, err := os.Open(filepath.Join(path, exampleIndexFile))
 	if err != nil {
 		return nil, err
 	}
 	return parseExampleIndex(f)
 }
 
-// Parses an entire lemma-example index file.
+// Parses an entire verb example index file.
 func parseExampleIndex(r io.Reader) (map[string][]int, error) {
 	result := map[string][]int{}
 	scanner := bufio.NewScanner(r)
@@ -58,10 +91,14 @@ func parseExampleIndex(r io.Reader) (map[string][]int, error) {
 		result[key] = raw.exampleIds
 	}
 
+	if scanner.Err() != nil {
+		return nil, scanner.Err()
+	}
+
 	return result, nil
 }
 
-// Represents a single line in the lemma-example index file.
+// Represents a single line in the verb example index file.
 type rawExampleIndex struct {
 	lemma      string
 	pos        int

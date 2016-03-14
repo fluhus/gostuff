@@ -70,8 +70,25 @@ func TestExampleIndexParser(t *testing.T) {
 	}
 	if !reflect.DeepEqual(expected, actual) {
 		t.Error("Non-equal values:")
-		t.Error(stringify(expected))
-		t.Error(stringify(actual))
+		t.Error(expected)
+		t.Error(actual)
+	}
+}
+
+func TestExampleParser(t *testing.T) {
+	expected := map[int]string{
+		111: "hello world",
+		222: "goodbye universe",
+	}
+
+	actual, err := parseExamples(strings.NewReader(testExamples))
+	if err != nil {
+		t.Fatal("Parsing error:", err)
+	}
+	if !reflect.DeepEqual(expected, actual) {
+		t.Error("Non-equal values:")
+		t.Error(expected)
+		t.Error(actual)
 	}
 }
 
@@ -88,3 +105,6 @@ baz bla blu`
 
 var testExampleIndex = `abash%2:37:00:: 126,127
 abhor%2:37:00:: 138,139,15`
+
+var testExamples = `111 hello world
+222 goodbye universe`
