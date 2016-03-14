@@ -21,8 +21,7 @@
 //  wn, _ := wordnet.Parse(...)
 //  eat := wn.Search("eat")["v"][1]
 //  examples := wn.Examples(eat)
-//  // = slice of string sentences that demonstrate usage of the words in the
-//  // 'eat' synset.
+//  // = string slice of examples for the words in the 'eat' synset.
 //
 // Parts of speech
 //
