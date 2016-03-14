@@ -263,7 +263,7 @@ func parseDataFile(in io.Reader, pos string, out map[string]*Synset) error {
 func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 	result := &Synset{
 		raw.ssType,
-		raw.word,
+		make([]string, len(raw.word)),
 		make([]*Pointer, len(raw.ptr)),
 		raw.frame,
 		raw.gloss,
@@ -271,7 +271,9 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 	for _, frame := range result.Frame {
 		frame.WordNumber-- // Switch from 1-based to 0-based.
 	}
-
+	for i, word := range raw.word {
+		result.Word[i] = word.word
+	}
 	for i, rawPtr := range raw.ptr {
 		result.Pointer[i] = &Pointer{
 			rawPtr.symbol,
@@ -289,7 +291,7 @@ type rawSynset struct {
 	synsetOffset string
 	lexFilenum   int
 	ssType       string
-	word         []string
+	word         []*rawWord
 	ptr          []*rawPointer
 	frame        []*Frame
 	gloss        string
@@ -301,6 +303,11 @@ type rawPointer struct {
 	pos          string
 	source       int // 1-based.
 	target       int // 1-based.
+}
+
+type rawWord struct {
+	word  string
+	lexId int
 }
 
 // Accepted synset types.
@@ -345,15 +352,17 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 		return nil, fmt.Errorf("Too few fields for words: %d, expected at "+
 			"least %d.", len(parts), 2*wordCount+2)
 	}
-	result.word = make([]string, wordCount)
+	result.word = make([]*rawWord, wordCount)
 
 	for i := 0; i < wordCount; i++ {
-		word := parts[0]
+		word := &rawWord{}
+		word.word = parts[0]
 		// TODO(amit): What should I do with the lex_id?
-		_, err := parseHexaUint(parts[1])
+		lexId, err := parseHexaUint(parts[1])
 		if err != nil {
 			return nil, err
 		}
+		word.lexId = lexId
 		result.word[i] = word
 		parts = parts[2:]
 	}
