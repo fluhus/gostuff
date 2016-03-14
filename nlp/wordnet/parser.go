@@ -446,7 +446,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 			if err != nil {
 				return nil, err
 			}
-			result.frame[i] = &Frame{f, w}
+			result.frame[i] = &Frame{w, f}
 			parts = parts[3:]
 		}
 	}

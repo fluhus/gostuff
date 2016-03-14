@@ -18,13 +18,14 @@ type Synset struct {
 	Example []*Example // Usage examples for words in this synset. Verbs only.
 }
 
-// A frame is a generic phrase that illustrates how to use a verb.
+// Links a synset word to a generic phrase that illustrates how to use it.
+// Applies to verbs only.
 //
 // See the list of frames here:
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect4
 type Frame struct {
-	FrameNumber int // Frame number on the WordNet site.
 	WordNumber  int // Index of word in the containing synset, -1 for entire synset.
+	FrameNumber int // Frame number on the WordNet site.
 }
 
 // Denotes a semantic relation between one synset/word to another.
