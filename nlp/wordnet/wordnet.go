@@ -1,7 +1,5 @@
 // WordNet parser and interface.
 //
-// !!! UNDER CONSTRUCTION !!!
-//
 // Basic usage
 //
 // The main entry point is the WordNet type. It holds all the data of a
@@ -19,6 +17,13 @@
 //  similarity := wn.PathSimilarity(cat, dog, false)
 //  // = 0.2
 //
+// To get usage examples for verbs:
+//  wn, _ := wordnet.Parse(...)
+//  eat := wn.Search("eat")["v"][1]
+//  examples := wn.Examples(eat)
+//  // = slice of string sentences that demonstrate usage of the words in the
+//  // 'eat' synset.
+//
 // Parts of speech
 //
 // Some data refers to parts of speech (POS). Everywhere a part of speech is
@@ -27,6 +32,11 @@
 //  n: noun
 //  r: adverb
 //  v: verb
+//
+// Work in progress
+//
+// This API is not final yet, and may improve as I go. Please take this in
+// consideration.
 package wordnet
 
 import (

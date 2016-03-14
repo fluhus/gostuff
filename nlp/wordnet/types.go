@@ -1,14 +1,6 @@
 package wordnet
 
 // An entire wordnet database.
-//
-// Keys in Lemma field are "pos.lemma". For example the key "n.back" relates to
-// the noun "back", and the key "v.back" relates to the verb "back".
-//
-// Keys in Synset field have no human-readable meaning, and should be used
-// blindly for matching lemmas to synsets.
-//
-// Keys in Exception field are plain words.
 type WordNet struct {
 	Synset    map[string]*Synset  // Maps from synset ID to synset.
 	Lemma     map[string][]string // Maps from pos.lemma to synset IDs that contain it.
