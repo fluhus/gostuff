@@ -8,13 +8,13 @@ type WordNet struct {
 	Example   map[int]string      // Maps from example ID to sentence template.
 }
 
-// A single synset.
+// A set of synonymous words.
 type Synset struct {
 	Pos     string     // Part of speech, including 's' for adjective satellite.
 	Word    []string   // Words in this synset.
 	Pointer []*Pointer // Pointers to other synsets.
 	Frame   []*Frame   // Sentence frames for verbs.
-	Gloss   string     // Word definition and usage examples.
+	Gloss   string     // Lexical definition.
 	Example []*Example // Usage examples for words in this synset. Verbs only.
 }
 
