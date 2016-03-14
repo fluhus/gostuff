@@ -155,15 +155,17 @@ func parseExampleIndexLine(line string) (*rawExampleIndex, error) {
 	}
 
 	// Parse example numbers.
-	numParts := strings.Split(parts[1], ",")
-	nums := make([]int, len(numParts))
-	for i := range numParts {
-		nums[i], err = parseDeciUint(numParts[i])
-		if err != nil {
-			return nil, err
+	if parts[1] != "" {
+		numParts := strings.Split(parts[1], ",")
+		nums := make([]int, len(numParts))
+		for i := range numParts {
+			nums[i], err = parseDeciUint(numParts[i])
+			if err != nil {
+				return nil, err
+			}
 		}
+		result.exampleIds = nums
 	}
-	result.exampleIds = nums
 
 	return result, nil
 }
@@ -217,15 +219,17 @@ func parseExceptionFile(in io.Reader, pos string, out map[string][]string,
 // TODO(amit): Convert pointer symbols to actual meaningful words?
 
 // Parses all the data files and returns the 'Synset' field for the Wordnet
-// object. Path is data root directory.
-func parseDataFiles(path string) (map[string]*Synset, error) {
+// object. Path is data root directory. Example is a map from word sense to
+// example IDs.
+func parseDataFiles(path string, examples map[string][]int) (
+	map[string]*Synset, error) {
 	result := map[string]*Synset{}
 	for file, pos := range dataFiles {
 		f, err := os.Open(filepath.Join(path, file))
 		if err != nil {
 			return nil, fmt.Errorf("%s: %v", file, err)
 		}
-		err = parseDataFile(f, pos, result)
+		err = parseDataFile(f, pos, examples, result)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %v", file, err)
 		}
@@ -234,8 +238,10 @@ func parseDataFiles(path string) (map[string]*Synset, error) {
 }
 
 // Parses a single data file. Path is the data file. Pos is the POS that this
-// file represents. Updates out with parsed data.
-func parseDataFile(in io.Reader, pos string, out map[string]*Synset) error {
+// file represents. Example is a map from word sense to example IDs. Updates
+// out with parsed data.
+func parseDataFile(in io.Reader, pos string, examples map[string][]int,
+	out map[string]*Synset) error {
 	scanner := bufio.NewScanner(in)
 
 	// For each line.
@@ -247,13 +253,26 @@ func parseDataFile(in io.Reader, pos string, out map[string]*Synset) error {
 			continue
 		}
 
+		// Parse.
 		raw, err := parseDataLine(line, pos == "v")
 		if err != nil {
 			return fmt.Errorf("Line %d: %v", lineNum, err)
 		}
 
+		// Assign.
+		nice := rawSynsetToNiceSynset(raw)
 		key := pos + "." + raw.synsetOffset
-		out[key] = rawSynsetToNiceSynset(raw)
+		out[key] = nice
+
+		// Handle examples.
+		for i, word := range raw.word {
+			key := fmt.Sprintf("%s.%d.%d", word.word, raw.lexFileNum,
+				word.lexId)
+			//fmt.Println(key)
+			for _, exampleId := range examples[key] {
+				nice.Example = append(nice.Example, &Example{i, exampleId})
+			}
+		}
 	}
 
 	return scanner.Err()
@@ -267,6 +286,7 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 		make([]*Pointer, len(raw.ptr)),
 		raw.frame,
 		raw.gloss,
+		nil,
 	}
 	for _, frame := range result.Frame {
 		frame.WordNumber-- // Switch from 1-based to 0-based.
@@ -286,10 +306,10 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 	return result
 }
 
-// Corresponds to a single line in a data file.
+// Represents a single line in a data file.
 type rawSynset struct {
 	synsetOffset string
-	lexFilenum   int
+	lexFileNum   int
 	ssType       string
 	word         []*rawWord
 	ptr          []*rawPointer
@@ -332,7 +352,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 
 	// Parse beginning of line.
 	result.synsetOffset = parts[0]
-	result.lexFilenum, err = parseHexaUint(parts[1])
+	result.lexFileNum, err = parseDeciUint(parts[1])
 	if err != nil {
 		return nil, err
 	}

@@ -25,11 +25,13 @@ func TestDataParser(t *testing.T) {
 				{6, 6},
 			},
 			"hello world",
+			nil,
 		},
 	}
 
 	actual := map[string]*Synset{}
-	err := parseDataFile(strings.NewReader(testData), "v", actual)
+	err := parseDataFile(strings.NewReader(testData), "v", map[string][]int{},
+		actual)
 	if err != nil {
 		t.Fatal("Parsing error:", err)
 	}

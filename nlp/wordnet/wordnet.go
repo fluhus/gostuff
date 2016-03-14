@@ -30,6 +30,7 @@
 package wordnet
 
 import (
+	"fmt"
 	"math"
 	"sort"
 )
@@ -46,7 +47,12 @@ func Parse(path string) (*WordNet, error) {
 		return nil, err
 	}
 
-	result.Synset, err = parseDataFiles(path)
+	examples, err := parseExampleIndexFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	result.Synset, err = parseDataFiles(path, examples)
 	if err != nil {
 		return nil, err
 	}
@@ -209,4 +215,15 @@ func (wn *WordNet) indexLemma() {
 			wn.Lemma[w] = append(wn.Lemma[w], id)
 		}
 	}
+}
+
+// Returns usage examples for the given synset.
+func (wn *WordNet) Examples(ss *Synset) []string {
+	result := make([]string, len(ss.Example))
+	for i := range result {
+		template := wn.Example[ss.Example[i].TemplateNumber]
+		word := ss.Word[ss.Example[i].WordNumber]
+		result[i] = fmt.Sprintf(template, word)
+	}
+	return result
 }

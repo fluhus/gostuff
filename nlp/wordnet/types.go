@@ -23,6 +23,7 @@ type Synset struct {
 	Pointer []*Pointer // Pointers to other synsets.
 	Frame   []*Frame   // Sentence frames for verbs.
 	Gloss   string     // Word definition and usage examples.
+	Example []*Example // Usage examples for words in this synset. Verbs only.
 }
 
 // A frame is a generic phrase that illustrates how to use a verb.
@@ -43,4 +44,10 @@ type Pointer struct {
 	Synset string // Target synset ID.
 	Source int    // Index of word in source synset, -1 for entire synset.
 	Target int    // Index of word in target synset, -1 for entire synset.
+}
+
+// Links a synset word to an example sentence. Applies to verbs only.
+type Example struct {
+	WordNumber     int // Index of word in the containing synset.
+	TemplateNumber int // Number of template in the WordNet.Example field.
 }
