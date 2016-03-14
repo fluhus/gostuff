@@ -217,7 +217,7 @@ func (wn *WordNet) indexLemma() {
 	}
 }
 
-// Returns usage examples for the given synset.
+// Returns usage examples for the given synset. Always empty for non-verbs.
 func (wn *WordNet) Examples(ss *Synset) []string {
 	result := make([]string, len(ss.Example))
 	for i := range result {
