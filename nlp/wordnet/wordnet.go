@@ -41,6 +41,11 @@ func Parse(path string) (*WordNet, error) {
 	result := &WordNet{}
 	var err error
 
+	result.Example, err = parseExampleFile(path)
+	if err != nil {
+		return nil, err
+	}
+
 	result.Synset, err = parseDataFiles(path)
 	if err != nil {
 		return nil, err

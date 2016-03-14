@@ -12,8 +12,9 @@ import (
 // Returns a compact string representation of the WordNet data collection, for
 // debugging.
 func (w *WordNet) String() string {
-	return fmt.Sprintf("WordNet[%d lemmas, %d synsets, %d exceptions]",
-		len(w.Lemma), len(w.Synset), len(w.Exception))
+	return fmt.Sprintf("WordNet[%d lemmas, %d synsets, %d exceptions,"+
+		" %d examples]",
+		len(w.Lemma), len(w.Synset), len(w.Exception), len(w.Example))
 }
 
 // Returns a string representation of the synset, for debugging.

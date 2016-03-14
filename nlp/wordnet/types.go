@@ -13,6 +13,7 @@ type WordNet struct {
 	Synset    map[string]*Synset  // Maps from synset ID to synset.
 	Lemma     map[string][]string // Maps from pos.lemma to synset IDs that contain it.
 	Exception map[string][]string // Maps from exceptional word to its forms.
+	Example   map[int]string      // Maps from example ID to sentence template.
 }
 
 // A single synset.
