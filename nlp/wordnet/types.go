@@ -15,7 +15,7 @@ type WordNet struct {
 	Example map[int]string
 }
 
-// A single synset.
+// A set of synonymous words.
 type Synset struct {
 	// Part of speech, including 's' for adjective satellite.
 	Pos string
@@ -29,23 +29,24 @@ type Synset struct {
 	// Sentence frames for verbs.
 	Frame []*Frame
 
-	// Word definition and usage examples.
+	// Lexical definition.
 	Gloss string
 
 	// Usage examples for words in this synset. Verbs only.
 	Example []*Example
 }
 
-// A frame is a generic phrase that illustrates how to use a verb.
+// Links a synset word to a generic phrase that illustrates how to use it.
+// Applies to verbs only.
 //
 // See the list of frames here:
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect4
 type Frame struct {
-	// Frame number on the WordNet site.
-	FrameNumber int
-
 	// Index of word in the containing synset, -1 for entire synset.
 	WordNumber int
+
+	// Frame number on the WordNet site.
+	FrameNumber int
 }
 
 // Denotes a semantic relation between one synset/word to another.
