@@ -1,5 +1,7 @@
 package wordnet
 
+// TODO(amit): Move field docs above them instead of on the side.
+
 // An entire wordnet database.
 type WordNet struct {
 	Synset    map[string]*Synset  // Maps from synset ID to synset.

@@ -10,9 +10,7 @@ import (
 	"strings"
 )
 
-// TODO(amit): Parse verb example sentences.
-
-// TODO(amit): Interface for pointers?
+// TODO(amit): Convenience functions for pointers?
 
 // ----- FILE LISTS -----------------------------------------------------------
 
@@ -216,8 +214,6 @@ func parseExceptionFile(in io.Reader, pos string, out map[string][]string,
 
 // ----- DATA PARSING ---------------------------------------------------------
 
-// TODO(amit): Convert pointer symbols to actual meaningful words?
-
 // Parses all the data files and returns the 'Synset' field for the Wordnet
 // object. Path is data root directory. Example is a map from word sense to
 // example IDs.
@@ -379,7 +375,6 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	for i := 0; i < wordCount; i++ {
 		word := &rawWord{}
 		word.word = parts[0]
-		// TODO(amit): What should I do with the lex_id?
 		lexId, err := parseHexaUint(parts[1])
 		if err != nil {
 			return nil, err
@@ -475,3 +470,34 @@ func parseDeciUint(s string) (int, error) {
 	i, err := strconv.ParseUint(s, 10, 0)
 	return int(i), err
 }
+
+// Pointer symbol meanings.
+const (
+	Antonym                   = "!"
+	Hypernym                  = "@"
+	InstanceHypernym          = "@i"
+	Hyponym                   = "~"
+	InstanceHyponym           = "~i"
+	MemberHolonym             = "#m"
+	SubstanceHolonym          = "#s"
+	PartHolonym               = "#p"
+	MemberMeronym             = "%m"
+	SubstanceMeronym          = "%s"
+	PartMeronym               = "%p"
+	Attribute                 = "="
+	DerivationallyRelatedForm = "+"
+	DomainOfSynsetTopic       = ";c"
+	MemberOfThisDomainTopic   = "-c"
+	DomainOfSynsetRegion      = ";r"
+	MemberOfThisDomainRegion  = "-r"
+	DomainOfSynsetUsage       = ";u"
+	MemberOfThisDomainUsage   = "-u"
+	Entailment                = "*"
+	Cause                     = ">"
+	AlsoSee                   = "^"
+	VerbGroup                 = "$"
+	SimilarTo                 = "&"
+	ParticipleOfVerb          = "<"
+	Pertainym                 = "\\"
+	DerivedFromAdjective      = "\\"
+)

@@ -183,7 +183,7 @@ func (wn *WordNet) hypernyms(ss *Synset) map[*Synset]int {
 		for s := range next {
 			result[s] = level
 			for _, ptr := range s.Pointer {
-				if ptr.Symbol[:1] == "@" { // Hypernym relation.
+				if ptr.Symbol[:1] == Hypernym {
 					newNext[wn.Synset[ptr.Synset]] = struct{}{}
 				}
 			}
