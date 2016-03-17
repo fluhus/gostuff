@@ -11,8 +11,9 @@ type WordNet struct {
 	// Maps from exceptional word to its forms.
 	Exception map[string][]string
 
-	// Maps from example ID to sentence template.
-	Example map[int]string
+	// Maps from example ID to sentence template. Using string keys for JSON
+	// compatibility.
+	Example map[string]string
 }
 
 // A set of synonymous words.

@@ -230,7 +230,7 @@ func (wn *WordNet) indexLemma() {
 func (wn *WordNet) Examples(ss *Synset) []string {
 	result := make([]string, len(ss.Example))
 	for i := range result {
-		template := wn.Example[ss.Example[i].TemplateNumber]
+		template := wn.Example[fmt.Sprint(ss.Example[i].TemplateNumber)]
 		word := ss.Word[ss.Example[i].WordNumber]
 		result[i] = fmt.Sprintf(template, word)
 	}

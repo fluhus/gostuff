@@ -78,9 +78,9 @@ func TestExampleIndexParser(t *testing.T) {
 }
 
 func TestExampleParser(t *testing.T) {
-	expected := map[int]string{
-		111: "hello world",
-		222: "goodbye universe",
+	expected := map[string]string{
+		"111": "hello world",
+		"222": "goodbye universe",
 	}
 
 	actual, err := parseExamples(strings.NewReader(testExamples))

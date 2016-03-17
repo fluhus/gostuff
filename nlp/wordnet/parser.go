@@ -34,7 +34,7 @@ var (
 // ----- VERB EXAMPLE PARSING -------------------------------------------------
 
 // Parses the verb example file.
-func parseExampleFile(path string) (map[int]string, error) {
+func parseExampleFile(path string) (map[string]string, error) {
 	f, err := os.Open(filepath.Join(path, exampleFile))
 	if err != nil {
 		return nil, fmt.Errorf("%s: %v", exampleFile, err)
@@ -43,8 +43,8 @@ func parseExampleFile(path string) (map[int]string, error) {
 }
 
 // Parses a verb example file.
-func parseExamples(r io.Reader) (map[int]string, error) {
-	result := map[int]string{}
+func parseExamples(r io.Reader) (map[string]string, error) {
+	result := map[string]string{}
 	scanner := bufio.NewScanner(r)
 
 	lineNum := 0
@@ -54,11 +54,11 @@ func parseExamples(r io.Reader) (map[int]string, error) {
 		if len(parts) == 0 {
 			return nil, fmt.Errorf("Line %d: No data to parse.", lineNum)
 		}
-		num, err := parseDeciUint(parts[0])
+		_, err := parseDeciUint(parts[0])
 		if err != nil {
 			return nil, fmt.Errorf("Line %d: %v", lineNum, err)
 		}
-		result[num] = strings.Join(parts[1:], " ")
+		result[parts[0]] = strings.Join(parts[1:], " ")
 	}
 
 	return result, nil
