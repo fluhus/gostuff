@@ -32,6 +32,13 @@
 //  r: adverb
 //  v: verb
 //
+// Citation
+//
+// This API is based on: Princeton University "About WordNet." WordNet.
+// Princeton University. 2010. http://wordnet.princeton.edu
+//
+// Please cite them if you use this API.
+//
 // Work in progress
 //
 // This API is not final yet, and may improve as I go. Please take this in
