@@ -94,6 +94,23 @@ func TestExampleParser(t *testing.T) {
 	}
 }
 
+func TestIndexParser(t *testing.T) {
+	expected := map[string][]string{
+		"n.thing": {"n.a", "n.b"},
+		"v.thing2": {"v.c", "v.d"},
+	}
+
+	actual, err := parseIndex(strings.NewReader(testIndex))
+	if err != nil {
+		t.Fatal("Parsing error:", err)
+	}
+	if !reflect.DeepEqual(expected, actual) {
+		t.Error("Non-equal values:")
+		t.Error(expected)
+		t.Error(actual)
+	}
+}
+
 func stringify(a interface{}) string {
 	j, _ := json.Marshal(a)
 	return string(j)
@@ -110,3 +127,6 @@ abhor%2:37:00:: 138,139,15`
 
 var testExamples = `111 hello world
 222 goodbye universe`
+
+var testIndex = `thing n 2 3 x y z 2 2 a b
+thing2 v 4 1 x 4 2 c d e f`
