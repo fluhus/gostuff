@@ -79,6 +79,11 @@ func Parse(path string) (*WordNet, error) {
 	}
 
 	result.indexLemma()
+	
+	result.LemmaRanked, err = parseIndexFiles(path)
+	if err != nil {
+		return nil, err
+	}
 
 	return result, nil
 }

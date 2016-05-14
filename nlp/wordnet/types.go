@@ -7,6 +7,11 @@ type WordNet struct {
 
 	// Maps from pos.lemma to synset IDs that contain it.
 	Lemma map[string][]string
+	
+	// Like Lemma, but synsets are ordered from the most frequently used to the
+	// least. Only a subset of the synsets are ranked, so LemmaRanked has less
+	// synsets.
+	LemmaRanked map[string][]string
 
 	// Maps from exceptional word to its forms.
 	Exception map[string][]string
