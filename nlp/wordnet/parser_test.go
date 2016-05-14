@@ -96,7 +96,7 @@ func TestExampleParser(t *testing.T) {
 
 func TestIndexParser(t *testing.T) {
 	expected := map[string][]string{
-		"n.thing": {"n.a", "n.b"},
+		"n.thing":  {"n.a", "n.b"},
 		"v.thing2": {"v.c", "v.d"},
 	}
 
@@ -128,5 +128,6 @@ abhor%2:37:00:: 138,139,15`
 var testExamples = `111 hello world
 222 goodbye universe`
 
-var testIndex = `thing n 2 3 x y z 2 2 a b
+var testIndex = `  copyright line
+thing n 2 3 x y z 2 2 a b
 thing2 v 4 1 x 4 2 c d e f`

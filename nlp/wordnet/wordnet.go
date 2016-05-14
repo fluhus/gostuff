@@ -79,7 +79,7 @@ func Parse(path string) (*WordNet, error) {
 	}
 
 	result.indexLemma()
-	
+
 	result.LemmaRanked, err = parseIndexFiles(path)
 	if err != nil {
 		return nil, err
@@ -94,6 +94,25 @@ func (wn *WordNet) Search(word string) map[string][]*Synset {
 	result := map[string][]*Synset{}
 	for _, pos := range [...]string{"a", "n", "r", "v"} {
 		ids := wn.Lemma[pos+"."+word]
+		result[pos] = make([]*Synset, len(ids))
+		for i, id := range ids {
+			result[pos][i] = wn.Synset[id]
+		}
+	}
+	// TODO(amit): Search in exceptions too?
+	return result
+}
+
+// Searches for a word in the dictionary. Returns a map from part of speech
+// (a, n, r, v) to synsets that contain that word, ranked from the most
+// frequently used to the least.
+//
+// Only a subset of the synsets are ranked so this may return less synsets than
+// what Search would have.
+func (wn *WordNet) SearchRanked(word string) map[string][]*Synset {
+	result := map[string][]*Synset{}
+	for _, pos := range [...]string{"a", "n", "r", "v"} {
+		ids := wn.LemmaRanked[pos+"."+word]
 		result[pos] = make([]*Synset, len(ids))
 		for i, id := range ids {
 			result[pos][i] = wn.Synset[id]

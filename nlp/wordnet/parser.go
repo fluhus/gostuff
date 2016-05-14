@@ -42,7 +42,7 @@ var (
 // Parses the index files.
 func parseIndexFiles(path string) (map[string][]string, error) {
 	result := map[string][]string{}
-	
+
 	for _, file := range indexFiles {
 		// Read index file.
 		f, err := os.Open(filepath.Join(path, file))
@@ -53,13 +53,13 @@ func parseIndexFiles(path string) (map[string][]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("%v: %v", file, err)
 		}
-		
+
 		// Merge index with result.
 		for lemma := range m {
 			result[lemma] = m[lemma]
 		}
 	}
-	
+
 	return result, nil
 }
 
@@ -67,19 +67,19 @@ func parseIndexFiles(path string) (map[string][]string, error) {
 func parseIndex(r io.Reader) (map[string][]string, error) {
 	result := map[string][]string{}
 	scanner := bufio.NewScanner(r)
-	
+
 	lineNum := 0
 	for scanner.Scan() {
 		lineNum++
 		if strings.HasPrefix(scanner.Text(), "  ") { // Copyright line.
 			continue
 		}
-		
+
 		line, err := parseIndexLine(scanner.Text())
 		if err != nil {
 			return nil, fmt.Errorf("Line %d: %v", lineNum, err)
 		}
-		
+
 		if len(line.synset) == 1 {
 			line.ranked = 1
 		}
@@ -87,18 +87,18 @@ func parseIndex(r io.Reader) (map[string][]string, error) {
 			line.synset[i] = line.pos + "." + line.synset[i]
 		}
 		if line.ranked > 0 {
-			result[line.pos + "." + line.lemma] = line.synset[:line.ranked]
+			result[line.pos+"."+line.lemma] = line.synset[:line.ranked]
 		}
 	}
-	
+
 	return result, nil
 }
 
 // A single line in an index file.
 type indexLine struct {
-	lemma string
-	pos string
-	ptr []string
+	lemma  string
+	pos    string
+	ptr    []string
 	synset []string
 	ranked int
 }
@@ -107,15 +107,15 @@ type indexLine struct {
 func parseIndexLine(line string) (*indexLine, error) {
 	result := &indexLine{}
 	parts := strings.Split(line, " ")
-	
+
 	if len(parts) < 7 {
 		return nil, fmt.Errorf("Bad number of parts: %d, expected at least 7.",
 			len(parts))
 	}
-	
+
 	result.lemma = parts[0]
 	result.pos = parts[1]
-	
+
 	synsetCount, err := parseDeciUint(parts[2])
 	if err != nil {
 		return nil, fmt.Errorf("Bad synset count: %s", parts[2])
@@ -124,27 +124,27 @@ func parseIndexLine(line string) (*indexLine, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Bad pointer count: %s", parts[3])
 	}
-	
+
 	parts = parts[4:]
-	if len(parts) < ptrCount + 2 + synsetCount {
+	if len(parts) < ptrCount+2+synsetCount {
 		return nil, fmt.Errorf("Bad number of parts: %d, expected %d.",
-			len(parts) + 4, ptrCount + synsetCount + 6)
+			len(parts)+4, ptrCount+synsetCount+6)
 	}
-	
+
 	result.ptr = parts[:ptrCount]
 	parts = parts[ptrCount:]
-	
+
 	result.ranked, err = parseDeciUint(parts[1])
 	if err != nil {
 		return nil, fmt.Errorf("Bad tagsense count: %s", parts[1])
 	}
-	
+
 	result.synset = parts[2:]
 	if result.ranked > len(result.synset) {
-		return nil, fmt.Errorf("Bad tagsense-count: %d is greated than " +
+		return nil, fmt.Errorf("Bad tagsense-count: %d is greated than "+
 			"synset count %d.", result.ranked, len(result.synset))
 	}
-	
+
 	return result, nil
 }
 
