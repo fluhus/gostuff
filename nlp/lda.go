@@ -15,14 +15,14 @@ import (
 //
 // Returns the topics (distributions), token-topic assignment, and list of words
 // such that the i'th position in the topics refers to the i'th word.
-func Lda(docTokens [][]string, k int) ([][]float64, [][]int, []string) {
+func Lda(docTokens [][]string, k int) (map[string][]float64, [][]int) {
 	return LdaThreads(docTokens, k, 1)
 }
 
 // Like the function Lda but runs on multiple subroutines. Calling this function
 // with 1 thread is equivalent to calling Lda.
-func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float64, [][]int,
-	[]string) {
+func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
+		[][]int) {
 	// Check input.
 	if k < 1 {
 		panic(fmt.Sprintf("k must be positive. Got %d.", k))
@@ -182,17 +182,21 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float64, [][]int,
 	}
 
 	// Make return values.
-	sdrow := make([]string, len(words))
-	for word, i := range words {
-		sdrow[i] = word
-	}
-
 	topicDists := make([][]float64, len(topics))
 	for i := range topicDists {
 		topicDists[i] = topics[i].dist()
 	}
+	
+	dict := map[string][]float64{}
+	for word, i := range words {
+		d := make([]float64, k)
+		for j := range d {
+			d[j] = topicDists[j][i]
+		}
+		dict[word] = d
+	}
 
-	return topicDists, doct, sdrow
+	return dict, doct
 }
 
 // ----- HELPERS ---------------------------------------------------------------
