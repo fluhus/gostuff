@@ -11,10 +11,12 @@ import (
 
 // Performs LDA on the given data. docTokens should contain tokenized documents,
 // such that docTokens[i][j] is the j'th token in the i'th document. k is the
-// number of topics.
+// number of topics. Returns the topics and token-topic assignment, respective
+// to docTokens.
 //
-// Returns the topics (distributions), token-topic assignment, and list of words
-// such that the i'th position in the topics refers to the i'th word.
+// Topics are returned in a map from word to a probability vector, such that
+// the i'th position is the probability of the i'th topic generating that word.
+// For each i, the i'th position of all words sum to 1.
 func Lda(docTokens [][]string, k int) (map[string][]float64, [][]int) {
 	return LdaThreads(docTokens, k, 1)
 }
