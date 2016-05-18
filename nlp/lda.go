@@ -15,13 +15,13 @@ import (
 //
 // Returns the topics (distributions), token-topic assignment, and list of words
 // such that the i'th position in the topics refers to the i'th word.
-func Lda(docTokens [][]string, k int) ([][]float32, [][]int, []string) {
+func Lda(docTokens [][]string, k int) ([][]float64, [][]int, []string) {
 	return LdaThreads(docTokens, k, 1)
 }
 
 // Like the function Lda but runs on multiple subroutines. Calling this function
 // with 1 thread is equivalent to calling Lda.
-func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
+func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float64, [][]int,
 	[]string) {
 	// Check input.
 	if k < 1 {
@@ -54,7 +54,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 		}
 	}
 
-	topics := newDists(k, len(words), 0.1/float32(len(words)))
+	topics := newDists(k, len(words), 0.1/float64(len(words)))
 
 	// Initial assignment.
 	doct := make([][]int, len(docs))
@@ -72,7 +72,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 	breakSignals := 0
 	for {
 		changeMap := map[int]bool{}
-		newTopics := newDists(k, len(words), 0.1/float32(len(words)))
+		newTopics := newDists(k, len(words), 0.1/float64(len(words)))
 
 		// Big buffers for speed.
 		push := make(chan int, numThreads*1000)
@@ -116,12 +116,12 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 				myTopics := copyDists(topics)
 				myChangeMap := map[int]bool{}
 				myRand := newRand()      // Thread-local random to prevent waiting on rand's default source.
-				ts := make([]float32, k) // Reusable slice for randomly picking topics.
+				ts := make([]float64, k) // Reusable slice for randomly picking topics.
 
 				// For each document.
 				for i := range push {
 					// Create distribution of profiles.
-					d := newDist(k, 0.1/float32(k))
+					d := newDist(k, 0.1/float64(k))
 					for j := range doct[i] {
 						d.add(doct[i][j])
 					}
@@ -187,7 +187,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 		sdrow[i] = word
 	}
 
-	topicDists := make([][]float32, len(topics))
+	topicDists := make([][]float64, len(topics))
 	for i := range topicDists {
 		topicDists[i] = topics[i].dist()
 	}
@@ -199,19 +199,19 @@ func LdaThreads(docTokens [][]string, k, numThreads int) ([][]float32, [][]int,
 
 // A distribution on elements by counts.
 type dist struct {
-	sum    float32
-	count  []float32
-	alpha  float32
-	alphas float32
+	sum    float64
+	count  []float64
+	alpha  float64
+	alphas float64
 }
 
 // Creates a new empty distribution.
-func newDist(n int, alpha float32) *dist {
-	return &dist{0, make([]float32, n), alpha, alpha * float32(n)}
+func newDist(n int, alpha float64) *dist {
+	return &dist{0, make([]float64, n), alpha, alpha * float64(n)}
 }
 
 // Creates a slice of empty distributions.
-func newDists(k, n int, alpha float32) []*dist {
+func newDists(k, n int, alpha float64) []*dist {
 	result := make([]*dist, k)
 	for i := range result {
 		result[i] = newDist(n, alpha)
@@ -220,7 +220,7 @@ func newDists(k, n int, alpha float32) []*dist {
 }
 
 // Returns the probability of i, considering alpha.
-func (d *dist) p(i int) float32 {
+func (d *dist) p(i int) float64 {
 	if d.sum == 0 {
 		return 0
 	}
@@ -244,8 +244,8 @@ func (d *dist) sub(i int) {
 }
 
 // Returns the counts of this distribution, normalized by its sum.
-func (d *dist) dist() []float32 {
-	result := make([]float32, len(d.count))
+func (d *dist) dist() []float64 {
+	result := make([]float64, len(d.count))
 	for i := range result {
 		result[i] = d.count[i] / d.sum
 	}
@@ -254,7 +254,7 @@ func (d *dist) dist() []float32 {
 
 // Deep-copies a distribution.
 func (d *dist) copy() *dist {
-	count := make([]float32, len(d.count))
+	count := make([]float64, len(d.count))
 	for i := range count {
 		count[i] = d.count[i]
 	}
@@ -313,12 +313,12 @@ func newRand() *rand.Rand {
 
 // Picks a random index from a, with a probability proportional to its value.
 // Using a local random-generator to prevent waiting on rand's default source.
-func pickRandom(a []float32, rnd *rand.Rand) int {
+func pickRandom(a []float64, rnd *rand.Rand) int {
 	if len(a) == 0 {
 		panic("Cannot pick element from an empty distribution.")
 	}
 
-	sum := float32(0)
+	sum := float64(0)
 	for i := range a {
 		if a[i] < 0 {
 			panic(fmt.Sprintf("Got negative value in distribution: %v", a[i]))
@@ -329,7 +329,7 @@ func pickRandom(a []float32, rnd *rand.Rand) int {
 		return rnd.Intn(len(a))
 	}
 
-	r := rnd.Float32() * sum
+	r := rnd.Float64() * sum
 	i := 0
 	for i < len(a) && r > a[i] {
 		r -= a[i]
