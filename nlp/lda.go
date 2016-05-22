@@ -7,6 +7,9 @@ import (
 	"time"
 )
 
+// If true, LDA will print progress information. For debugging.
+var LdaVerbose = false
+
 // ----- INTERFACE FUNCTIONS ---------------------------------------------------
 
 // Performs LDA on the given data. docTokens should contain tokenized documents,
@@ -24,7 +27,7 @@ func Lda(docTokens [][]string, k int) (map[string][]float64, [][]int) {
 // Like the function Lda but runs on multiple subroutines. Calling this function
 // with 1 thread is equivalent to calling Lda.
 func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
-		[][]int) {
+	[][]int) {
 	// Check input.
 	if k < 1 {
 		panic(fmt.Sprintf("k must be positive. Got %d.", k))
@@ -46,6 +49,9 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 	if len(words) == 0 {
 		panic("Found 0 words in documents.")
 	}
+	if LdaVerbose {
+		fmt.Println("LDA:", len(words), "words in dictionary")
+	}
 
 	// Convert tokens to indexes.
 	docs := make([][]int, len(docTokens))
@@ -58,7 +64,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 
 	topics := newDists(k, len(words), 0.1/float64(len(words)))
 
-	// Initial assignment.
+	// Initial topic assignment.
 	doct := make([][]int, len(docs))
 	for i := range docs {
 		doct[i] = make([]int, len(docs[i]))
@@ -69,17 +75,20 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 		}
 	}
 
-	// Fun part!
-	lastChange := len(words)
+	lastChange := 0 // How many words changed their topic in the last iteration.
+	for _, t := range doct {
+		lastChange += len(t)
+	}
 	breakSignals := 0
+
+	// Fun part!
 	for {
-		changeMap := map[int]bool{}
 		newTopics := newDists(k, len(words), 0.1/float64(len(words)))
 
 		// Big buffers for speed.
 		push := make(chan int, numThreads*1000)
 		pull := make(chan int, numThreads*1000)
-		change := make(chan map[int]bool, numThreads)
+		change := make(chan int, numThreads)
 		done := make(chan int, numThreads)
 
 		// Pusher thread - pushes documnet index to threads.
@@ -92,21 +101,36 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 
 		// Puller thread - updates new topics with done documents.
 		go func() {
+			count := 0
+			progress := -1
 			for i := range pull {
+				// Print progress if verbose.
+				if LdaVerbose {
+					count++
+					newProgress := count * 100 / len(doct)
+					if newProgress > progress {
+						progress = newProgress
+						fmt.Printf("\rLDA: [%d%%]", progress)
+					}
+				}
+
+				// Update document.
 				for j := range doct[i] {
 					newTopics[doct[i][j]].add(docs[i][j])
 				}
 			}
+
+			if LdaVerbose {
+				fmt.Println()
+			}
 			done <- 0
 		}()
 
-		// changeMap thread - collects words that were changed in this
-		// iteration.
+		// changeCount thread - counts how many word changed their topic.
+		changeCount := 0
 		go func() {
-			for m := range change {
-				for i := range m {
-					changeMap[i] = true
-				}
+			for count := range change {
+				changeCount += count
 			}
 			done <- 0
 		}()
@@ -116,7 +140,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 			go func() {
 				// Make a local copy of topics.
 				myTopics := copyDists(topics)
-				myChangeMap := map[int]bool{}
+				myChangeCount := 0
 				myRand := newRand()      // Thread-local random to prevent waiting on rand's default source.
 				ts := make([]float64, k) // Reusable slice for randomly picking topics.
 
@@ -143,7 +167,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 						}
 						t2 := pickRandom(ts, myRand)
 						if t2 != doct[i][j] {
-							myChangeMap[word] = true
+							myChangeCount++
 						}
 
 						// Assign.
@@ -156,7 +180,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 					pull <- i
 				}
 
-				change <- myChangeMap
+				change <- myChangeCount
 				done <- 0
 			}()
 		}
@@ -174,13 +198,18 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 		topics = newTopics
 
 		// Check halting condition.
-		if len(changeMap) >= lastChange {
+		if changeCount >= lastChange {
 			breakSignals++
 			if breakSignals == 5 {
 				break
 			}
 		}
-		lastChange = len(changeMap)
+
+		if LdaVerbose {
+			fmt.Printf("LDA: Changes: %d (%d) %.3f\n", changeCount, breakSignals,
+				float64(changeCount)/float64(lastChange))
+		}
+		lastChange = changeCount
 	}
 
 	// Make return values.
@@ -188,7 +217,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 	for i := range topicDists {
 		topicDists[i] = topics[i].dist()
 	}
-	
+
 	dict := map[string][]float64{}
 	for word, i := range words {
 		d := make([]float64, k)
