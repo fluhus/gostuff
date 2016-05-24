@@ -1,4 +1,4 @@
-// Performs k-means analysis on data.
+// Basic clustering functions.
 package clustering
 
 import (
