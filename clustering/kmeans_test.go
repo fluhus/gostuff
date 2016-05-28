@@ -21,14 +21,14 @@ func TestKmeans(t *testing.T) {
 		[]float64{0.0, 0.1},
 	}
 
-	tags, means := Kmeans(m, 2)
+	means, tags := Kmeans(m, 2)
 
 	if tags[0] == 0 {
 		assertEqual(tags, []int{0, 1, 0, 0, 1, 1, 1, 0}, t)
-		assertEqual(means, [][]float64{[]float64{0, 0}, []float64{1, 1}}, t)
+		assertEqual(means, [][]float64{{0, 0}, {1, 1}}, t)
 	} else {
 		assertEqual(tags, []int{1, 0, 1, 1, 0, 0, 0, 1}, t)
-		assertEqual(means, [][]float64{[]float64{1, 1}, []float64{0, 0}}, t)
+		assertEqual(means, [][]float64{{1, 1}, {0, 0}}, t)
 	}
 }
 

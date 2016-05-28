@@ -3,15 +3,16 @@ package clustering
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 
 	"github.com/fluhus/gostuff/vectors"
 )
 
 // Performs k-means clustering on the given data. Each vector is an element in
-// the clustering. Returns the tags each element was given, and the generated
-// means.
-func Kmeans(vecs [][]float64, k int) (tags []int, means [][]float64) {
+// the clustering. Returns the generated means, and the tag each element was
+// given.
+func Kmeans(vecs [][]float64, k int) (means [][]float64, tags []int) {
 	// K must be at least 1.
 	if k < 1 {
 		panic(fmt.Sprint("Bad k:", k))
@@ -22,23 +23,13 @@ func Kmeans(vecs [][]float64, k int) (tags []int, means [][]float64) {
 		panic("Cannot cluster 0 vectors.")
 	}
 
-	// Use m & n to ease syntax.
-	m, n := len(vecs), len(vecs[0])
-
 	// If k is too large - that's ok just reduce to avoid out-of-range.
-	if k > m {
-		k = m
-	}
-
-	// Pick random elements to be the means.
-	initMeans := rand.Perm(m)[:k]
-	means = make([][]float64, k)
-	for i := range means {
-		means[i] = make([]float64, n)
-		copy(means[i], vecs[initMeans[i]])
+	if k > len(vecs) {
+		k = len(vecs)
 	}
 
 	// First tagging.
+	means = initialMeans(vecs, k)
 	tags = tag(vecs, means, make([]int, len(vecs)))
 	dist := MeanSquaredError(vecs, means, tags)
 	distOld := 2 * dist
@@ -119,6 +110,48 @@ func findMeans(vecs [][]float64, tags []int, k int) [][]float64 {
 	}
 
 	return means
+}
+
+// Picks the initial means with the K-means++ algorithm.
+func initialMeans(vecs [][]float64, k int) [][]float64 {
+	result := make([][]float64, k)
+	perm := rand.Perm(len(vecs))
+
+	// Pick each mean.
+	distance := make([]float64, len(vecs))
+	for i := range result {
+		result[i] = make([]float64, len(vecs[0]))
+
+		// First mean is first.
+		if i == 0 {
+			copy(result[0], vecs[perm[0]])
+			for _, j := range perm {
+				distance[j] = vectors.L2(vecs[j], result[0])
+			}
+			continue
+		}
+
+		// Find next mean.
+		sum := 0.0
+		newMean := -1
+		for _, j := range perm {
+			// Pick element relative to d^2.
+			d := distance[j]
+			sum += d * d
+			if rand.Float64()*sum <= d*d {
+				newMean = j
+			}
+		}
+		copy(result[i], vecs[newMean])
+
+		// Update distances.
+		for _, j := range perm {
+			d := vectors.L2(vecs[j], result[i])
+			distance[j] = math.Min(distance[j], d)
+		}
+	}
+
+	return result
 }
 
 // Calculates the average squared-distance of elements from their assigned
