@@ -32,7 +32,7 @@ func Agglo(n int, d func(int, int) float64) *AggloResult {
 		}
 
 		for j := 0; j < i; j++ {
-			if lambda[j] >= m[j] {
+			if m[j] <= lambda[j] {
 				m[pi[j]] = math.Min(m[pi[j]], lambda[j])
 				lambda[j] = m[j]
 				pi[j] = i
@@ -110,7 +110,7 @@ func (r *AggloResult) String() string {
 		if i == j { // Reached the end.
 			return strs[i]
 		}
-		strs[j] = fmt.Sprintf("[%s, %s]", strs[i], strs[j])
+		strs[j] = fmt.Sprintf("[%s, %s, %.1f]", strs[i], strs[j], r.lambda[i])
 	}
 
 	// TODO(amit): Panic if reached here.
