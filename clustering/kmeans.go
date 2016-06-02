@@ -116,13 +116,21 @@ func findMeans(vecs [][]float64, tags []int, k int) [][]float64 {
 func initialMeans(vecs [][]float64, k int) [][]float64 {
 	result := make([][]float64, k)
 	perm := rand.Perm(len(vecs))
+	numTrials := 2 + int(math.Log(float64(k)))
+
+	probs := make([]float64, len(vecs))    // Probability of each vector.
+	nearest := make([]int, len(vecs))      // Index of nearest mean to each vector.
+	distance := make([]float64, len(vecs)) // Distance to nearest mean.
+	mdistance := make([][]float64, k)      // Distance between means.
+	for i := range mdistance {
+		mdistance[i] = make([]float64, k)
+	}
 
 	// Pick each mean.
-	distance := make([]float64, len(vecs))
 	for i := range result {
 		result[i] = make([]float64, len(vecs[0]))
 
-		// First mean is first.
+		// First mean is first vector.
 		if i == 0 {
 			copy(result[0], vecs[perm[0]])
 			for _, j := range perm {
@@ -132,22 +140,60 @@ func initialMeans(vecs [][]float64, k int) [][]float64 {
 		}
 
 		// Find next mean.
-		sum := 0.0
-		newMean := -1
-		for _, j := range perm {
-			// Pick element relative to d^2.
-			d := distance[j]
-			sum += d * d
-			if rand.Float64()*sum <= d*d {
-				newMean = j
+		bestCandidate := -1
+		bestImprovement := -math.MaxFloat64
+
+		for t := 0; t < numTrials; t++ { // Make a few attempts.
+			sum := 0.0
+			for _, j := range perm {
+				probs[j] = distance[j] * distance[j]
+				sum += probs[j]
+			}
+			// Pick element with probability relative to d^2.
+			r := rand.Float64() * sum
+			newMean := 0
+			for r > probs[newMean] {
+				r -= probs[newMean]
+				newMean++
+			}
+			copy(result[i], vecs[newMean])
+
+			// Update distances from new mean to other means.
+			for j := range mdistance[:i] {
+				mdistance[j][i] = vectors.L2(result[i], result[j])
+				mdistance[i][j] = mdistance[j][i]
+			}
+
+			// Check improvement.
+			newImprovement := 0.0
+			for j := range vecs {
+				if mdistance[i][nearest[j]] < 2*distance[j] {
+					d := vectors.L2(vecs[j], result[i])
+					d = math.Min(distance[j], d)
+					newImprovement += distance[j] - d
+				}
+			}
+			if newImprovement > bestImprovement {
+				bestCandidate = newMean
+				bestImprovement = newImprovement
 			}
 		}
-		copy(result[i], vecs[newMean])
+
+		copy(result[i], vecs[bestCandidate])
 
 		// Update distances.
-		for _, j := range perm {
-			d := vectors.L2(vecs[j], result[i])
-			distance[j] = math.Min(distance[j], d)
+		for j := range mdistance[:i] { // From new mean to other means.
+			mdistance[j][i] = vectors.L2(result[i], result[j])
+			mdistance[i][j] = mdistance[j][i]
+		}
+		for j := range vecs { // From vecs to nearest means.
+			if mdistance[i][nearest[j]] < 2*distance[j] {
+				d := vectors.L2(vecs[j], result[i])
+				if d < distance[j] {
+					distance[j] = math.Min(distance[j], d)
+					nearest[j] = i
+				}
+			}
 		}
 	}
 
