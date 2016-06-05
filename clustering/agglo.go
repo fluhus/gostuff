@@ -6,12 +6,20 @@ import (
 	"sort"
 )
 
+// How agglomerative clustering should calculate distance between clusters.
+const (
+	AggloMin = iota // Minimal distance between any pair.
+	AggloMax // Maximal distance between any pair.
+)
+
 // Performs agglomerative clustering on the indexes 0 to n-1. d should return
 // the distance between the i'th and j'th element, such that d(i,j)=d(j,i) and
 // d(i,i)=0.
 //
+// clusterDist should be any of AggloMin or AggloMax.
+//
 // Works in O(n^2) time and makes O(n^2) calls to d.
-func Agglo(n int, d func(int, int) float64) *AggloResult {
+func Agglo(n int, clusterDist int, d func(int, int) float64) *AggloResult {
 	if n <= 0 {
 		panic(fmt.Sprintf("Bad n: %d, must be positive", n))
 	}
@@ -33,11 +41,25 @@ func Agglo(n int, d func(int, int) float64) *AggloResult {
 
 		for j := 0; j < i; j++ {
 			if m[j] <= lambda[j] {
-				m[pi[j]] = math.Min(m[pi[j]], lambda[j])
+				switch clusterDist {
+				case AggloMin:
+					m[pi[j]] = math.Min(m[pi[j]], lambda[j])
+				case AggloMax:
+					m[pi[j]] = math.Max(m[pi[j]], lambda[j])
+				default:
+					panic(fmt.Sprintf("Unsupported cluster distance: %v", clusterDist))
+				}
 				lambda[j] = m[j]
 				pi[j] = i
 			} else {
-				m[pi[j]] = math.Min(m[pi[j]], m[j])
+				switch clusterDist {
+				case AggloMin:
+					m[pi[j]] = math.Min(m[pi[j]], m[j])
+				case AggloMax:
+					m[pi[j]] = math.Max(m[pi[j]], m[j])
+				default:
+					panic(fmt.Sprintf("Unsupported cluster distance: %v", clusterDist))
+				}
 			}
 		}
 
