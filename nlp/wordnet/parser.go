@@ -106,7 +106,7 @@ type indexLine struct {
 // Parses an index file line.
 func parseIndexLine(line string) (*indexLine, error) {
 	result := &indexLine{}
-	parts := strings.Split(line, " ")
+	parts := strings.Split(strings.Trim(line, " "), " ")
 
 	if len(parts) < 7 {
 		return nil, fmt.Errorf("Bad number of parts: %d, expected at least 7.",

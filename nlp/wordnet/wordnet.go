@@ -49,6 +49,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 )
 
 // Parses an entire WordNet directory. Path is the root of the directory.
@@ -251,7 +252,7 @@ func (wn *WordNet) indexLemma() {
 		ss := wn.Synset[id]
 		pos := id[0:1]
 		for _, word := range ss.Word {
-			w := pos + "." + word
+			w := pos + "." + strings.ToLower(word)
 			wn.Lemma[w] = append(wn.Lemma[w], id)
 		}
 	}
