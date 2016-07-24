@@ -1,4 +1,4 @@
-// Generic TSV decoder. Wraps the encoding/csv package with a decoder that
+// Generic CSV decoder. Wraps the encoding/csv package with a decoder that
 // can populate structs and slices.
 package tsv
 
@@ -9,7 +9,7 @@ import (
 	"reflect"
 )
 
-// Reads TSV lines and converts them to data objects. Embeds a csv.Reader,
+// Reads CSV lines and converts them to data objects. Embeds a csv.Reader,
 // so it can be used the same way. The default comma is '\t'.
 type Decoder struct {
 	*csv.Reader
@@ -25,7 +25,6 @@ func NewDecoder(r io.Reader, skipRows, skipCols int) *Decoder {
 	}
 
 	reader := csv.NewReader(r)
-	reader.Comma = '\t'
 	for i := 0; i < skipRows; i++ {
 		reader.Read()
 	}
@@ -33,16 +32,16 @@ func NewDecoder(r io.Reader, skipRows, skipCols int) *Decoder {
 	return &Decoder{reader, skipCols}
 }
 
-// Reads the next TSV line and populates the given object with parsed values.
+// Reads the next CSV line and populates the given object with parsed values.
 // Accepted input types are:
 //
 // Struct pointer: all fields must be exported and of type int*, uint* float*
 // or string. Fields will be populated by order of appearance. Too few fields in
-// the TSV line will result in an error. Excess fields in the TSV line will be
+// the CSV line will result in an error. Excess fields in the CSV line will be
 // ignored.
 //
 // Slice pointer of type int*, uint*, float*, string: the pointer will be
-// populated with a slice of parsed values, according to the length of the TSV
+// populated with a slice of parsed values, according to the length of the CSV
 // line.
 //
 // Any other type will cause a panic.
