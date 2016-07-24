@@ -1,4 +1,4 @@
-package tsv
+package csvdec
 
 import (
 	"strings"
