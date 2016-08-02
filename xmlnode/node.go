@@ -13,11 +13,11 @@ import (
 // search for a specific text, you don't need to check which nodes are actually
 // text nodes.
 //
-// You can, of course, check node types (returned by Kind()) if you still need
+// You can, of course, check node types (returned by Type()) if you still need
 // to.
 
 // DESIGN NOTE (2):
-// The Kind() function is used instead of exported types to avoid cluttering
+// The Type() function is used instead of exported types to avoid cluttering
 // the package's godoc.
 
 // Represents a single XML node. Can be one of: Root, Tag, Text, Comment,
@@ -62,9 +62,9 @@ type Node interface {
 	// markers. Empty for other node types.
 	Directive() string
 	
-	// Kind of this node. Returns one of: Root, Tag, Text, Comment, ProcInst
+	// Type of this node. Returns one of: Root, Tag, Text, Comment, ProcInst
 	// or Directive.
-	Kind() int
+	Type() int
 }
 
 // Represents the root node of an XML tree. Only has children, no other
@@ -82,7 +82,7 @@ func (n *root) Comment() string   { return "" }
 func (n *root) Target() string    { return "" }
 func (n *root) Inst() string      { return "" }
 func (n *root) Directive() string { return "" }
-func (n *root) Kind() int         { return Root }
+func (n *root) Type() int         { return Root }
 
 // Represents a start-end element, along with its children.
 type tag struct {
@@ -101,7 +101,7 @@ func (n *tag) Comment() string   { return "" }
 func (n *tag) Target() string    { return "" }
 func (n *tag) Inst() string      { return "" }
 func (n *tag) Directive() string { return "" }
-func (n *tag) Kind() int         { return Tag }
+func (n *tag) Type() int         { return Tag }
 
 // Represents raw text data, in which XML escape sequences have been replaced
 // by the characters they represent.
@@ -119,7 +119,7 @@ func (n *text) Comment() string   { return "" }
 func (n *text) Target() string    { return "" }
 func (n *text) Inst() string      { return "" }
 func (n *text) Directive() string { return "" }
-func (n *text) Kind() int         { return Text }
+func (n *text) Type() int         { return Text }
 
 // A Comment represents an XML comment of the form <!--comment-->. The string
 // does not include the <!-- and --> comment markers.
@@ -137,7 +137,7 @@ func (n *comment) Comment() string   { return n.comment }
 func (n *comment) Target() string    { return "" }
 func (n *comment) Inst() string      { return "" }
 func (n *comment) Directive() string { return "" }
-func (n *comment) Kind() int         { return Comment }
+func (n *comment) Type() int         { return Comment }
 
 // Represents an XML processing instruction of the form <?target inst?>.
 type procInst struct {
@@ -155,7 +155,7 @@ func (n *procInst) Comment() string   { return "" }
 func (n *procInst) Target() string    { return n.target }
 func (n *procInst) Inst() string      { return n.inst }
 func (n *procInst) Directive() string { return "" }
-func (n *procInst) Kind() int         { return ProcInst }
+func (n *procInst) Type() int         { return ProcInst }
 
 // Represents an XML directive of the form <!text>. The string does not include
 // the <! and > markers.
@@ -173,9 +173,9 @@ func (n *directive) Comment() string   { return "" }
 func (n *directive) Target() string    { return "" }
 func (n *directive) Inst() string      { return "" }
 func (n *directive) Directive() string { return n.directive }
-func (n *directive) Kind() int         { return Directive }
+func (n *directive) Type() int         { return Directive }
 
-// Possible return values of Kind()
+// Possible return values of Type().
 const (
 	Root = iota
 	Tag
