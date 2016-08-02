@@ -10,7 +10,7 @@ import (
 )
 
 // Reads CSV lines and converts them to data objects. Embeds a csv.Reader,
-// so it can be used the same way. The default comma is '\t'.
+// so it can be used the same way.
 type Decoder struct {
 	*csv.Reader
 	skipCols int
