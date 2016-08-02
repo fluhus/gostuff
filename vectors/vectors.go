@@ -2,6 +2,7 @@
 //
 // Example 1
 //
+// Summing vectors and calculating distances:
 //  a, b, c, d := {some vectors}
 //
 // Giving a nil result vector to Sum() allocates a new result, and thus does
@@ -14,7 +15,7 @@
 //
 // Example 2
 //
-// Create a vector of -1's of length 10:
+// Creating a vector of -1's of length 10:
 //  v := Mul(Ones(10), -1)
 package vectors
 
