@@ -10,7 +10,7 @@ import (
 func TestDataParser(t *testing.T) {
 	expected := map[string]*Synset{
 		"v111": &Synset{
-			111,
+			"111",
 			"v",
 			[]string{
 				"foo",
@@ -102,8 +102,8 @@ func TestExampleParser(t *testing.T) {
 
 func TestIndexParser(t *testing.T) {
 	expected := map[string][]string{
-		"n.thing":  {"n.a", "n.b"},
-		"v.thing2": {"v.c", "v.d"},
+		"n.thing":  {"na", "nb"},
+		"v.thing2": {"vc", "vd"},
 	}
 
 	actual, err := parseIndex(strings.NewReader(testIndex))

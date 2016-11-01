@@ -24,7 +24,7 @@ type WordNet struct {
 // A set of synonymous words.
 type Synset struct {
 	// Synset offset, also used as an identifier.
-	Offset int `json:"offset"`
+	Offset string `json:"offset"`
 
 	// Part of speech, including 's' for adjective satellite.
 	Pos string `json:"pos"`

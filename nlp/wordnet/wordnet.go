@@ -56,12 +56,16 @@ func Parse(path string) (*WordNet, error) {
 
 	result.Example, err = parseExampleFile(path)
 	if err != nil {
-		return nil, err
+		// Older versions of the database don't have examples, so skipping if
+		// not found.
+		result.Example = map[string]string{}
 	}
 
 	examples, err := parseExampleIndexFile(path)
 	if err != nil {
-		return nil, err
+		// Older versions of the database don't have examples, so skipping if
+		// not found.
+		examples = map[string][]int{}
 	}
 
 	result.Synset, err = parseDataFiles(path, examples)
@@ -71,7 +75,9 @@ func Parse(path string) (*WordNet, error) {
 
 	result.Exception, err = parseExceptionFiles(path)
 	if err != nil {
-		return nil, err
+		// Older versions of the database don't have exceptions, so skipping if
+		// not found.
+		result.Exception = map[string][]string{}
 	}
 
 	result.indexLemma()
@@ -89,7 +95,7 @@ func Parse(path string) (*WordNet, error) {
 func (wn *WordNet) Search(word string) map[string][]*Synset {
 	result := map[string][]*Synset{}
 	for _, pos := range [...]string{"a", "n", "r", "v"} {
-		ids := wn.Lemma[pos+"."+word]
+		ids := wn.Lemma[pos+word]
 		result[pos] = make([]*Synset, len(ids))
 		for i, id := range ids {
 			result[pos][i] = wn.Synset[id]
@@ -247,7 +253,7 @@ func (wn *WordNet) indexLemma() {
 		ss := wn.Synset[id]
 		pos := id[0:1]
 		for _, word := range ss.Word {
-			w := pos + "." + strings.ToLower(word)
+			w := pos + strings.ToLower(word)
 			wn.Lemma[w] = append(wn.Lemma[w], id)
 		}
 	}
@@ -267,5 +273,5 @@ func (wn *WordNet) Examples(ss *Synset) []string {
 // Returns the synset's ID, for example n123456. Equals the concatenation of
 // POS and offset.
 func (ss *Synset) Id() string {
-	return fmt.Sprintf("%s%d", ss.Pos, ss.Offset)
+	return fmt.Sprintf("%v%v", ss.Pos, ss.Offset)
 }

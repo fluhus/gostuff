@@ -84,7 +84,7 @@ func parseIndex(r io.Reader) (map[string][]string, error) {
 			line.ranked = 1
 		}
 		for i := range line.synset {
-			line.synset[i] = line.pos + "." + line.synset[i]
+			line.synset[i] = line.pos + line.synset[i]
 		}
 		if line.ranked > 0 {
 			result[line.pos+"."+line.lemma] = line.synset[:line.ranked]
@@ -374,7 +374,7 @@ func parseDataFile(in io.Reader, pos string, examples map[string][]int,
 
 		// Assign.
 		nice := rawSynsetToNiceSynset(raw)
-		key := fmt.Sprintf("%s%d", pos, raw.synsetOffset)
+		key := fmt.Sprintf("%v%v", pos, raw.synsetOffset)
 		out[key] = nice
 
 		// Handle examples.
@@ -411,7 +411,7 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 	for i, rawPtr := range raw.ptr {
 		result.Pointer[i] = &Pointer{
 			rawPtr.symbol,
-			fmt.Sprintf("%s%d", rawPtr.pos, rawPtr.synsetOffset),
+			fmt.Sprintf("%v%v", rawPtr.pos, rawPtr.synsetOffset),
 			rawPtr.source - 1, // Switch from 1-based to 0-based.
 			rawPtr.target - 1, // Switch from 1-based to 0-based.
 		}
@@ -422,7 +422,7 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 
 // Represents a single line in a data file.
 type rawSynset struct {
-	synsetOffset int
+	synsetOffset string
 	lexFileNum   int
 	ssType       string
 	word         []*rawWord
@@ -433,7 +433,7 @@ type rawSynset struct {
 
 type rawPointer struct {
 	symbol       string
-	synsetOffset int
+	synsetOffset string
 	pos          string
 	source       int // 1-based.
 	target       int // 1-based.
@@ -467,10 +467,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	}
 
 	// Parse beginning of line.
-	result.synsetOffset, err = parseDeciUint(parts[0])
-	if err != nil {
-		return nil, err
-	}
+	result.synsetOffset = parts[0]
 	result.lexFileNum, err = parseDeciUint(parts[1])
 	if err != nil {
 		return nil, err
@@ -520,11 +517,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	for i := 0; i < ptrCount; i++ {
 		ptr := &rawPointer{}
 		ptr.symbol = parts[0]
-		ptr.synsetOffset, err = parseDeciUint(parts[1])
-		if err != nil {
-			return nil, fmt.Errorf("Failed to parse pointer synset offset: %v",
-				err)
-		}
+		ptr.synsetOffset = parts[1]
 		ptr.pos = parts[2]
 
 		if len(parts[3]) != 4 {
