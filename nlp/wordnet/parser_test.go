@@ -9,7 +9,8 @@ import (
 
 func TestDataParser(t *testing.T) {
 	expected := map[string]*Synset{
-		"v.111": &Synset{
+		"v111": &Synset{
+			111,
 			"v",
 			[]string{
 				"foo",
@@ -17,8 +18,8 @@ func TestDataParser(t *testing.T) {
 				"baz",
 			},
 			[]*Pointer{
-				{"!", "n.123", -1, -1},
-				{"@", "a.321", 0, 1},
+				{"!", "n123", -1, -1},
+				{"@", "a321", 0, 1},
 			},
 			[]*Frame{
 				{4, 4},
@@ -39,6 +40,11 @@ func TestDataParser(t *testing.T) {
 		t.Error("Non-equal values:")
 		t.Error(stringify(expected))
 		t.Error(stringify(actual))
+	}
+	for key, ss := range actual {
+		if ss.Id() != key {
+			t.Errorf("ss.Id()=%v, want %v", ss.Id(), key)
+		}
 	}
 }
 

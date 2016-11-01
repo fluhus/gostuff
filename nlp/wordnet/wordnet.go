@@ -38,11 +38,6 @@
 // Princeton University. 2010. http://wordnet.princeton.edu
 //
 // Please cite them if you use this API.
-//
-// Work in progress
-//
-// This API is not final yet, and may improve as I go. Please take this in
-// consideration.
 package wordnet
 
 import (
@@ -267,4 +262,10 @@ func (wn *WordNet) Examples(ss *Synset) []string {
 		result[i] = fmt.Sprintf(template, word)
 	}
 	return result
+}
+
+// Returns the synset's ID, for example n123456. Equals the concatenation of
+// POS and offset.
+func (ss *Synset) Id() string {
+	return fmt.Sprintf("%s%d", ss.Pos, ss.Offset)
 }

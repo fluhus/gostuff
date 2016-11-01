@@ -374,7 +374,7 @@ func parseDataFile(in io.Reader, pos string, examples map[string][]int,
 
 		// Assign.
 		nice := rawSynsetToNiceSynset(raw)
-		key := pos + "." + raw.synsetOffset
+		key := fmt.Sprintf("%s%d", pos, raw.synsetOffset)
 		out[key] = nice
 
 		// Handle examples.
@@ -394,6 +394,7 @@ func parseDataFile(in io.Reader, pos string, examples map[string][]int,
 // Converts a raw parsed synset to the exported type.
 func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 	result := &Synset{
+		raw.synsetOffset,
 		raw.ssType,
 		make([]string, len(raw.word)),
 		make([]*Pointer, len(raw.ptr)),
@@ -410,7 +411,7 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 	for i, rawPtr := range raw.ptr {
 		result.Pointer[i] = &Pointer{
 			rawPtr.symbol,
-			rawPtr.pos + "." + rawPtr.synsetOffset,
+			fmt.Sprintf("%s%d", rawPtr.pos, rawPtr.synsetOffset),
 			rawPtr.source - 1, // Switch from 1-based to 0-based.
 			rawPtr.target - 1, // Switch from 1-based to 0-based.
 		}
@@ -421,7 +422,7 @@ func rawSynsetToNiceSynset(raw *rawSynset) *Synset {
 
 // Represents a single line in a data file.
 type rawSynset struct {
-	synsetOffset string
+	synsetOffset int
 	lexFileNum   int
 	ssType       string
 	word         []*rawWord
@@ -432,7 +433,7 @@ type rawSynset struct {
 
 type rawPointer struct {
 	symbol       string
-	synsetOffset string
+	synsetOffset int
 	pos          string
 	source       int // 1-based.
 	target       int // 1-based.
@@ -466,7 +467,10 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	}
 
 	// Parse beginning of line.
-	result.synsetOffset = parts[0]
+	result.synsetOffset, err = parseDeciUint(parts[0])
+	if err != nil {
+		return nil, err
+	}
 	result.lexFileNum, err = parseDeciUint(parts[1])
 	if err != nil {
 		return nil, err
@@ -516,7 +520,11 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	for i := 0; i < ptrCount; i++ {
 		ptr := &rawPointer{}
 		ptr.symbol = parts[0]
-		ptr.synsetOffset = parts[1]
+		ptr.synsetOffset, err = parseDeciUint(parts[1])
+		if err != nil {
+			return nil, fmt.Errorf("Failed to parse pointer synset offset: %v",
+				err)
+		}
 		ptr.pos = parts[2]
 
 		if len(parts[3]) != 4 {
@@ -575,8 +583,8 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 
 // ----- UTILS ----------------------------------------------------------------
 
-// Now what the heck were they thinking when they put hexa and decimal in the
-// same format? Academics and code. -_-
+// Now what in the world were they thinking when they put hexa and decimal in
+// the same format? Academics and code. -_-
 
 func parseHexaUint(s string) (int, error) {
 	i, err := strconv.ParseUint(s, 16, 0)
