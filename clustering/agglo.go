@@ -8,15 +8,15 @@ import (
 
 // How agglomerative clustering should calculate distance between clusters.
 const (
-	AggloMin = iota // Minimal distance between any pair.
-	AggloMax // Maximal distance between any pair.
+	AggloMin = iota // Minimal distance between any pair of elements.
+	AggloMax        // Maximal distance between any pair of elements.
 )
 
 // Performs agglomerative clustering on the indexes 0 to n-1. d should return
 // the distance between the i'th and j'th element, such that d(i,j)=d(j,i) and
 // d(i,i)=0.
 //
-// clusterDist should be any of AggloMin or AggloMax.
+// clusterDist should be one of AggloMin or AggloMax.
 //
 // Works in O(n^2) time and makes O(n^2) calls to d.
 func Agglo(n int, clusterDist int, d func(int, int) float64) *AggloResult {
@@ -24,11 +24,27 @@ func Agglo(n int, clusterDist int, d func(int, int) float64) *AggloResult {
 		panic(fmt.Sprintf("Bad n: %d, must be positive", n))
 	}
 
-	// An implementation of the SLINK algorithm.
-	// Copied from paper, pardon the crap names.
-	m := make([]float64, n)
-	pi := make([]int, n)
-	lambda := make([]float64, n)
+	switch clusterDist {
+	case AggloMin:
+		return slink(n, d)
+	case AggloMax:
+		return clink(n, d)
+	default:
+		panic(fmt.Sprintf("Unsupported cluster distance: %v, "+
+			"want AggloMin or AggloMax", clusterDist))
+	}
+}
+
+// slink is an implementation of the SLINK algorithm.
+//
+// Copied from:
+// https://www.cs.ucsb.edu/~veronika/MAE/SLINK_sibson.pdf
+func slink(n int, d func(int, int) float64) *AggloResult {
+	// Implementation copied from paper, pardon the crap names.
+	m := make([]float64, n)      // Distance of i'th element from elements/clusters.
+	pi := make([]int, n)         // Index of first merge target of each element.
+	lambda := make([]float64, n) // Distance of first merge target of each element.
+
 	lambda[0] = math.MaxFloat64
 
 	for i := 1; i < n; i++ {
@@ -41,30 +57,83 @@ func Agglo(n int, clusterDist int, d func(int, int) float64) *AggloResult {
 
 		for j := 0; j < i; j++ {
 			if m[j] <= lambda[j] {
-				switch clusterDist {
-				case AggloMin:
-					m[pi[j]] = math.Min(m[pi[j]], lambda[j])
-				case AggloMax:
-					m[pi[j]] = math.Max(m[pi[j]], lambda[j])
-				default:
-					panic(fmt.Sprintf("Unsupported cluster distance: %v", clusterDist))
-				}
+				m[pi[j]] = math.Min(m[pi[j]], lambda[j])
 				lambda[j] = m[j]
 				pi[j] = i
 			} else {
-				switch clusterDist {
-				case AggloMin:
-					m[pi[j]] = math.Min(m[pi[j]], m[j])
-				case AggloMax:
-					m[pi[j]] = math.Max(m[pi[j]], m[j])
-				default:
-					panic(fmt.Sprintf("Unsupported cluster distance: %v", clusterDist))
-				}
+				m[pi[j]] = math.Min(m[pi[j]], m[j])
 			}
 		}
 
 		for j := 0; j < i; j++ {
 			if lambda[j] >= lambda[pi[j]] {
+				pi[j] = i
+			}
+		}
+	}
+
+	return newAggloResult(pi, lambda)
+}
+
+// clink is an implementation of the CLINK algorithm.
+//
+// Copied from:
+// https://academic.oup.com/comjnl/article-pdf/20/4/364/1108735/200364.pdf
+func clink(n int, d func(int, int) float64) *AggloResult {
+	// Implementation copied from paper, pardon the crap names.
+	m := make([]float64, n)      // Distance of i'th element from elements/clusters.
+	pi := make([]int, n)         // Index of first merge target of each element.
+	lambda := make([]float64, n) // Distance of first merge target of each element.
+
+	lambda[0] = math.MaxFloat64
+
+	for i := 1; i < n; i++ {
+		pi[i] = i
+		lambda[i] = math.MaxFloat64
+
+		for j := 0; j < i; j++ {
+			m[j] = d(i, j)
+		}
+
+		for j := 0; j < i; j++ {
+			if lambda[j] < m[j] {
+				m[pi[j]] = math.Max(m[pi[j]], m[j])
+				m[j] = math.MaxFloat64
+			}
+		}
+
+		a := i - 1
+		for j := 0; j < i; j++ {
+			if lambda[i-j-1] >= m[pi[i-j-1]] {
+				if m[i-j-1] < m[a] {
+					a = i - j - 1
+				}
+			} else {
+				m[i-j-1] = math.MaxFloat64
+			}
+		}
+
+		b := pi[a]
+		c := lambda[a]
+		pi[a] = i
+		lambda[a] = m[a]
+		for a < i-1 {
+			if b < i-1 {
+				d := pi[b]
+				e := lambda[b]
+				pi[b] = i
+				lambda[b] = c
+				b = d
+				c = e
+			} else if b == i-1 {
+				pi[b] = i
+				lambda[b] = c
+				break
+			}
+		}
+
+		for j := 0; j < i; j++ {
+			if pi[pi[j]] == i && lambda[j] >= lambda[pi[j]] {
 				pi[j] = i
 			}
 		}
@@ -79,6 +148,10 @@ type AggloResult struct {
 	lambda []float64
 	perm   []int
 	dict   []string
+}
+
+func (a *AggloResult) Dict() []string {
+	return a.dict
 }
 
 // Creates a new result.
@@ -132,7 +205,7 @@ func (r *AggloResult) String() string {
 		if i == j { // Reached the end.
 			return strs[i]
 		}
-		strs[j] = fmt.Sprintf("[%s, %s, %.1f]", strs[i], strs[j], r.lambda[i])
+		strs[j] = fmt.Sprintf("[%s, %s]", strs[i], strs[j])
 	}
 
 	// TODO(amit): Panic if reached here.
@@ -145,9 +218,16 @@ func (r *AggloResult) Len() int {
 	return len(r.perm) - 1
 }
 
-// Returns the i'th step in the clustering. Returns the indexes of the merged
-// clusters and their distance just before merging. The index of a cluster is
-// the greatest indexed element in it.
-func (r *AggloResult) Step(i int) (int, int, float64) {
-	return r.perm[i], r.pi[r.perm[i]], r.lambda[r.perm[i]]
+// An AggloStep is a single step in the clustering process.
+// The index of a cluster is the greatest indexed element in it.
+// C2 is always greater than C1.
+type AggloStep struct {
+	C1 int     // Index of the first merged cluster.
+	C2 int     // Index of the second merged cluster.
+	D  float64 // Distance between the clusters when merging.
+}
+
+// Returns the i'th step in the clustering.
+func (r *AggloResult) Step(i int) AggloStep {
+	return AggloStep{r.perm[i], r.pi[r.perm[i]], r.lambda[r.perm[i]]}
 }
