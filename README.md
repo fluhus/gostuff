@@ -12,7 +12,7 @@ Godoc: [https://godoc.org/github.com/fluhus/gostuff](https://godoc.org/github.co
 License
 -------
 
-Copyright (c) 2015-2016 Amit Lavon
+Copyright (c) 2015-2017 Amit Lavon
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
