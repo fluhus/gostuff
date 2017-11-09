@@ -281,8 +281,11 @@ func (d *dist) sub(i int) {
 // Returns the counts of this distribution, normalized by its sum.
 func (d *dist) dist() []float64 {
 	result := make([]float64, len(d.count))
-	for i := range result {
-		result[i] = d.count[i] / d.sum
+	copy(result, d.count)
+	if d.sum != 0 {
+		for i := range result {
+			result[i] /= d.sum
+		}
 	}
 	return result
 }
