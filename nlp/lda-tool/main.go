@@ -21,11 +21,15 @@ func main() {
 	parseArgs()
 
 	// Read input and perform LDA.
-	fmt.Fprintln(os.Stdout, "Reading documents from stdin. Run with no arguments for usage help.")
+	fmt.Fprintln(os.Stdout, "Run with no arguments for usage help.")
+	fmt.Fprintln(os.Stdout, "Reading documents from stdin...")
 	docs, err := readDocs(os.Stdin)
 	if err != nil {
 		die("Error: failed to read input:", err)
 	}
+	fmt.Fprintln(os.Stdout, "Found", len(docs), "documents.")
+
+	fmt.Fprintln(os.Stdout, "Performing LDA...")
 	lda, _ := nlp.LdaThreads(docs, args.K, args.NumThreads)
 
 	// Print output.
@@ -51,7 +55,7 @@ func readDocs(r io.Reader) ([][]string, error) {
 	var result [][]string
 	for scanner.Scan() {
 		w := wordsRe.FindAllString(strings.ToLower(scanner.Text()), -1)
-		
+
 		// Copy line to a lower capacity slice, to reduce memory usage.
 		result = append(result, make([]string, len(w)))
 		copy(result[len(result)-1], w)
