@@ -1,8 +1,7 @@
-// Convenience wrapper for the runtime/pprof package.
+// Package ezpprof is a convenience wrapper over the runtime/pprof package.
 //
-// Sometimes you just want to profile a piece of code, without the mess of
-// opening files and checking errors. This package will help you profile your
-// code while keeping it clean.
+// This package helps to quickly introduce profiling to a piece of code without
+// the mess of opening files and checking errors.
 //
 // A typical use of this package looks like:
 //  ezpprof.Start("myfile.pprof")
@@ -27,7 +26,8 @@ import (
 var fout *os.File
 var bout *bufio.Writer
 
-// Starts CPU profiling and writes to the given file. Panics if an error occurs.
+// Start starts CPU profiling and writes to the given file. Panics if an error
+// occurs.
 func Start(file string) {
 	if fout != nil {
 		panic("Already profiling.")
@@ -44,8 +44,8 @@ func Start(file string) {
 	pprof.StartCPUProfile(bout)
 }
 
-// Stops CPU profiling and closes the output file. Panics if called without
-// calling Start.
+// Stop stops CPU profiling and closes the output file. Panics if called
+// without calling Start.
 func Stop() {
 	if fout == nil {
 		panic("Stop called without calling Start.")
@@ -57,7 +57,7 @@ func Stop() {
 	fout, bout = nil, nil
 }
 
-// Writes heap profile to the given file. Panics if an error occurs.
+// Heap writes heap profile to the given file. Panics if an error occurs.
 func Heap(file string) {
 	f, err := os.Create(file)
 	if err != nil {
