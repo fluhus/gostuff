@@ -4,9 +4,9 @@ import (
 	"fmt"
 )
 
-// Compares 2 taggings of the data for similarity. A score of 1 means
-// identical, a score of 0 means as good as random, and a negative score means
-// worse than random.
+// AdjustedRandIndex compares 2 taggings of the data for similarity. A score of
+// 1 means identical, a score of 0 means as good as random, and a negative
+// score means worse than random.
 func AdjustedRandIndex(tags1, tags2 []int) float64 {
 	// Check input.
 	if len(tags1) != len(tags2) {
@@ -23,7 +23,7 @@ func AdjustedRandIndex(tags1, tags2 []int) float64 {
 	return (r - e) / (m - e)
 }
 
-// Returns the RI part of the adjusted index.
+// randIndex returns the RI part of the adjusted index.
 func randIndex(tags1, tags2 []intSet) float64 {
 	r := 0
 	for _, t1 := range tags1 {
@@ -34,7 +34,8 @@ func randIndex(tags1, tags2 []intSet) float64 {
 	return float64(r)
 }
 
-// Returns the expected index according to hypergeometrical distribution.
+// expectedRandIndex returns the expected index according to hypergeometrical
+// distribution.
 func expectedRandIndex(tags1, tags2 []intSet) float64 {
 	p1 := 0
 	n := 0
@@ -50,7 +51,7 @@ func expectedRandIndex(tags1, tags2 []intSet) float64 {
 	return float64(p1) * float64(p2) / p
 }
 
-// Returns the maximal possible index.
+// maxRandIndex returns the maximal possible index.
 func maxRandIndex(tags1, tags2 []intSet) float64 {
 	p := 0
 	for _, tags := range tags1 {
@@ -68,10 +69,11 @@ func choose2(n int) int {
 
 // ----- INT SET --------------------------------------------------------------
 
-// A set of integers.
+// intSet is a set of integers.
 type intSet map[int]struct{}
 
-// Converts a list of tags to a list of sets of indexes, one list for each tag.
+// tagsToSets converts a list of tags to a list of sets of indexes, one list
+// for each tag.
 func tagsToSets(tags []int) []intSet {
 	// Make map from tag to its set.
 	sets := map[int]intSet{}
@@ -91,18 +93,18 @@ func tagsToSets(tags []int) []intSet {
 	return result
 }
 
-// Adds a number to the set.
+// add adds a number to the set.
 func (is intSet) add(i int) {
 	is[i] = struct{}{}
 }
 
-// Checks if a set contains the given element.
+// contains checks if a set contains the given element.
 func (is intSet) contains(i int) bool {
 	_, ok := is[i]
 	return ok
 }
 
-// Returns the size of the intersection of the 2 sets.
+// intersect returns the size of the intersection of the 2 sets.
 func (is intSet) intersect(other intSet) int {
 	result := 0
 	for i := range is {

@@ -12,9 +12,9 @@ const (
 	AggloMax        // Maximal distance between any pair of elements.
 )
 
-// Performs agglomerative clustering on the indexes 0 to n-1. d should return
-// the distance between the i'th and j'th element, such that d(i,j)=d(j,i) and
-// d(i,i)=0.
+// Agglo performs agglomerative clustering on the indexes 0 to n-1. d should
+// return the distance between the i'th and j'th element, such that
+// d(i,j)=d(j,i) and d(i,i)=0.
 //
 // clusterDist should be one of AggloMin or AggloMax.
 //
@@ -142,7 +142,7 @@ func clink(n int, d func(int, int) float64) *AggloResult {
 	return newAggloResult(pi, lambda)
 }
 
-// An interactive agglomerative-clustering result.
+// AggloResult is an interactive agglomerative-clustering result.
 type AggloResult struct {
 	pi     []int
 	lambda []float64
@@ -150,11 +150,12 @@ type AggloResult struct {
 	dict   []string
 }
 
-func (a *AggloResult) Dict() []string {
+// Dict returns the string representations of elements in the clustering.
+func (r *AggloResult) Dict() []string {
 	return a.dict
 }
 
-// Creates a new result.
+// newAggloResult creates a new result.
 func newAggloResult(pi []int, lambda []float64) *AggloResult {
 	result := &AggloResult{pi, lambda, make([]int, len(pi)), nil}
 	for i := range result.perm {
@@ -164,22 +165,27 @@ func newAggloResult(pi []int, lambda []float64) *AggloResult {
 	return result
 }
 
-// Sorting interface for AggloResult, for sorting by distance. This actually
-// sorts the agglomerative steps by their order of occurance.
+// aggloSorter is a sorting interface for AggloResult, for sorting by distance.
+// This actually sorts the agglomerative steps by their order of occurance.
 type aggloSorter AggloResult
 
+// Len returns the number of elements in the sorter.
 func (r *aggloSorter) Len() int {
 	return len(r.perm)
 }
+
+// Less compares two steps by their order of occurance.
 func (r *aggloSorter) Less(i, j int) bool {
 	return r.lambda[r.perm[i]] < r.lambda[r.perm[j]]
 }
+
+// Swap swaps two steps.
 func (r *aggloSorter) Swap(i, j int) {
 	r.perm[i], r.perm[j] = r.perm[j], r.perm[i]
 }
 
-// Sets the string representation of each element, for the String() function.
-// Returns itself for chaining.
+// SetDict sets the string representation of each element, for the String()
+// function. Returns itself for chaining.
 func (r *AggloResult) SetDict(dict []string) *AggloResult {
 	if len(dict) != len(r.perm) {
 		panic(fmt.Sprintf("Bad dictionary size: %d, expected %d",
@@ -189,8 +195,8 @@ func (r *AggloResult) SetDict(dict []string) *AggloResult {
 	return r
 }
 
-// String representation of the clustering. If SetDict was not called, will use
-// element numbers.
+// String returns a representation of the clustering. If SetDict was not
+// called, will use element numbers.
 func (r *AggloResult) String() string {
 	strs := make([]string, len(r.perm))
 	for i := range strs {
@@ -212,7 +218,7 @@ func (r *AggloResult) String() string {
 	return ""
 }
 
-// Returns the number of steps in this clustering. Equals the number of
+// Len returns the number of steps in this clustering. Equals the number of
 // elements - 1.
 func (r *AggloResult) Len() int {
 	return len(r.perm) - 1
@@ -227,7 +233,7 @@ type AggloStep struct {
 	D  float64 // Distance between the clusters when merging.
 }
 
-// Returns the i'th step in the clustering.
+// Step returns the i'th step in the clustering.
 func (r *AggloResult) Step(i int) AggloStep {
 	return AggloStep{r.perm[i], r.pi[r.perm[i]], r.lambda[r.perm[i]]}
 }

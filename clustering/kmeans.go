@@ -1,4 +1,4 @@
-// Basic clustering functions.
+// Package clustering provides basic clustering functions.
 package clustering
 
 import (
@@ -9,9 +9,9 @@ import (
 	"github.com/fluhus/gostuff/vectors"
 )
 
-// Performs k-means clustering on the given data. Each vector is an element in
-// the clustering. Returns the generated means, and the tag each element was
-// given.
+// Kmeans performs k-means clustering on the given data. Each vector is an
+// element in the clustering. Returns the generated means, and the tag each
+// element was given.
 func Kmeans(vecs [][]float64, k int) (means [][]float64, tags []int) {
 	// K must be at least 1.
 	if k < 1 {
@@ -45,8 +45,8 @@ func Kmeans(vecs [][]float64, k int) (means [][]float64, tags []int) {
 	return
 }
 
-// Tags each row with the index of its nearest centroid. The old tags are used
-// for optimization.
+// tag tags each row with the index of its nearest centroid. The old tags are
+// used for optimization.
 func tag(vecs, means [][]float64, oldTags []int) []int {
 	if len(means) == 0 {
 		panic("Cannot tag on 0 centroids.")
@@ -86,8 +86,8 @@ func tag(vecs, means [][]float64, oldTags []int) []int {
 	return tags
 }
 
-// Calculates the new means, according to average of tagged rows in each
-// group.
+// findMeans calculates the new means, according to average of tagged rows in
+// each group.
 func findMeans(vecs [][]float64, tags []int, k int) [][]float64 {
 	// Initialize new arrays.
 	means := make([][]float64, k)
@@ -112,7 +112,7 @@ func findMeans(vecs [][]float64, tags []int, k int) [][]float64 {
 	return means
 }
 
-// Picks the initial means with the K-means++ algorithm.
+// initialMeans picks the initial means with the K-means++ algorithm.
 func initialMeans(vecs [][]float64, k int) [][]float64 {
 	result := make([][]float64, k)
 	perm := rand.Perm(len(vecs))
@@ -200,8 +200,8 @@ func initialMeans(vecs [][]float64, k int) [][]float64 {
 	return result
 }
 
-// Calculates the average squared-distance of elements from their assigned
-// means.
+// MeanSquaredError calculates the average squared-distance of elements from
+// their assigned means.
 func MeanSquaredError(vecs, means [][]float64, tags []int) float64 {
 	if len(tags) != len(vecs) {
 		panic(fmt.Sprintf("Non-matching lengths of matrix and tags: %d, %d",
