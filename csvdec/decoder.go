@@ -1,5 +1,5 @@
-// Generic CSV decoder. Wraps the encoding/csv package with a decoder that
-// can populate structs and slices.
+// Package csvdec provides a generic CSV decoder. Wraps the encoding/csv
+// package with a decoder that can populate structs and slices.
 package csvdec
 
 import (
@@ -9,15 +9,15 @@ import (
 	"reflect"
 )
 
-// Reads CSV lines and converts them to data objects. Embeds a csv.Reader,
-// so it can be used the same way.
+// A Decoder reads CSV lines and converts them to data objects. Embeds a
+// csv.Reader, so it can be used the same way.
 type Decoder struct {
 	*csv.Reader
 	skipCols int
 }
 
-// Returns a new decoder. skipRows and skipCols indicate how many of the first
-// rows and columns should be ignored.
+// NewDecoder returns a new decoder that reads from r. skipRows and skipCols
+// indicate how many of the first rows and columns should be ignored.
 func NewDecoder(r io.Reader, skipRows, skipCols int) *Decoder {
 	if skipRows < 0 || skipCols < 0 {
 		panic(fmt.Sprintf("skipRows and skipCols must be non-negative. "+
@@ -32,8 +32,8 @@ func NewDecoder(r io.Reader, skipRows, skipCols int) *Decoder {
 	return &Decoder{reader, skipCols}
 }
 
-// Reads the next CSV line and populates the given object with parsed values.
-// Accepted input types are:
+// Decode reads the next CSV line and populates the given object with parsed
+// values. Accepted input types are:
 //
 // Struct pointer: all fields must be exported and of type int*, uint* float*
 // or string. Fields will be populated by order of appearance. Too few fields in

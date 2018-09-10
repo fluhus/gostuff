@@ -6,12 +6,12 @@ import (
 	"strconv"
 )
 
-// Populates a value's fields with the values in slice s. Value is assumed to be
-// a struct.
+// fillStruct populates a value's fields with the values in slice s. Value is
+// assumed to be a struct.
 func fillStruct(value reflect.Value, s []string) error {
 	// Check number of fields.
 	if len(s) < value.NumField() {
-		return fmt.Errorf("Not enough values to populate all fields (%d/%d).",
+		return fmt.Errorf("not enough values to populate all fields (%d/%d)",
 			len(s), value.NumField())
 	}
 
@@ -66,7 +66,7 @@ func fillStruct(value reflect.Value, s []string) error {
 	return nil
 }
 
-// Populates the given int slice with values parsed from fields.
+// fillIntSlice populates the given int slice with values parsed from fields.
 // Returns an error if parsing fails.
 func fillIntSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
@@ -92,7 +92,7 @@ func fillIntSlice(value reflect.Value, fields []string) error {
 	return nil
 }
 
-// Populates the given uint slice with values parsed from fields.
+// fillUintSlice populates the given uint slice with values parsed from fields.
 // Returns an error if parsing fails.
 func fillUintSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
@@ -118,8 +118,8 @@ func fillUintSlice(value reflect.Value, fields []string) error {
 	return nil
 }
 
-// Populates the given float slice with values parsed from fields.
-// Returns an error if parsing fails.
+// fillFloatSlice populates the given float slice with values parsed from
+// fields. Returns an error if parsing fails.
 func fillFloatSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
 	typ := value.Type().Elem()
@@ -144,8 +144,8 @@ func fillFloatSlice(value reflect.Value, fields []string) error {
 	return nil
 }
 
-// Populates the given string slice with values parsed from fields.
-// Returns an error if parsing fails.
+// fillStringSlice populates the given string slice with values parsed from
+// fields. Returns an error if parsing fails.
 func fillStringSlice(value reflect.Value, fields []string) error {
 	// Type of slice elements.
 	typ := value.Type().Elem()
