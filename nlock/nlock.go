@@ -1,4 +1,4 @@
-// A lock that can be locked n times simultanously.
+// Package nlock provides a lock that can be locked n times simultanously.
 package nlock
 
 import (
@@ -13,7 +13,7 @@ type NLock struct {
 	i int        // Current number of holders.
 }
 
-// Creates a new lock for n maximum holders.
+// New creates a new lock for n maximum holders.
 func New(n int) *NLock {
 	if n <= 0 {
 		panic(fmt.Sprintf("Bad n: %v, needs to be at least 1.", n))
@@ -21,7 +21,7 @@ func New(n int) *NLock {
 	return &NLock{sync.NewCond(&sync.Mutex{}), n, 0}
 }
 
-// Locks the lock. Will block if n calls to lock were made, that were not
+// Lock locks the lock. Will block if n calls to lock were made, that were not
 // unlocked.
 func (n *NLock) Lock() {
 	n.c.L.Lock()
@@ -32,7 +32,7 @@ func (n *NLock) Lock() {
 	n.i++
 }
 
-// Releases one holder of the lock. Panics if lock has 0 holders.
+// Unlock releases one holder of the lock. Panics if lock has 0 holders.
 func (n *NLock) Unlock() {
 	n.c.L.Lock()
 	defer n.c.L.Unlock()
@@ -43,8 +43,8 @@ func (n *NLock) Unlock() {
 	n.c.Signal()
 }
 
-// Attempts to obtain lock without waiting. Returns true if succeeded, or
-// false if not.
+// TryLock attempts to obtain lock without waiting. Returns true if succeeded,
+// or false if not.
 func (n *NLock) TryLock() bool {
 	n.c.L.Lock()
 	defer n.c.L.Unlock()
