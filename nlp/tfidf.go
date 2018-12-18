@@ -6,8 +6,8 @@ import (
 	"math"
 )
 
-// Returns the TF-IDF scores of the given corpus. For each documet, returns a
-// map from token to TF-IDF score.
+// TfIdf returns the TF-IDF scores of the given corpus. For each documet,
+// returns a map from token to TF-IDF score.
 //
 // TF = count(token in document) / count(all tokens in document)
 //

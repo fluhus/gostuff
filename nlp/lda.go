@@ -7,15 +7,16 @@ import (
 	"time"
 )
 
-// If true, LDA will print progress information. For debugging.
+// LdaVerbose determines whether progress information should be printed during
+// LDA. For debugging.
 var LdaVerbose = false
 
 // ----- INTERFACE FUNCTIONS ---------------------------------------------------
 
-// Performs LDA on the given data. docTokens should contain tokenized documents,
-// such that docTokens[i][j] is the j'th token in the i'th document. k is the
-// number of topics. Returns the topics and token-topic assignment, respective
-// to docTokens.
+// Lda performs LDA on the given data. docTokens should contain tokenized
+// documents, such that docTokens[i][j] is the j'th token in the i'th document.
+// k is the number of topics. Returns the topics and token-topic assignment,
+// respective to docTokens.
 //
 // Topics are returned in a map from word to a probability vector, such that
 // the i'th position is the probability of the i'th topic generating that word.
@@ -24,8 +25,8 @@ func Lda(docTokens [][]string, k int) (map[string][]float64, [][]int) {
 	return LdaThreads(docTokens, k, 1)
 }
 
-// Like the function Lda but runs on multiple subroutines. Calling this function
-// with 1 thread is equivalent to calling Lda.
+// LdaThreads is like the function Lda but runs on multiple subroutines.
+// Calling this function with 1 thread is equivalent to calling Lda.
 func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 	[][]int) {
 	// Check input.
@@ -232,7 +233,7 @@ func LdaThreads(docTokens [][]string, k, numThreads int) (map[string][]float64,
 
 // ----- HELPERS ---------------------------------------------------------------
 
-// A distribution on elements by counts.
+// dist is a distribution on elements by counts.
 type dist struct {
 	sum    float64
 	count  []float64
@@ -240,12 +241,12 @@ type dist struct {
 	alphas float64
 }
 
-// Creates a new empty distribution.
+// newDist creates a new empty distribution.
 func newDist(n int, alpha float64) *dist {
 	return &dist{0, make([]float64, n), alpha, alpha * float64(n)}
 }
 
-// Creates a slice of empty distributions.
+// newDists creates a slice of empty distributions.
 func newDists(k, n int, alpha float64) []*dist {
 	result := make([]*dist, k)
 	for i := range result {
@@ -254,7 +255,7 @@ func newDists(k, n int, alpha float64) []*dist {
 	return result
 }
 
-// Returns the probability of i, considering alpha.
+// p returns the probability of i, considering alpha.
 func (d *dist) p(i int) float64 {
 	if d.sum == 0 {
 		return 0
@@ -262,13 +263,13 @@ func (d *dist) p(i int) float64 {
 	return (d.count[i] + d.alpha*d.sum) / (d.sum + d.alphas*d.sum)
 }
 
-// Increments i by 1.
+// add increments i by 1.
 func (d *dist) add(i int) {
 	d.count[i]++
 	d.sum++
 }
 
-// Decrements i by 1.
+// sun decrements i by 1.
 func (d *dist) sub(i int) {
 	d.count[i]--
 	d.sum--
@@ -278,7 +279,7 @@ func (d *dist) sub(i int) {
 	}
 }
 
-// Returns the counts of this distribution, normalized by its sum.
+// dist returns the counts of this distribution, normalized by its sum.
 func (d *dist) dist() []float64 {
 	result := make([]float64, len(d.count))
 	copy(result, d.count)
@@ -290,7 +291,7 @@ func (d *dist) dist() []float64 {
 	return result
 }
 
-// Deep-copies a distribution.
+// copy deep-copies a distribution.
 func (d *dist) copy() *dist {
 	count := make([]float64, len(d.count))
 	for i := range count {
@@ -299,7 +300,7 @@ func (d *dist) copy() *dist {
 	return &dist{d.sum, count, d.alpha, d.alphas}
 }
 
-// Deep-copies a slice of distributions.
+// copyDists deep-copies a slice of distributions.
 func copyDists(dists []*dist) []*dist {
 	result := make([]*dist, len(dists))
 	for i := range result {
@@ -308,7 +309,7 @@ func copyDists(dists []*dist) []*dist {
 	return result
 }
 
-// Returns the n most likely items in the distribution.
+// top returns the n most likely items in the distribution.
 func (d *dist) top(n int) []int {
 	s := newDistSorter(d)
 	sort.Sort(s)
@@ -318,7 +319,7 @@ func (d *dist) top(n int) []int {
 	return s.perm[:n]
 }
 
-// Distribution sorting interface.
+// distSorter is a distribution sorting interface.
 type distSorter struct {
 	*dist
 	perm []int
@@ -344,13 +345,14 @@ func (d *distSorter) Swap(i, j int) {
 	d.perm[i], d.perm[j] = d.perm[j], d.perm[i]
 }
 
-// Creates a new random generator.
+// newRand creates a new random generator.
 func newRand() *rand.Rand {
 	return rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
-// Picks a random index from a, with a probability proportional to its value.
-// Using a local random-generator to prevent waiting on rand's default source.
+// pickRandom picks a random index from a, with a probability proportional to
+// its value. Using a local random-generator to prevent waiting on rand's
+// default source.
 func pickRandom(a []float64, rnd *rand.Rand) int {
 	if len(a) == 0 {
 		panic("Cannot pick element from an empty distribution.")

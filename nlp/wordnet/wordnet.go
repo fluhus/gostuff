@@ -1,4 +1,4 @@
-// WordNet parser and interface.
+// Package wordnet provides a WordNet parser and interface.
 //
 // Basic usage
 //
@@ -47,7 +47,7 @@ import (
 	"strings"
 )
 
-// Parses an entire WordNet directory. Path is the root of the directory.
+// Parse parses an entire WordNet directory. Path is the root of the directory.
 // The parser will trverse it and parse the required files, assuming
 // directory structure is as published.
 func Parse(path string) (*WordNet, error) {
@@ -90,8 +90,8 @@ func Parse(path string) (*WordNet, error) {
 	return result, nil
 }
 
-// Searches for a word in the dictionary. Returns a map from part of speech
-// (a, n, r, v) to all synsets that contain that word.
+// Search searches for a word in the dictionary. Returns a map from part of
+// speech (a, n, r, v) to all synsets that contain that word.
 func (wn *WordNet) Search(word string) map[string][]*Synset {
 	result := map[string][]*Synset{}
 	for _, pos := range [...]string{"a", "n", "r", "v"} {
@@ -105,9 +105,9 @@ func (wn *WordNet) Search(word string) map[string][]*Synset {
 	return result
 }
 
-// Searches for a word in the dictionary. Returns a map from part of speech
-// (a, n, r, v) to synsets that contain that word, ranked from the most
-// frequently used to the least.
+// SearchRanked searches for a word in the dictionary. Returns a map from part
+// of speech (a, n, r, v) to synsets that contain that word, ranked from the
+// most frequently used to the least.
 //
 // Only a subset of the synsets are ranked so this may return less synsets than
 // what Search would have.
@@ -124,10 +124,10 @@ func (wn *WordNet) SearchRanked(word string) map[string][]*Synset {
 	return result
 }
 
-// Returns a score denoting how similar two word senses are, based on the
-// shortest path that connects the senses in the is-a (hypernym/hypnoym)
-// taxonomy. The score is in the range 0 to 1, where 1 means identity and 0
-// means completely disjoint.
+// PathSimilarity returns a score denoting how similar two word senses are,
+// based on the shortest path that connects the senses in the is-a
+// (hypernym/hypnoym) taxonomy. The score is in the range 0 to 1, where 1 means
+// identity and 0 means completely disjoint.
 //
 // If simulateRoot is true, will create a common fake root for the top of each
 // synset's hierarchy if no common ancestor was found.
@@ -162,9 +162,9 @@ func (wn *WordNet) PathSimilarity(from, to *Synset, simulateRoot bool) float64 {
 	return 1.0 / float64(shortest+1)
 }
 
-// Wu-Palmer Similarity. Returns a score denoting how similar two word senses
-// are, based on the depth of the two senses in the taxonomy and that of their
-// Least Common Subsumer (most specific ancestor node).
+// WupSimilarity is Wu-Palmer Similarity. Returns a score denoting how similar
+// two word senses are, based on the depth of the two senses in the taxonomy
+// and that of their Least Common Subsumer (most specific ancestor node).
 //
 // If simulateRoot is true, will create a common fake root for the top of each
 // synset's hierarchy if no common ancestor was found.
@@ -259,7 +259,8 @@ func (wn *WordNet) indexLemma() {
 	}
 }
 
-// Returns usage examples for the given synset. Always empty for non-verbs.
+// Examples returns usage examples for the given synset. Always empty for
+// non-verbs.
 func (wn *WordNet) Examples(ss *Synset) []string {
 	result := make([]string, len(ss.Example))
 	for i := range result {
@@ -270,7 +271,7 @@ func (wn *WordNet) Examples(ss *Synset) []string {
 	return result
 }
 
-// Returns the synset's ID, for example n123456. Equals the concatenation of
+// Id returns the synset's ID, for example n123456. Equals the concatenation of
 // POS and offset.
 func (ss *Synset) Id() string {
 	return fmt.Sprintf("%v%v", ss.Pos, ss.Offset)

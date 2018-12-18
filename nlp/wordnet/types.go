@@ -1,6 +1,6 @@
 package wordnet
 
-// An entire wordnet database.
+// WordNet is an entire wordnet database.
 type WordNet struct {
 	// Maps from synset ID to synset.
 	Synset map[string]*Synset `json:"synset"`
@@ -21,7 +21,7 @@ type WordNet struct {
 	Example map[string]string `json:"example"`
 }
 
-// A set of synonymous words.
+// Synset is a set of synonymous words.
 type Synset struct {
 	// Synset offset, also used as an identifier.
 	Offset string `json:"offset"`
@@ -45,8 +45,8 @@ type Synset struct {
 	Example []*Example `json:"example"`
 }
 
-// Links a synset word to a generic phrase that illustrates how to use it.
-// Applies to verbs only.
+// A Frame links a synset word to a generic phrase that illustrates how to use
+// it. Applies to verbs only.
 //
 // See the list of frames here:
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect4
@@ -58,7 +58,7 @@ type Frame struct {
 	FrameNumber int `json:"frameNumber"`
 }
 
-// Denotes a semantic relation between one synset/word to another.
+// A Pointer denotes a semantic relation between one synset/word to another.
 //
 // See list of pointer symbols here:
 // https://wordnet.princeton.edu/man/wninput.5WN.html#sect3
@@ -77,7 +77,7 @@ type Pointer struct {
 	Target int `json:"target"`
 }
 
-// Links a synset word to an example sentence. Applies to verbs only.
+// An Example links a synset word to an example sentence. Applies to verbs only.
 type Example struct {
 	// Index of word in the containing synset.
 	WordNumber int `json:"wordNumber"`

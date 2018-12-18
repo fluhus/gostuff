@@ -6,12 +6,12 @@ import (
 	"strings"
 )
 
-// Splits text into tokens. This regexp represents a single word.
+// Tokenizer splits text into tokens. This regexp represents a single word.
 // Changing this regexp will affect the Tokenize function.
 var Tokenizer = regexp.MustCompile("\\w([\\w']*\\w)?")
 
-// Splits a given text to a slice of stemmed, lowercase words. If keepStopWords
-// is false, will drop stop words.
+// Tokenize splits a given text to a slice of stemmed, lowercase words. If
+// keepStopWords is false, will drop stop words.
 func Tokenize(s string, keepStopWords bool) []string {
 	s = correctUtf8Punctuation(s)
 	s = strings.ToLower(s)
@@ -27,7 +27,7 @@ func Tokenize(s string, keepStopWords bool) []string {
 	return result
 }
 
-// Porter-stems the given word.
+// Stem porter-stems the given word.
 func Stem(s string) string {
 	if strings.HasSuffix(s, "'s") {
 		s = s[:len(s)-2]
@@ -35,7 +35,7 @@ func Stem(s string) string {
 	return string(stemmer.Stem([]byte(s)))
 }
 
-// Translates or removes non-ASCII punctuation characters.
+// correctUtf8Punctuation translates or removes non-ASCII punctuation characters.
 func correctUtf8Punctuation(s string) string {
 	return strings.Replace(s, "’", "'", -1)
 	// TODO(amit): Improve this function with more characters.

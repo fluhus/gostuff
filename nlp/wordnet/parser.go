@@ -109,7 +109,7 @@ func parseIndexLine(line string) (*indexLine, error) {
 	parts := strings.Split(strings.Trim(line, " "), " ")
 
 	if len(parts) < 7 {
-		return nil, fmt.Errorf("Bad number of parts: %d, expected at least 7.",
+		return nil, fmt.Errorf("bad number of parts: %d, expected at least 7",
 			len(parts))
 	}
 
@@ -118,16 +118,16 @@ func parseIndexLine(line string) (*indexLine, error) {
 
 	synsetCount, err := parseDeciUint(parts[2])
 	if err != nil {
-		return nil, fmt.Errorf("Bad synset count: %s", parts[2])
+		return nil, fmt.Errorf("bad synset count: %s", parts[2])
 	}
 	ptrCount, err := parseDeciUint(parts[3])
 	if err != nil {
-		return nil, fmt.Errorf("Bad pointer count: %s", parts[3])
+		return nil, fmt.Errorf("bad pointer count: %s", parts[3])
 	}
 
 	parts = parts[4:]
 	if len(parts) < ptrCount+2+synsetCount {
-		return nil, fmt.Errorf("Bad number of parts: %d, expected %d.",
+		return nil, fmt.Errorf("bad number of parts: %d, expected %d",
 			len(parts)+4, ptrCount+synsetCount+6)
 	}
 
@@ -169,11 +169,11 @@ func parseExamples(r io.Reader) (map[string]string, error) {
 		lineNum++
 		parts := strings.Split(scanner.Text(), " ")
 		if len(parts) == 0 {
-			return nil, fmt.Errorf("Line %d: No data to parse.", lineNum)
+			return nil, fmt.Errorf("line %d: No data to parse", lineNum)
 		}
 		_, err := parseDeciUint(parts[0])
 		if err != nil {
-			return nil, fmt.Errorf("Line %d: %v", lineNum, err)
+			return nil, fmt.Errorf("line %d: %v", lineNum, err)
 		}
 		result[parts[0]] = strings.Join(parts[1:], " ")
 	}
@@ -200,7 +200,7 @@ func parseExampleIndex(r io.Reader) (map[string][]int, error) {
 		lineNum++
 		raw, err := parseExampleIndexLine(scanner.Text())
 		if err != nil {
-			return nil, fmt.Errorf("Line %d: %v", lineNum, err)
+			return nil, fmt.Errorf("line %d: %v", lineNum, err)
 		}
 		key := fmt.Sprintf("%s.%d.%d", raw.lemma, raw.lexFileNum, raw.lexId)
 		result[key] = raw.exampleIds
@@ -229,22 +229,22 @@ func parseExampleIndexLine(line string) (*rawExampleIndex, error) {
 	result := &rawExampleIndex{}
 	parts := strings.Split(line, " ")
 	if len(parts) != 2 {
-		return nil, fmt.Errorf("Bad number of parts: %d, expected 2.",
+		return nil, fmt.Errorf("bad number of parts: %d, expected 2",
 			len(parts))
 	}
 
 	// Parse sense.
 	senseParts := strings.Split(parts[0], "%")
 	if len(senseParts) != 2 {
-		return nil, fmt.Errorf("Bad number of sense-key parts: %d, expected"+
-			" 2.", len(senseParts))
+		return nil, fmt.Errorf("bad number of sense-key parts: %d, expected"+
+			" 2", len(senseParts))
 	}
 
 	result.lemma = senseParts[0]
 	lexSenseParts := strings.Split(senseParts[1], ":")
 	if len(lexSenseParts) != 5 {
-		return nil, fmt.Errorf("Bad number of lex-sense parts: %d, expected"+
-			" 5.", len(lexSenseParts))
+		return nil, fmt.Errorf("bad number of lex-sense parts: %d, expected"+
+			" 5", len(lexSenseParts))
 	}
 
 	// Parse lex-sense.
@@ -316,7 +316,7 @@ func parseExceptionFile(in io.Reader, pos string, out map[string][]string,
 		line := scanner.Text()
 		parts := strings.Split(line, " ")
 		if len(parts) < 2 {
-			return fmt.Errorf("Line %d: Bad number of fields: %d, expected 2.",
+			return fmt.Errorf("line %d: Bad number of fields: %d, expected 2",
 				lineNum, len(parts))
 		}
 
@@ -462,8 +462,8 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	var err error
 	parts := strings.Split(strings.Trim(line, " "), " ")
 	if len(parts) < 6 {
-		return nil, fmt.Errorf("Too few fields: %d, expected at "+
-			"least 6.", len(parts))
+		return nil, fmt.Errorf("too few fields: %d, expected at "+
+			"least 6", len(parts))
 	}
 
 	// Parse beginning of line.
@@ -474,7 +474,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	}
 
 	if !ssTypes[parts[2]] {
-		return nil, fmt.Errorf("Unrecognized ss_type: %s", parts[2])
+		return nil, fmt.Errorf("unrecognized ss_type: %s", parts[2])
 	}
 	result.ssType = parts[2]
 
@@ -485,8 +485,8 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	}
 	parts = parts[4:]
 	if len(parts) < 2*wordCount+2 {
-		return nil, fmt.Errorf("Too few fields for words: %d, expected at "+
-			"least %d.", len(parts), 2*wordCount+2)
+		return nil, fmt.Errorf("too few fields for words: %d, expected at "+
+			"least %d", len(parts), 2*wordCount+2)
 	}
 	result.word = make([]*rawWord, wordCount)
 
@@ -509,8 +509,8 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 	}
 	parts = parts[1:]
 	if len(parts) < 4*ptrCount+1 {
-		return nil, fmt.Errorf("Too few fields for pointers: %d, expected "+
-			"at least %d.", len(parts), 4*ptrCount+1)
+		return nil, fmt.Errorf("too few fields for pointers: %d, expected "+
+			"at least %d", len(parts), 4*ptrCount+1)
 	}
 	result.ptr = make([]*rawPointer, ptrCount)
 
@@ -521,7 +521,7 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 		ptr.pos = parts[2]
 
 		if len(parts[3]) != 4 {
-			return nil, fmt.Errorf("Bad pointer source/target field: %s",
+			return nil, fmt.Errorf("bad pointer source/target field: %s",
 				parts[3])
 		}
 		ptr.source, err = parseHexaUint(parts[3][:2])
@@ -545,8 +545,8 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 		}
 		parts = parts[1:]
 		if len(parts) < 3*frameCount+1 {
-			return nil, fmt.Errorf("Too few fields for frames: %d, expected "+
-				"at least %d.", len(parts), 3*frameCount+1)
+			return nil, fmt.Errorf("too few fields for frames: %d, expected "+
+				"at least %d", len(parts), 3*frameCount+1)
 		}
 
 		result.frame = make([]*Frame, frameCount)
@@ -566,8 +566,8 @@ func parseDataLine(line string, hasFrames bool) (*rawSynset, error) {
 
 	// Parse glossary.
 	if parts[0] != "|" {
-		return nil, fmt.Errorf("Expected '|' at end of fields, but found "+
-			"'%s'.", parts[0])
+		return nil, fmt.Errorf("expected '|' at end of fields, but found "+
+			"'%s'", parts[0])
 	}
 	result.gloss = strings.Join(parts[1:], " ")
 

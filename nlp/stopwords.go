@@ -1,7 +1,7 @@
 package nlp
 
-// A map of stop words, for token filtering. Modifying this map will affect
-// the Tokenize function.
+// StopWords is a map of stop words, for token filtering. Modifying this map
+// will affect the Tokenize function.
 //
 // Taken from: http://www.ranks.nl/stopwords
 var StopWords = map[string]bool{
