@@ -216,7 +216,9 @@ func (wn *WordNet) hypernyms(ss *Synset) map[*Synset]int {
 			result[s] = level
 			for _, ptr := range s.Pointer {
 				if ptr.Symbol[:1] == Hypernym {
-					newNext[wn.Synset[ptr.Synset]] = struct{}{}
+					if _, ok := result[wn.Synset[ptr.Synset]]; !ok {
+						newNext[wn.Synset[ptr.Synset]] = struct{}{}
+					}
 				}
 			}
 		}
