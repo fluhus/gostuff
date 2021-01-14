@@ -13,7 +13,7 @@ import (
 // csv.Reader, so it can be used the same way.
 type Decoder struct {
 	*csv.Reader
-	SkipCols uint
+	SkipCols uint // How many columns to skip from the beginning of each line.
 }
 
 // NewDecoder returns a new decoder that reads from r. skipRows and skipCols
@@ -30,12 +30,15 @@ func (d *Decoder) SkipRow() error {
 }
 
 // Decode reads the next CSV line and populates the given object with parsed
-// values. Accepted input types are:
+// values. Accepted input types are struct pointers and slice pointers, as
+// explained below.
 //
-// Struct pointer: all fields must be exported and of type int*, uint* float*
-// or string. Fields will be populated by order of appearance. Too few fields in
-// the CSV line will result in an error. Excess fields in the CSV line will be
-// ignored.
+// Struct pointer: all fields must be exported and of type int*, uint* float*,
+// string or bool. Fields will be populated by order of appearance. Too few
+// values in the CSV line will result in an error. Excess values in the CSV
+// line will be ignored. The struct's last field may be a slice, in which case
+// all the remaining values will be parsed for that slice's type, according to
+// the restrictions below.
 //
 // Slice pointer of type int*, uint*, float*, string: the pointer will be
 // populated with a slice of parsed values, according to the length of the CSV

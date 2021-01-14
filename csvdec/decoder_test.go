@@ -1,6 +1,7 @@
 package csvdec
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -112,6 +113,24 @@ func TestDecoder_stringSlice(t *testing.T) {
 		if act[i] != exp[i] {
 			t.Fatal("Wrong decoding. Expected:", exp, "Actual:", act)
 		}
+	}
+}
+
+func TestDecoder_structWithSlice(t *testing.T) {
+	type T struct {
+		S string
+		I []int
+	}
+	want := T{"hello", []int{5, 4, 3, 2, 1}}
+	got := T{}
+	input := "hello,5,4,3,2,1"
+	decoder := NewDecoder(strings.NewReader(input))
+
+	if err := decoder.Decode(&got); err != nil {
+		t.Fatalf("Decode(%q) failed: %v, want success", input, err)
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("Decode(%q)=%v, want %v", input, got, want)
 	}
 }
 
