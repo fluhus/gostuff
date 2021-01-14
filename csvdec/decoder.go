@@ -13,23 +13,20 @@ import (
 // csv.Reader, so it can be used the same way.
 type Decoder struct {
 	*csv.Reader
-	skipCols int
+	SkipCols uint
 }
 
 // NewDecoder returns a new decoder that reads from r. skipRows and skipCols
 // indicate how many of the first rows and columns should be ignored.
-func NewDecoder(r io.Reader, skipRows, skipCols int) *Decoder {
-	if skipRows < 0 || skipCols < 0 {
-		panic(fmt.Sprintf("skipRows and skipCols must be non-negative. "+
-			"(skipRows=%d skipCols=%d)", skipRows, skipCols))
-	}
-
+func NewDecoder(r io.Reader) *Decoder {
 	reader := csv.NewReader(r)
-	for i := 0; i < skipRows; i++ {
-		reader.Read()
-	}
+	return &Decoder{reader, 0}
+}
 
-	return &Decoder{reader, skipCols}
+// SkipRow skips a row and returns an error if reading failed.
+func (d *Decoder) SkipRow() error {
+	_, err := d.Read()
+	return err
 }
 
 // Decode reads the next CSV line and populates the given object with parsed
@@ -51,37 +48,27 @@ func (d *Decoder) Decode(a interface{}) error {
 		return err
 	}
 
-	// Skip given number of columns.
-	if len(fields) < d.skipCols {
-		fields = nil
-	} else {
-		fields = fields[d.skipCols:]
+	// Skip columns.
+	if uint(len(fields)) < d.SkipCols {
+		return fmt.Errorf("cannot skip %v columns, found only %v columns",
+			d.SkipCols, len(fields))
 	}
+	fields = fields[d.SkipCols:]
 
 	// Act according to type.
 	value := reflect.ValueOf(a)
 	if value.Kind() != reflect.Ptr {
-		panic("Input must be a pointer.")
+		panic("Input must be a pointer. Got: " + value.Type().String())
 	}
 	elem := value.Elem()
 	typ := elem.Type()
 
 	switch typ.Kind() {
 	case reflect.Struct:
-		return fillStruct(value.Elem(), fields)
+		return fillStruct(elem, fields)
 	case reflect.Slice:
-		t := typ.Elem().Kind()
-		switch {
-		case t >= reflect.Int && t <= reflect.Int64:
-			return fillIntSlice(elem, fields)
-		case t >= reflect.Uint && t <= reflect.Uint64:
-			return fillUintSlice(elem, fields)
-		case t == reflect.Float32 || t == reflect.Float64:
-			return fillFloatSlice(elem, fields)
-		case t == reflect.String:
-			return fillStringSlice(elem, fields)
-		}
+		return fillSlice(elem, fields)
+	default:
+		panic("Unsupported type: " + value.Type().String())
 	}
-
-	panic("Unsupported type.")
 }

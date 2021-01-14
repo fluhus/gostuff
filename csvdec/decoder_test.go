@@ -6,7 +6,7 @@ import (
 )
 
 func TestDecoder_struct(t *testing.T) {
-	decoder := NewDecoder(strings.NewReader("Hello,1,-1,3.14"), 0, 0)
+	decoder := NewDecoder(strings.NewReader("Hello,1,-1,3.14"))
 
 	act := struct {
 		S string
@@ -32,7 +32,7 @@ func TestDecoder_struct(t *testing.T) {
 }
 
 func TestDecoder_uintSlice(t *testing.T) {
-	decoder := NewDecoder(strings.NewReader("2,3,5,7,11,13"), 0, 0)
+	decoder := NewDecoder(strings.NewReader("2,3,5,7,11,13"))
 	var act []uint
 	exp := []uint{2, 3, 5, 7, 11, 13}
 
@@ -53,7 +53,7 @@ func TestDecoder_uintSlice(t *testing.T) {
 }
 
 func TestDecoder_intSlice(t *testing.T) {
-	decoder := NewDecoder(strings.NewReader("2,-3,5,-7,11,-13"), 0, 0)
+	decoder := NewDecoder(strings.NewReader("2,-3,5,-7,11,-13"))
 	var act []int
 	exp := []int{2, -3, 5, -7, 11, -13}
 
@@ -74,8 +74,7 @@ func TestDecoder_intSlice(t *testing.T) {
 }
 
 func TestDecoder_floatSlice(t *testing.T) {
-	decoder := NewDecoder(strings.NewReader("2,-3.14,5.5,-7008,0.11,-1.3"),
-		0, 0)
+	decoder := NewDecoder(strings.NewReader("2,-3.14,5.5,-7008,0.11,-1.3"))
 	var act []float64
 	exp := []float64{2, -3.14, 5.5, -7008, 0.11, -1.3}
 
@@ -96,8 +95,7 @@ func TestDecoder_floatSlice(t *testing.T) {
 }
 
 func TestDecoder_stringSlice(t *testing.T) {
-	decoder := NewDecoder(strings.NewReader("yar,har,fiddle,di,dee"),
-		0, 0)
+	decoder := NewDecoder(strings.NewReader("yar,har,fiddle,di,dee"))
 	var act []string
 	exp := []string{"yar", "har", "fiddle", "di", "dee"}
 
