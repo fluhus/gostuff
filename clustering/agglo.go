@@ -152,7 +152,7 @@ type AggloResult struct {
 
 // Dict returns the string representations of elements in the clustering.
 func (r *AggloResult) Dict() []string {
-	return a.dict
+	return r.dict
 }
 
 // newAggloResult creates a new result.

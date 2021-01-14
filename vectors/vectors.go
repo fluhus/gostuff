@@ -1,4 +1,4 @@
-// Basic vector operations.
+// Package vectors provides basic vector operations.
 //
 // Example 1
 //
@@ -49,7 +49,7 @@ func L2(a, b []float64) float64 {
 	return math.Sqrt(sum)
 }
 
-// Returns an Lp distance function. Lp is calculated as follows:
+// Lp returns an Lp distance function. Lp is calculated as follows:
 //  Lp(v) = the p'th root of sum_i(v[i]^p)
 //
 // For convenience, L1 (Manhattan)and L2 (Euclidean) are prepared package
@@ -81,7 +81,8 @@ func Lp(p int) func([]float64, []float64) float64 {
 	}
 }
 
-// Adds b to a and returns a. b is unchanged. If a is nil, creates a new vector.
+// Add adds b to a and returns a. b is unchanged. If a is nil, creates a new
+// vector.
 func Add(a []float64, b ...[]float64) []float64 {
 	if a == nil {
 		if len(b) == 0 {
@@ -100,8 +101,8 @@ func Add(a []float64, b ...[]float64) []float64 {
 	return a
 }
 
-// Subtracts b from a and returns a. b is unchanged. If a is nil, creates a new
-// vector.
+// Sub subtracts b from a and returns a. b is unchanged. If a is nil, creates a
+// new vector.
 func Sub(a []float64, b ...[]float64) []float64 {
 	if a == nil {
 		if len(b) == 0 {
@@ -120,7 +121,7 @@ func Sub(a []float64, b ...[]float64) []float64 {
 	return a
 }
 
-// Multiplies the values of a by m and returns a.
+// Mul multiplies the values of a by m and returns a.
 func Mul(a []float64, m float64) []float64 {
 	for i := range a {
 		a[i] *= m
@@ -128,7 +129,7 @@ func Mul(a []float64, m float64) []float64 {
 	return a
 }
 
-// Returns the dot product of the input vectors.
+// Dot returns the dot product of the input vectors.
 func Dot(a, b []float64) float64 {
 	assertMatchingLengths(a, b)
 
@@ -139,7 +140,7 @@ func Dot(a, b []float64) float64 {
 	return sum
 }
 
-// Returns the norm of the vector, in L2.
+// Norm returns the norm of the vector, in L2.
 func Norm(a []float64) float64 {
 	norm := 0.0
 	for _, v := range a {
@@ -148,7 +149,7 @@ func Norm(a []float64) float64 {
 	return math.Sqrt(norm)
 }
 
-// Returns a slice of ones, of length n. Panics if n is negative.
+// Ones returns a slice of ones of length n. Panics if n is negative.
 func Ones(n int) []float64 {
 	if n < 0 {
 		panic(fmt.Sprintf("Bad vector length: %d", n))
@@ -160,7 +161,7 @@ func Ones(n int) []float64 {
 	return a
 }
 
-// Returns a copy of the given vector.
+// Copy returns a copy of the given vector.
 func Copy(a []float64) []float64 {
 	result := make([]float64, len(a))
 	copy(result, a)

@@ -1,4 +1,4 @@
-// Basic statistic functions.
+// Package stats provides basic statistic functions.
 package stats
 
 import (
@@ -7,7 +7,7 @@ import (
 	"sort"
 )
 
-// Returns the sum of values in a sample.
+// Sum returns the sum of values in a sample.
 func Sum(a []float64) float64 {
 	sum := 0.0
 	for _, v := range a {
@@ -16,12 +16,12 @@ func Sum(a []float64) float64 {
 	return sum
 }
 
-// Returns the mean value of the sample.
+// Mean returns the mean value of the sample.
 func Mean(a []float64) float64 {
 	return Sum(a) / float64(len(a))
 }
 
-// Returns the covariance of the 2 samples. Panics if lengths don't match.
+// Cov returns the covariance of the 2 samples. Panics if lengths don't match.
 func Cov(a, b []float64) float64 {
 	assertMatchingLengths(a, b)
 
@@ -36,22 +36,23 @@ func Cov(a, b []float64) float64 {
 	return cov
 }
 
-// Returns the variance of the sample.
+// Var returns the variance of the sample.
 func Var(a []float64) float64 {
 	return Cov(a, a)
 }
 
-// Returns the standard deviation of the sample.
+// Std returns the standard deviation of the sample.
 func Std(a []float64) float64 {
 	return math.Sqrt(Var(a))
 }
 
-// Returns the correlation between the samples. Panics if lengths don't match.
+// Corr returns the correlation between the samples. Panics if lengths don't
+// match.
 func Corr(a, b []float64) float64 {
 	return Cov(a, b) / Std(a) / Std(b)
 }
 
-// Returns the minimal element in the sample.
+// Min returns the minimal element in the sample.
 func Min(a []float64) float64 {
 	if len(a) == 0 {
 		return math.NaN()
@@ -67,7 +68,7 @@ func Min(a []float64) float64 {
 	return min
 }
 
-// Returns the maximal element in the sample.
+// Max returns the maximal element in the sample.
 func Max(a []float64) float64 {
 	if len(a) == 0 {
 		return math.NaN()
@@ -83,14 +84,13 @@ func Max(a []float64) float64 {
 	return max
 }
 
-// Returns the span of the sample (max - min).
+// Span returns the span of the sample (max - min).
 func Span(a []float64) float64 {
 	return Max(a) - Min(a)
 }
 
-// Returns the entropy for the given distribution.
-// The distribution does not have to sum up to 1, for it will be normalized
-// anyway.
+// Ent returns the entropy for the given distribution.
+// The distribution does not have to sum up to 1.
 func Ent(distribution []float64) float64 {
 	// Sum of the distribution.
 	sum := Sum(distribution)
@@ -118,9 +118,10 @@ func Ent(distribution []float64) float64 {
 	return result
 }
 
-// Creates a histogram of counts of values in the given slice. 'counts' maps
-// a unique value from 'a' to its count. 'byValue' holds uniqe values sorted.
-// 'byCount' holds unique values sorted by their counts, most common first.
+// Hist creates a histogram of counts of values in the given slice. 'counts'
+// maps a unique value from 'a' to its count. 'byValue' holds uniqe values
+// sorted. 'byCount' holds unique values sorted by their counts, most common
+// first.
 func Hist(a []float64) (counts map[float64]int, byValue []float64,
 	byCount []float64) {
 	// Create raw counts.

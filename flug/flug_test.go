@@ -18,7 +18,7 @@ func TestBasic(t *testing.T) {
 	f := flag.NewFlagSet("", flag.ContinueOnError)
 	err := RegisterFlagSet(&a, f)
 	if err != nil {
-		t.Fatalf("RegisterFlagSet(%v) = error: %v", err)
+		t.Fatalf("RegisterFlagSet(%v) = error: %v", a, err)
 	}
 	err = f.Parse([]string{"-d", "40", "-c", "30", "-e", "50", "-b", "20", "-f", "60", "-a", "10"})
 	if err != nil {
