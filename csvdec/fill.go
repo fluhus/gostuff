@@ -6,11 +6,17 @@ import (
 	"strconv"
 )
 
+// TODO(amit): Support bool slices.
+
 // Populates a value's fields with the values in slice s.
 // Value is assumed to be a struct.
 func fillStruct(value reflect.Value, s []string) error {
 	// Check number of fields.
-	if len(s) < value.NumField() {
+	expectedLength := value.NumField()
+	if value.Field(value.NumField()-1).Kind() == reflect.Slice {
+		expectedLength--
+	}
+	if len(s) < expectedLength {
 		return fmt.Errorf("not enough values to populate all fields (%d/%d)",
 			len(s), value.NumField())
 	}

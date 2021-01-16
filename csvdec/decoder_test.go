@@ -6,6 +6,9 @@ import (
 	"testing"
 )
 
+// TODO(amit): Change output style to got, want.
+// TODO(amit): Add tests for bad input.
+
 func TestDecoder_struct(t *testing.T) {
 	decoder := NewDecoder(strings.NewReader("Hello,1,-1,3.14"))
 
@@ -133,5 +136,3 @@ func TestDecoder_structWithSlice(t *testing.T) {
 		t.Fatalf("Decode(%q)=%v, want %v", input, got, want)
 	}
 }
-
-// TODO(amit): Add tests for bad input.
