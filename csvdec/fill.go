@@ -178,20 +178,10 @@ func fillFloatSlice(value reflect.Value, fields []string) error {
 // Populates the given string slice with values parsed from fields.
 // Returns an error if parsing fails.
 func fillStringSlice(value reflect.Value, fields []string) error {
-	// Type of slice elements.
-	typ := value.Type().Elem()
-
-	slice := reflect.MakeSlice(reflect.SliceOf(typ), 0, len(fields))
-	target := reflect.New(typ).Elem()
-
-	// Append fields.
-	for _, field := range fields {
-		target.SetString(field)
-		slice = reflect.Append(slice, target)
-	}
-
-	// Assign new slice.
-	value.Set(slice)
-
+	// Fields may be a part of a bigger slice, so copying to allow the big
+	// slice to get CG'ed.
+	slice := make([]string, len(fields))
+	copy(slice, fields)
+	value.Set(reflect.ValueOf(slice))
 	return nil
 }
