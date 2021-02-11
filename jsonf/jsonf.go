@@ -7,7 +7,7 @@ package jsonf
 import (
 	"encoding/json"
 
-	"gzipf"
+	"github.com/fluhus/gostuff/gzipf"
 )
 
 // Save encodes v as JSON and saves it to the given file.
