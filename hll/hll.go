@@ -3,12 +3,16 @@
 // A HyperLogLog counter can approximate the cardinality of a set with high
 // accuracy and little memory.
 //
+// Accuracy
+//
+// The counter is built to be accurate up to +-1% for any cardinality starting
+// from 0, with a high probability. This is verified in the tests.
+//
 // Performance
 //
-// An HLL counter uses 65kb (2^16) memory.
-//
-// Using murmur3 hash it was able to estimate the cardinality of the set of
-// numbers 1 to 10^9 with 0.1% error in 49 seconds on a single core (49 ns/op).
+// An HLL counter uses 65kb memory. Adding an element of size up to 100
+// bytes takes an order of 100ns. Calculating the approximate count takes an
+// order of 4ms.
 //
 // Citation
 //
@@ -19,6 +23,7 @@
 package hll
 
 import (
+	"hash/maphash"
 	"math"
 )
 
@@ -32,20 +37,20 @@ const (
 // An HLL is a HyperLogLog counter for arbitrary values.
 type HLL struct {
 	counters []byte
-	hash     func(v interface{}) uint64
+	h        maphash.Hash
 }
 
-// New creates a new HyperLogLog counter that uses the given hash function.
-func New(hash func(v interface{}) uint64) *HLL {
-	return &HLL{
-		make([]byte, m),
-		hash,
-	}
+// New creates a new HyperLogLog counter.
+func New() *HLL {
+	return &HLL{counters: make([]byte, m)}
 }
 
-// Add adds an element to the counter. Calls hash once.
-func (h *HLL) Add(v interface{}) {
-	hash := h.hash(v)
+// Add adds v to the counter. Calls hash once.
+func (h *HLL) Add(v []byte) {
+	h.h.Reset()
+	h.h.Write(v)
+	hash := h.h.Sum64()
+
 	idx := hash & mask
 	fp := hash >> nbits
 	z := byte(nzeros(fp)) + 1
@@ -54,18 +59,30 @@ func (h *HLL) Add(v interface{}) {
 	}
 }
 
-// ApproxCount returns the current approximate count. Does not alter the state
-// of the counter.
-//
-// The approximation starts being accurate around one million. Values lower than
-// that should generally be regarded as highly inaccurate.
+// ApproxCount returns the current approximate count.
+// Does not alter the state of the counter.
 func (h *HLL) ApproxCount() int {
 	z := 0.0
 	for _, v := range h.counters {
 		z += math.Pow(2, -float64(v))
 	}
 	z = 1.0 / z
-	return int(alpha * m * m * z)
+	result := int(alpha * m * m * z)
+
+	if result < m*5/2 {
+		zeros := 0
+		for _, v := range h.counters {
+			if v == 0 {
+				zeros++
+			}
+		}
+		// If some registers are zero, use linear counting.
+		if zeros > 0 {
+			result = int(m * math.Log(m/float64(zeros)))
+		}
+	}
+
+	return result
 }
 
 // nzeros counts the number of zeros on the right side of a binary number.
