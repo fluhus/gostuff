@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+//go:generate go run github.com/fluhus/goat -i fillslice.got -o fillslice.go
+
 // TODO(amit): Support bool slices.
 
 // Populates a value's fields with the values in slice s.
@@ -78,110 +80,5 @@ func fillStruct(value reflect.Value, s []string) error {
 		}
 	}
 
-	return nil
-}
-
-// Populates any slice value.
-func fillSlice(value reflect.Value, fields []string) error {
-	kind := value.Type().Elem().Kind()
-	switch {
-	case kind >= reflect.Int && kind <= reflect.Int64:
-		return fillIntSlice(value, fields)
-	case kind >= reflect.Uint && kind <= reflect.Uint64:
-		return fillUintSlice(value, fields)
-	case kind == reflect.Float32 || kind == reflect.Float64:
-		return fillFloatSlice(value, fields)
-	case kind == reflect.String:
-		return fillStringSlice(value, fields)
-	}
-	panic("Unsupported type: " + value.Type().String())
-}
-
-// Populates the given int slice with values parsed from fields.
-// Returns an error if parsing fails.
-func fillIntSlice(value reflect.Value, fields []string) error {
-	// Type of slice elements.
-	typ := value.Type().Elem()
-
-	size := int(typ.Size()) * 8
-	slice := reflect.MakeSlice(reflect.SliceOf(typ), 0, len(fields))
-	target := reflect.New(typ).Elem()
-
-	// Parse fields.
-	for _, field := range fields {
-		val, err := strconv.ParseInt(field, 0, size)
-		if err != nil {
-			return err
-		}
-		target.SetInt(val)
-		slice = reflect.Append(slice, target)
-	}
-
-	// Assign new slice.
-	value.Set(slice)
-
-	return nil
-}
-
-// Populates the given uint slice with values parsed from fields.
-// Returns an error if parsing fails.
-func fillUintSlice(value reflect.Value, fields []string) error {
-	// Type of slice elements.
-	typ := value.Type().Elem()
-
-	size := int(typ.Size()) * 8
-	slice := reflect.MakeSlice(reflect.SliceOf(typ), 0, len(fields))
-	target := reflect.New(typ).Elem()
-
-	// Parse fields.
-	for _, field := range fields {
-		val, err := strconv.ParseUint(field, 0, size)
-		if err != nil {
-			return err
-		}
-		target.SetUint(val)
-		slice = reflect.Append(slice, target)
-	}
-
-	// Assign new slice.
-	value.Set(slice)
-
-	return nil
-}
-
-// Populates the given float slice with values parsed from fields.
-// Returns an error if parsing fails.
-func fillFloatSlice(value reflect.Value, fields []string) error {
-	// Type of slice elements.
-	typ := value.Type().Elem()
-
-	size := int(typ.Size()) * 8
-	slice := reflect.MakeSlice(reflect.SliceOf(typ), 0, len(fields))
-	target := reflect.New(typ).Elem()
-
-	// Parse fields.
-	for _, field := range fields {
-		val, err := strconv.ParseFloat(field, size)
-		if err != nil {
-			return err
-		}
-		target.SetFloat(val)
-		slice = reflect.Append(slice, target)
-	}
-
-	// Assign new slice.
-	value.Set(slice)
-
-	return nil
-}
-
-// Populates the given string slice with values parsed from fields.
-// Returns an error if parsing fails.
-func fillStringSlice(value reflect.Value, fields []string) error {
-	// Fields may be a part of a bigger slice, so copying to allow the big
-	// slice to get CG'ed.
-	slice := make([]string, len(fields))
-	copy(slice, fields)
-	value.Set(reflect.ValueOf(slice))
 	return nil
 }
