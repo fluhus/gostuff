@@ -23,8 +23,13 @@
 package hll
 
 import (
-	"hash/maphash"
+	"encoding/json"
+	"fmt"
+	"hash"
 	"math"
+	_ "unsafe"
+
+	"github.com/spaolacci/murmur3"
 )
 
 const (
@@ -34,15 +39,28 @@ const (
 	alpha = 0.7213 / (1.0 + 1.079/m)
 )
 
+//go:linkname fastrand runtime.fastrand
+func fastrand() uint32
+
 // An HLL is a HyperLogLog counter for arbitrary values.
 type HLL struct {
 	counters []byte
-	h        maphash.Hash
+	h        hash.Hash64
+	seed     uint32
 }
 
-// New creates a new HyperLogLog counter.
+// New creates a new HyperLogLog counter with a random hash seed.
 func New() *HLL {
-	return &HLL{counters: make([]byte, m)}
+	return NewSeed(fastrand())
+}
+
+// New creates a new HyperLogLog counter with the given hash seed.
+func NewSeed(seed uint32) *HLL {
+	return &HLL{
+		counters: make([]byte, m),
+		h:        murmur3.New64WithSeed(seed),
+		seed:     seed,
+	}
 }
 
 // Add adds v to the counter. Calls hash once.
@@ -96,4 +114,38 @@ func nzeros(a uint64) int {
 		a /= 2
 	}
 	return n
+}
+
+// AddHLL adds the state of another counter to h.
+// The result is equivalent to adding all the values of other to h.
+func (h *HLL) AddHLL(other *HLL) {
+	if h.seed != other.seed {
+		panic(fmt.Sprintf("seeds don't match: %v, %v", h.seed, other.seed))
+	}
+	for i, b := range other.counters {
+		if h.counters[i] < b {
+			h.counters[i] = b
+		}
+	}
+}
+
+// Used for JSON marshaling/unmarshaling.
+type jsonHLL struct {
+	Counters []byte
+	Seed     uint32
+}
+
+func (h *HLL) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&jsonHLL{Counters: h.counters, Seed: h.seed})
+}
+
+func (h *HLL) UnmarshalJSON(b []byte) error {
+	jh := &jsonHLL{}
+	if err := json.Unmarshal(b, jh); err != nil {
+		return err
+	}
+	h.counters = jh.Counters
+	h.h = murmur3.New64WithSeed(jh.Seed)
+	h.seed = jh.Seed
+	return nil
 }

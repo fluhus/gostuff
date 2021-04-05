@@ -67,6 +67,51 @@ func TestCount_zero(t *testing.T) {
 	}
 }
 
+func TestMarshalJSON(t *testing.T) {
+	hll := New()
+	for i := 1; i <= 10; i++ {
+		hll.Add([]byte{byte(i)})
+	}
+	if count := hll.ApproxCount(); count != 10 {
+		t.Fatalf("ApproxCount()=%v, want 0", count)
+	}
+	b, err := hll.MarshalJSON()
+	if err != nil {
+		t.Fatalf("MarshalJSON failed: %v", err)
+	}
+	hll2 := New()
+	err = hll2.UnmarshalJSON(b)
+	if err != nil {
+		t.Fatalf("UnmarshalJSON failed: %v", err)
+	}
+	if count := hll2.ApproxCount(); count != 10 {
+		t.Fatalf("ApproxCount()=%v, want 0", count)
+	}
+}
+
+func TestAddHLL(t *testing.T) {
+	hll1 := NewSeed(0)
+	for i := 1; i <= 5; i++ {
+		hll1.Add([]byte{byte(i)})
+	}
+	if count := hll1.ApproxCount(); count != 5 {
+		t.Fatalf("ApproxCount()=%v, want 5", count)
+	}
+
+	hll2 := NewSeed(0)
+	for i := 4; i <= 9; i++ {
+		hll2.Add([]byte{byte(i)})
+	}
+	if count := hll2.ApproxCount(); count != 6 {
+		t.Fatalf("ApproxCount()=%v, want 6", count)
+	}
+
+	hll1.AddHLL(hll2)
+	if count := hll1.ApproxCount(); count != 9 {
+		t.Fatalf("ApproxCount()=%v, want 9", count)
+	}
+}
+
 func BenchmarkAdd(b *testing.B) {
 	for _, n := range []int{10, 30, 100} {
 		b.Run(fmt.Sprintf("%v byte elements", n), func(b *testing.B) {
