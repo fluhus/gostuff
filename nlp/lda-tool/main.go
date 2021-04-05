@@ -12,9 +12,14 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/fluhus/gostuff/flug"
 	"github.com/fluhus/gostuff/maps"
 	"github.com/fluhus/gostuff/nlp"
+)
+
+var (
+	k          = flag.Int("k", 0, "Number of topics")
+	numThreads = flag.Int("t", 0, "Number of therads to use (default: number of CPUs)")
+	js         = flag.Bool("j", false, "Output as JSON instead of default format")
 )
 
 func main() {
@@ -30,10 +35,10 @@ func main() {
 	fmt.Fprintln(os.Stdout, "Found", len(docs), "documents.")
 
 	fmt.Fprintln(os.Stdout, "Performing LDA...")
-	lda, _ := nlp.LdaThreads(docs, args.K, args.NumThreads)
+	lda, _ := nlp.LdaThreads(docs, *k, *numThreads)
 
 	// Print output.
-	if args.Json {
+	if *js {
 		j, _ := json.MarshalIndent(lda, "", "\t")
 		fmt.Println(string(j))
 	} else {
@@ -73,30 +78,23 @@ func die(a ...interface{}) {
 	os.Exit(2)
 }
 
-var args = struct {
-	K          int  `flug:"k,Number of topics."`
-	NumThreads int  `flug:"t,Number of therads to use. (default: number of CPUs)"`
-	Json       bool `flug:"j,Output as JSON instead of default format."`
-}{0, 0, false}
-
 // parseArgs parses the program's arguments and validates them.
 // Exits with an error message upon validation error.
 func parseArgs() {
-	flug.Register(&args)
 	flag.Parse()
 	if len(os.Args) == 1 {
 		fmt.Fprintln(os.Stderr, help)
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
-	if args.K < 1 {
-		die("Error: invalid k:", args.K)
+	if *k < 1 {
+		die("Error: invalid k:", *k)
 	}
-	if args.NumThreads < 0 {
-		die("Error: invalid number of threads:", args.NumThreads)
+	if *numThreads < 0 {
+		die("Error: invalid number of threads:", *numThreads)
 	}
-	if args.NumThreads == 0 {
-		args.NumThreads = runtime.NumCPU()
+	if *numThreads == 0 {
+		*numThreads = runtime.NumCPU()
 	}
 }
 
