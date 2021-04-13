@@ -6,6 +6,7 @@ package bloom
 import (
 	"fmt"
 	"hash"
+	"io"
 	"math"
 	_ "unsafe"
 
@@ -78,9 +79,53 @@ func (f *Filter) SetSeed(seed uint32) {
 		}
 	}
 	f.seed = seed
+	h := murmur3.New32WithSeed(seed)
 	for i := range f.h {
-		f.h[i] = murmur3.New64WithSeed(seed + uint32(i))
+		h.Write([]byte{1})
+		f.h[i] = murmur3.New64WithSeed(h.Sum32())
 	}
+}
+
+// Encode writes this filter to the stream. Can be reproduced later with Decode.
+func (f *Filter) Encode(w io.Writer) error {
+	// Order is k, seed, bytes.
+	if err := binio.WriteUint64(w, uint64(len(f.h))); err != nil {
+		return err
+	}
+	if err := binio.WriteUint64(w, uint64(f.seed)); err != nil {
+		return err
+	}
+	if err := binio.WriteBytes(w, f.b); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Decode reads an encoded filter from the stream and sets this filter's state
+// to match it. Destroys the previously existing state of this filter.
+func (f *Filter) Decode(r io.Reader) error {
+	k, err := binio.ReadUint64(r)
+	if err != nil {
+		return err
+	}
+	f.h = make([]hash.Hash64, k)
+	seed, err := binio.ReadUint64(r)
+	if err != nil {
+		return err
+	}
+	if seed >= 1<<32 {
+		return fmt.Errorf("seed is too large: %v, want at most %v",
+			seed, 1<<32-1)
+	}
+	f.b = nil
+	f.SetSeed(uint32(seed))
+	b, err := binio.ReadBytes(r)
+	if err != nil {
+		return err
+	}
+	f.b = b
+
+	return nil
 }
 
 // New creates a new bloom filter with the given parameters. Number of

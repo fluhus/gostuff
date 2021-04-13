@@ -1,6 +1,7 @@
 package bloom
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -75,6 +76,44 @@ func TestNewOptimal(t *testing.T) {
 	}
 	if fpr := float64(fp) / float64(n); fpr > p {
 		t.Fatalf("fp=%v, want <%v", fpr, p)
+	}
+}
+
+func TestEncode(t *testing.T) {
+	data1 := []byte{1, 2, 3, 4}
+	data2 := []byte{4, 3, 2, 1}
+	f1 := New(80, 4)
+	f1.SetSeed(5678)
+	f1.Add(data1)
+
+	if !f1.Has(data1) {
+		t.Fatalf("Has(%v)=false, want true", data1)
+	}
+	if f1.Has(data2) {
+		t.Fatalf("Has(%v)=true, want false", data2)
+	}
+
+	buf := bytes.NewBuffer(nil)
+	if err := f1.Encode(buf); err != nil {
+		t.Fatalf("Encode(...) failed: %v", err)
+	}
+	f2 := &Filter{}
+	if err := f2.Decode(buf); err != nil {
+		t.Fatalf("Decode(...) failed: %v", err)
+	}
+
+	if !bytes.Equal(f1.b, f2.b) {
+		t.Fatalf("Decode(...) bytes=%v, want %v", f2.b, f1.b)
+	}
+	if f1.seed != f2.seed {
+		t.Fatalf("Decode(...) seed=%v, want %v", f2.seed, f1.seed)
+	}
+
+	if !f2.Has(data1) {
+		t.Fatalf("Decode(...).Has(%v)=false, want true", data1)
+	}
+	if f2.Has(data2) {
+		t.Fatalf("Decode(...).Has(%v)=true, want false", data2)
 	}
 }
 
