@@ -12,11 +12,6 @@ import (
 	"io"
 )
 
-const (
-	// MaxBytesLen is the maximal string length for ReadString and WriteString.
-	MaxBytesLen = 100_000_000
-)
-
 var (
 	// TODO(amit): This renders the package thread-unsafe.
 	buf = make([]byte, 10)
@@ -111,9 +106,6 @@ func ReadByte(r io.Reader) (byte, error) {
 // WriteBytes writes a slice of bytes to the given writer.
 // Returns an error if the string is longer than MaxBytesLen.
 func WriteBytes(w io.Writer, b []byte) error {
-	if len(b) > MaxBytesLen {
-		return fmt.Errorf("bytes too long: len=%v", len(b))
-	}
 	if err := WriteUint64(w, uint64(len(b))); err != nil {
 		return err
 	}
@@ -127,9 +119,6 @@ func ReadBytes(r io.Reader) ([]byte, error) {
 	n, err := ReadUint64(r)
 	if err != nil {
 		return nil, err
-	}
-	if n > MaxBytesLen {
-		return nil, fmt.Errorf("string too long: len=%v", n)
 	}
 	b := make([]byte, n)
 	_, err = io.ReadFull(r, b)
