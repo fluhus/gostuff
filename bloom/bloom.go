@@ -64,6 +64,29 @@ func (f *Filter) Add(v []byte) bool {
 	return has
 }
 
+// Merges other into f. After merging, f is equivalent to have been added all
+// the elements of other.
+func (f *Filter) AddFilter(other *Filter) {
+	// Make sure the two filters are compatible.
+	if f.NBits() != other.NBits() {
+		panic(fmt.Sprintf("mismatching number of bits: this has %v, other has %v",
+			f.NBits(), other.NBits()))
+	}
+	if f.NHash() != other.NHash() {
+		panic(fmt.Sprintf("mismatching number of hashes: this has %v, other has %v",
+			f.NHash(), other.NHash()))
+	}
+	if f.Seed() != other.Seed() {
+		panic(fmt.Sprintf("mismatching seeds: this has %v, other has %v",
+			f.Seed(), other.Seed()))
+	}
+
+	// Merge.
+	for i := range f.b {
+		f.b[i] |= other.b[i]
+	}
+}
+
 // Seed returns the hash seed of this filter.
 // A new filter starts with a random seed.
 func (f *Filter) Seed() uint32 {

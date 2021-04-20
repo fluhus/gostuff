@@ -117,6 +117,31 @@ func TestEncode(t *testing.T) {
 	}
 }
 
+func TestAddFilter(t *testing.T) {
+	data := [][]byte{
+		{1, 2, 3, 4},
+		{5, 6, 7, 8},
+		{9, 10},
+	}
+	f1 := New(100, 3)
+	f2 := New(100, 3)
+	f2.SetSeed(f1.Seed())
+
+	f1.Add(data[0])
+	f2.Add(data[1])
+	f1.AddFilter(f2)
+
+	if !f1.Has(data[0]) {
+		t.Fatalf("Has(%v)=false, want true", data[0])
+	}
+	if !f1.Has(data[1]) {
+		t.Fatalf("Has(%v)=false, want true", data[1])
+	}
+	if f1.Has(data[2]) {
+		t.Fatalf("Has(%v)=true, want false", data[2])
+	}
+}
+
 func BenchmarkHas(b *testing.B) {
 	for _, n := range []int{10, 30, 100} {
 		for k := 1; k <= 3; k++ {
