@@ -106,7 +106,7 @@ func ReadByte(r io.Reader) (byte, error) {
 // WriteBytes writes a slice of bytes to the given writer.
 // Returns an error if the string is longer than MaxBytesLen.
 func WriteBytes(w io.Writer, b []byte) error {
-	if err := WriteUint64(w, uint64(len(b))); err != nil {
+	if err := WriteUvarint(w, uint64(len(b))); err != nil {
 		return err
 	}
 	_, err := w.Write(b)
@@ -116,7 +116,7 @@ func WriteBytes(w io.Writer, b []byte) error {
 // ReadBytes reads a slice of bytes from the given writer.
 // Returns an error if the string is longer than MaxBytesLen.
 func ReadBytes(r io.Reader) ([]byte, error) {
-	n, err := ReadUint64(r)
+	n, err := ReadUvarint(r)
 	if err != nil {
 		return nil, err
 	}

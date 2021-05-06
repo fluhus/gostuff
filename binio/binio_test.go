@@ -118,11 +118,7 @@ func TestReadUint64_bad(t *testing.T) {
 func TestReadString_eof(t *testing.T) {
 	in := [][]byte{
 		{1},
-		{1, 1},
-		{1, 1, 1},
-		{1, 0, 0, 0, 0, 0, 0, 0},
-		{2, 0, 0, 0, 0, 0, 0, 0, 10},
-		{3, 0, 0, 0, 0, 0, 0, 0, 10, 10},
+		{2, 1},
 	}
 	for _, b := range in {
 		buf := bytes.NewBuffer(b)
