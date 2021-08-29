@@ -115,7 +115,7 @@ func TestOf(t *testing.T) {
 		{
 			[]int{2},
 			struct{}{},
-			map[int]struct{}{2: struct{}{}},
+			map[int]struct{}{2: {}},
 		},
 	}
 
@@ -146,6 +146,31 @@ func TestDedup(t *testing.T) {
 		got := Dedup(test.input)
 		if !reflect.DeepEqual(got, test.want) {
 			t.Errorf("#%v Dedup(%v) = %v, want %v", i+1, test.input, got, test.want)
+		}
+	}
+}
+
+func TestMap(t *testing.T) {
+	tests := []struct {
+		a    interface{}
+		f    interface{}
+		want interface{}
+	}{
+		{
+			[]int{1, 3, 5},
+			func(a int) float64 { return float64(a) + 0.5 },
+			map[int]float64{1: 1.5, 3: 3.5, 5: 5.5},
+		},
+		{
+			[]string{"a", "bb", "ccc"},
+			func(s string) string { return s[:1] },
+			map[string]string{"a": "a", "bb": "b", "ccc": "c"},
+		},
+	}
+	for _, test := range tests {
+		got := Map(test.a, test.f)
+		if !reflect.DeepEqual(got, test.want) {
+			t.Fatalf("Map(%v, %v)=%v, want %v", test.a, test.f, got, test.want)
 		}
 	}
 }

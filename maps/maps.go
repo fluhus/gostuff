@@ -3,6 +3,7 @@
 package maps
 
 import (
+	"fmt"
 	"reflect"
 	"sort"
 )
@@ -50,6 +51,8 @@ func Values(a interface{}) interface{} {
 // value.
 //
 // For a slice of type []k and value of type v, result is of type map[k]v.
+//
+// Deprecated: use Map instead.
 func Of(slice interface{}, value interface{}) interface{} {
 	result := reflect.MakeMap(reflect.MapOf(
 		reflect.TypeOf(slice).Elem(),
@@ -66,6 +69,39 @@ func Of(slice interface{}, value interface{}) interface{} {
 // For non-comparable types, removes duplicates without sorting. Input slice is unchanged.
 func Dedup(a interface{}) interface{} {
 	return Keys(Of(a, struct{}{}))
+}
+
+// Map creates a map using the elements in slice a and the values obtaned by calling
+// f on those elements. If a is of type []K then f needs to be of type func(K) V and
+// the result will be of type map[K]V. Panics if the types are not as expected.
+func Map(a interface{}, f interface{}) interface{} {
+	ftyp := reflect.TypeOf(f)
+	if ftyp.NumIn() != 1 {
+		panic(fmt.Sprintf("bad number of inputs to f: %v, want 1", ftyp.NumIn()))
+	}
+	if ftyp.NumOut() != 1 {
+		panic(fmt.Sprintf("bad number of outputs of f: %v, want 1", ftyp.NumOut()))
+	}
+	atyp := reflect.TypeOf(a)
+	if atyp.Kind() != reflect.Slice {
+		panic(fmt.Sprintf("bad input type: %v, want slice", atyp.Kind()))
+	}
+	ktyp := atyp.Elem()
+	if ftyp.In(0) != ktyp {
+		panic(fmt.Sprintf("bad input type to f: %v, want %v",
+			ftyp.In(0).Kind(), ktyp.Kind()))
+	}
+	vtyp := ftyp.Out(0)
+	aval := reflect.ValueOf(a)
+	fval := reflect.ValueOf(f)
+	n := aval.Len()
+
+	result := reflect.MakeMap(reflect.MapOf(ktyp, vtyp))
+	for i := 0; i < n; i++ {
+		k := aval.Index(i)
+		result.SetMapIndex(k, fval.Call([]reflect.Value{k})[0])
+	}
+	return result.Interface()
 }
 
 // sortSlice sorts a slice, if its elements are comparable. Otherwise, leaves it as is.
