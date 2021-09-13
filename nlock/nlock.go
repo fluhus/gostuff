@@ -1,4 +1,4 @@
-// Package nlock provides a lock that can be locked n times simultanously.
+// Package nlock provides a lock that can be locked n times simultaneously.
 package nlock
 
 import (
@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-// An NLock is a lock that allows n holders to hold the lock simultanously.
+// An NLock is a lock that allows n holders to hold the lock simultaneously.
 type NLock struct {
 	c *sync.Cond // Sync object.
 	n int        // Max number of holders.

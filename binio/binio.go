@@ -1,10 +1,9 @@
-// Package binio provides high-performance funcitonality for binary IO.
+// Package binio provides high-performance functionality for binary IO.
 //
 // The package is currently thread-unsafe, even when writing to different
 // writers.
 package binio
 
-// TODO(amit): Make MaxBytesLen a parameter to string functions.
 // TODO(amit): Make the package thread-safe.
 
 import (
@@ -104,7 +103,6 @@ func ReadByte(r io.Reader) (byte, error) {
 }
 
 // WriteBytes writes a slice of bytes to the given writer.
-// Returns an error if the string is longer than MaxBytesLen.
 func WriteBytes(w io.Writer, b []byte) error {
 	if err := WriteUvarint(w, uint64(len(b))); err != nil {
 		return err
@@ -114,7 +112,6 @@ func WriteBytes(w io.Writer, b []byte) error {
 }
 
 // ReadBytes reads a slice of bytes from the given writer.
-// Returns an error if the string is longer than MaxBytesLen.
 func ReadBytes(r io.Reader) ([]byte, error) {
 	n, err := ReadUvarint(r)
 	if err != nil {
@@ -132,13 +129,11 @@ func ReadBytes(r io.Reader) ([]byte, error) {
 }
 
 // WriteString writes a string to the given writer.
-// Returns an error if the string is longer than MaxBytesLen.
 func WriteString(w io.Writer, s string) error {
 	return WriteBytes(w, []byte(s))
 }
 
 // ReadString reads a string from the given writer.
-// Returns an error if the string is longer than MaxBytesLen.
 func ReadString(r io.Reader) (string, error) {
 	b, err := ReadBytes(r)
 	return string(b), err

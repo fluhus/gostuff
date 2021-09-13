@@ -166,7 +166,7 @@ func newAggloResult(pi []int, lambda []float64) *AggloResult {
 }
 
 // aggloSorter is a sorting interface for AggloResult, for sorting by distance.
-// This actually sorts the agglomerative steps by their order of occurance.
+// This actually sorts the agglomerative steps by their order of occurrence.
 type aggloSorter AggloResult
 
 // Len returns the number of elements in the sorter.
@@ -174,7 +174,7 @@ func (r *aggloSorter) Len() int {
 	return len(r.perm)
 }
 
-// Less compares two steps by their order of occurance.
+// Less compares two steps by their order of occurrence.
 func (r *aggloSorter) Less(i, j int) bool {
 	return r.lambda[r.perm[i]] < r.lambda[r.perm[j]]
 }

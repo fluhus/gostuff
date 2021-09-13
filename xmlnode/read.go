@@ -22,7 +22,7 @@ import (
 // ReadAll reads all XML data from the given reader and stores it in a root node.
 func ReadAll(r io.Reader) (Node, error) {
 	// Create root node.
-	// Starting with Tag instead of Root, to eliminate type checks when refering
+	// Starting with Tag instead of Root, to eliminate type checks when referring
 	// to parent nodes during reading. Will be replaced with a Root node at the
 	// end.
 	result := &tag{
