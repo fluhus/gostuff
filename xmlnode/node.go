@@ -20,7 +20,7 @@ import (
 // The Type() function is used instead of exported types to avoid cluttering
 // the package's godoc.
 
-// Represents a single XML node. Can be one of: Root, Tag, Text, Comment,
+// A Node represents a single XML node. Can be one of: Root, Tag, Text, Comment,
 // ProcInst or Directive.
 //
 // String methods return empty strings when called on a non-relevant node. For
@@ -32,36 +32,36 @@ import (
 type Node interface {
 	// Parent of the current node. Nil for root node.
 	Parent() Node
-	
+
 	// Tag name of tag nodes of the form <tagname>...</tagname>. Empty for
 	// other node types.
 	TagName() string
-	
+
 	// Attributes of tag nodes. Nil for other node types.
 	Attr() []*xml.Attr
-	
+
 	// Child nodes of root and tag nodes. Nil for other node types.
 	Children() []Node
-	
+
 	// Text data of text nodes. Empty for other node types.
 	Text() string
-	
+
 	// Comment data of comments of the form <!--comment-->. Does not include the
 	// <!-- and --> markers. Empty for other node types.
 	Comment() string
-	
+
 	// Target of processing instructions of the form <?target inst?>.
 	// Empty for other node types.
 	Target() string
-	
+
 	// Instruction of processing instructions of the form <?target inst?>.
 	// Empty for other node types.
 	Inst() string
-	
+
 	// Directive of the form <!directive>. Does not include the <! and >
 	// markers. Empty for other node types.
 	Directive() string
-	
+
 	// Type of this node. Returns one of: Root, Tag, Text, Comment, ProcInst
 	// or Directive.
 	Type() int

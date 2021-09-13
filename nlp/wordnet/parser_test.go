@@ -9,7 +9,7 @@ import (
 
 func TestDataParser(t *testing.T) {
 	expected := map[string]*Synset{
-		"v111": &Synset{
+		"v111": {
 			"111",
 			"v",
 			[]string{
@@ -50,8 +50,8 @@ func TestDataParser(t *testing.T) {
 
 func TestExceptionParser(t *testing.T) {
 	expected := map[string][]string{
-		"n.foo": []string{"n.bar"},
-		"n.baz": []string{"n.bla", "n.blu"},
+		"n.foo": {"n.bar"},
+		"n.baz": {"n.bla", "n.blu"},
 	}
 
 	actual := map[string][]string{}
@@ -68,8 +68,8 @@ func TestExceptionParser(t *testing.T) {
 
 func TestExampleIndexParser(t *testing.T) {
 	expected := map[string][]int{
-		"abash.37.0": []int{126, 127},
-		"abhor.37.0": []int{138, 139, 15},
+		"abash.37.0": {126, 127},
+		"abhor.37.0": {138, 139, 15},
 	}
 
 	actual, err := parseExampleIndex(strings.NewReader(testExampleIndex))

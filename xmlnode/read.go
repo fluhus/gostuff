@@ -1,5 +1,5 @@
-// A hierarchical node representation of XML documents. This package wraps
-// encoding/xml and can be used instead of it.
+// Package xmlnode provides a hierarchical node representation of XML documents.
+// This package wraps encoding/xml and can be used instead of it.
 //
 // Each node has an underlying concrete type, but calling all functions is
 // legal. For example, here is how you can traverse the node tree:
@@ -19,7 +19,7 @@ import (
 	"io"
 )
 
-// Reads all XML data from the given reader and stores it in a root node.
+// ReadAll reads all XML data from the given reader and stores it in a root node.
 func ReadAll(r io.Reader) (Node, error) {
 	// Create root node.
 	// Starting with Tag instead of Root, to eliminate type checks when refering
@@ -44,7 +44,7 @@ func ReadAll(r io.Reader) (Node, error) {
 			// Copy attributes.
 			attrs := make([]*xml.Attr, len(t.Attr))
 			for i, attr := range t.Attr {
-				attrs[i] = &xml.Attr{attr.Name, attr.Value}
+				attrs[i] = &xml.Attr{Name: attr.Name, Value: attr.Value}
 			}
 
 			// Create child node.

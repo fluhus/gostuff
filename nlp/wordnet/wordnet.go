@@ -208,7 +208,7 @@ func (wn *WordNet) WupSimilarity(from, to *Synset, simulateRoot bool) float64 {
 // input synset.
 func (wn *WordNet) hypernyms(ss *Synset) map[*Synset]int {
 	result := map[*Synset]int{}
-	next := map[*Synset]struct{}{ss: struct{}{}}
+	next := map[*Synset]struct{}{ss: {}}
 	level := 0
 	for len(next) > 0 {
 		newNext := map[*Synset]struct{}{}

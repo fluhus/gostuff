@@ -1,8 +1,6 @@
 // Package bloom provides a simple bloom filter implementation.
 package bloom
 
-// TODO(amit): Add merge function.
-
 import (
 	"fmt"
 	"hash"
@@ -64,8 +62,8 @@ func (f *Filter) Add(v []byte) bool {
 	return has
 }
 
-// Merges other into f. After merging, f is equivalent to have been added all
-// the elements of other.
+// AddFilter merges other into f. After merging, f is equivalent to have been added
+// all the elements of other.
 func (f *Filter) AddFilter(other *Filter) {
 	// Make sure the two filters are compatible.
 	if f.NBits() != other.NBits() {

@@ -18,9 +18,9 @@
 package ezpprof
 
 import (
-	"runtime/pprof"
-	"os"
 	"bufio"
+	"os"
+	"runtime/pprof"
 )
 
 var fout *os.File
@@ -39,7 +39,7 @@ func Start(file string) {
 		fout, bout = nil, nil
 		panic(err)
 	}
-	
+
 	bout = bufio.NewWriter(fout)
 	pprof.StartCPUProfile(bout)
 }
@@ -64,7 +64,7 @@ func Heap(file string) {
 		panic(err)
 	}
 	defer f.Close()
-	
+
 	err = pprof.WriteHeapProfile(f)
 	if err != nil {
 		panic(err)

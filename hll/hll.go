@@ -54,7 +54,7 @@ func New() *HLL {
 	return NewSeed(fastrand())
 }
 
-// New creates a new HyperLogLog counter with the given hash seed.
+// NewSeed creates a new HyperLogLog counter with the given hash seed.
 func NewSeed(seed uint32) *HLL {
 	return &HLL{
 		counters: make([]byte, m),
@@ -135,10 +135,12 @@ type jsonHLL struct {
 	Seed     uint32
 }
 
+// MarshalJSON implements the json.Marshaler interface.
 func (h *HLL) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&jsonHLL{Counters: h.counters, Seed: h.seed})
 }
 
+// UnmarshalJSON implements the json.Unmarshaler interface.
 func (h *HLL) UnmarshalJSON(b []byte) error {
 	jh := &jsonHLL{}
 	if err := json.Unmarshal(b, jh); err != nil {

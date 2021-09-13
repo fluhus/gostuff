@@ -87,9 +87,8 @@ func Add(a []float64, b ...[]float64) []float64 {
 	if a == nil {
 		if len(b) == 0 {
 			return nil
-		} else {
-			a = make([]float64, len(b[0]))
 		}
+		a = make([]float64, len(b[0]))
 	}
 
 	for i := range b {
@@ -107,9 +106,8 @@ func Sub(a []float64, b ...[]float64) []float64 {
 	if a == nil {
 		if len(b) == 0 {
 			return nil
-		} else {
-			a = make([]float64, len(b[0]))
 		}
+		a = make([]float64, len(b[0]))
 	}
 
 	for i := range b {
