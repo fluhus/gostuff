@@ -1,5 +1,7 @@
 // Package maps provides utility functions for handling maps, and transitioning between maps and
 // slices.
+//
+// Deprecated: use https://pkg.go.dev/golang.org/x/exp/maps
 package maps
 
 import (
@@ -7,8 +9,6 @@ import (
 	"reflect"
 	"sort"
 )
-
-// TODO(amit): Consider adding a Flip function, to reverse a map (key<=>value).
 
 // Keys returns the keys of the given map in a sorted slice.
 //
@@ -51,8 +51,6 @@ func Values(a interface{}) interface{} {
 // value.
 //
 // For a slice of type []k and value of type v, result is of type map[k]v.
-//
-// Deprecated: use Map instead.
 func Of(slice interface{}, value interface{}) interface{} {
 	result := reflect.MakeMap(reflect.MapOf(
 		reflect.TypeOf(slice).Elem(),
