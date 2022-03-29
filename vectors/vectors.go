@@ -1,6 +1,8 @@
 // Package vectors provides basic vector operations.
 //
-// Example 1
+// Deprecated: generic numerical operations are available in package gnum.
+//
+//  Example 1
 //
 // Summing vectors and calculating distances:
 //  a, b, c, d := {some vectors}
