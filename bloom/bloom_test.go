@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/fluhus/gostuff/binio"
+	"github.com/fluhus/gostuff/gnum"
 )
 
 func TestLen(t *testing.T) {
@@ -139,6 +140,22 @@ func TestAddFilter(t *testing.T) {
 	}
 	if f1.Has(data[2]) {
 		t.Fatalf("Has(%v)=true, want false", data[2])
+	}
+}
+
+func TestNElements(t *testing.T) {
+	bf := New(2000, 4)
+	bf.SetSeed(0)
+	n := 100
+	errs := 0
+	for i := 1; i <= n; i++ {
+		bf.Add([]byte{byte(i)})
+		if gnum.Diff( bf.NElements(), i)>1 {
+			errs++
+		}
+	}
+	if errs > n/10 {
+		t.Fatalf("Too many errors: %v, want %v", errs, n/10)
 	}
 }
 

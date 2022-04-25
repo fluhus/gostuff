@@ -32,6 +32,23 @@ func (f *Filter) NBits() int {
 	return 8 * len(f.b)
 }
 
+// NElements returns an approximation of the number of elements added to the
+// filter.
+func (f *Filter) NElements() int {
+	m := float64(f.NBits())
+	k := float64(f.NHash())
+	x := 0.0 // Number of bits that are 1.
+	for _, bt := range f.b {
+		for bt > 0 {
+			if bt&1 > 0 {
+				x++
+			}
+			bt >>= 1
+		}
+	}
+	return int(math.Round(-m / k * math.Log(1-x/m)))
+}
+
 // Has checks if all k hash values of v were encountered.
 // Makes at most k hash calculations.
 func (f *Filter) Has(v []byte) bool {
