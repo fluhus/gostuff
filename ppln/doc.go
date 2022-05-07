@@ -1,4 +1,4 @@
-// Package ppln2 provides generic parallel processing pipelines.
+// Package ppln provides generic parallel processing pipelines.
 //
 // NOTE: this API is currently experimental and may change in future releases.
 //
