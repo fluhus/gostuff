@@ -1,9 +1,10 @@
 package ppln
 
 import (
-	"container/heap"
 	"fmt"
 	"sync"
+
+	"github.com/fluhus/gostuff/gheap"
 )
 
 const (
@@ -71,7 +72,10 @@ func Serial[T1 any, T2 any](
 		}()
 	}
 	go func() {
-		items := &serialHeap[T2]{}
+		items := &serialHeap[T2]{
+			data: gheap.New[serialItemComparator[T2], serialItem[T2]](
+				serialItemComparator[T2]{}),
+		}
 		for item := range pull {
 			if stopper.Stopped() {
 				break
@@ -98,15 +102,21 @@ type serialItem[T any] struct {
 	data T
 }
 
+type serialItemComparator[T any] struct{}
+
+func (c serialItemComparator[T]) Less(a, b serialItem[T]) bool {
+	return a.i < b.i
+}
+
 // A heap of serial items. Sorts by serial number.
 type serialHeap[T any] struct {
 	next int
-	data []serialItem[T]
+	data *gheap.Heap[serialItemComparator[T], serialItem[T]]
 }
 
 // Checks whether the minimal element in the heap is the next in the series.
 func (s *serialHeap[T]) ok() bool {
-	return len(s.data) > 0 && s.data[0].i == s.next
+	return s.data.Len() > 0 && s.data.Head().i == s.next
 }
 
 // Removes and returns the minimal element in the heap. Panics if the element
@@ -116,8 +126,8 @@ func (s *serialHeap[T]) pop() T {
 		panic("get when not ok")
 	}
 	s.next++
-	a := heap.Pop(s)
-	return a.(serialItem[T]).data
+	a := s.data.Pop()
+	return a.data
 }
 
 // Adds an item to the heap.
@@ -125,29 +135,5 @@ func (s *serialHeap[T]) put(item serialItem[T]) {
 	if item.i < s.next {
 		panic(fmt.Sprintf("put(%d) when next is %d", item.i, s.next))
 	}
-	heap.Push(s, item)
-}
-
-// Implementation of heap.Interface.
-
-func (s *serialHeap[T]) Len() int {
-	return len(s.data)
-}
-
-func (s *serialHeap[T]) Less(i, j int) bool {
-	return s.data[i].i < s.data[j].i
-}
-
-func (s *serialHeap[T]) Swap(i, j int) {
-	s.data[i], s.data[j] = s.data[j], s.data[i]
-}
-
-func (s *serialHeap[T]) Push(a interface{}) {
-	s.data = append(s.data, a.(serialItem[T]))
-}
-
-func (s *serialHeap[T]) Pop() interface{} {
-	a := s.data[len(s.data)-1]
-	s.data = s.data[:len(s.data)-1]
-	return a
+	s.data.Push(item)
 }

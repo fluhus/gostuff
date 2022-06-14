@@ -72,7 +72,7 @@ func (h *Heap[C, T]) Len() int {
 	return h.h.Len()
 }
 
-// Push adds an element to h while maintaining its heap invariants.
+// Push adds x to h while maintaining its heap invariants.
 func (h *Heap[C, T]) Push(x T) {
 	heap.Push(&h.h, x)
 }
@@ -80,4 +80,9 @@ func (h *Heap[C, T]) Push(x T) {
 // Pop removes and returns the minimal element in h.
 func (h *Heap[C, T]) Pop() T {
 	return heap.Pop(&h.h).(T)
+}
+
+// Head returns the minimal element in h.
+func (h *Heap[C, T]) Head() T {
+	return h.h.a[0]
 }
