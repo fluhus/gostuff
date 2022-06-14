@@ -8,8 +8,9 @@ import (
 
 // How agglomerative clustering should calculate distance between clusters.
 const (
-	AggloMin = iota // Minimal distance between any pair of elements.
-	AggloMax        // Maximal distance between any pair of elements.
+	AggloMin     = iota // Minimal distance between any pair of elements.
+	AggloMax            // Maximal distance between any pair of elements.
+	AggloAverage        // Average distance between any pair of elements.
 )
 
 // Agglo performs agglomerative clustering on the indexes 0 to n-1. d should
@@ -29,6 +30,8 @@ func Agglo(n int, clusterDist int, d func(int, int) float64) *AggloResult {
 		return slink(n, d)
 	case AggloMax:
 		return clink(n, d)
+	case AggloAverage:
+		return upgma(n, d)
 	default:
 		panic(fmt.Sprintf("Unsupported cluster distance: %v, "+
 			"want AggloMin or AggloMax", clusterDist))
