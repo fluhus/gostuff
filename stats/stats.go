@@ -1,4 +1,6 @@
 // Package stats provides basic statistic functions.
+//
+// Deprecated: use gnum instead.
 package stats
 
 import (
