@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/fluhus/gostuff/gheap"
+	"github.com/fluhus/gostuff/heaps"
 )
 
 const (
@@ -73,8 +73,7 @@ func Serial[T1 any, T2 any](
 	}
 	go func() {
 		items := &serialHeap[T2]{
-			data: gheap.New[serialItemComparator[T2], serialItem[T2]](
-				serialItemComparator[T2]{}),
+			data: heaps.New[serialItemComparator[T2], serialItem[T2]](),
 		}
 		for item := range pull {
 			if stopper.Stopped() {
@@ -104,14 +103,14 @@ type serialItem[T any] struct {
 
 type serialItemComparator[T any] struct{}
 
-func (c serialItemComparator[T]) Less(a, b serialItem[T]) bool {
+func (_ serialItemComparator[T]) Less(a, b serialItem[T]) bool {
 	return a.i < b.i
 }
 
 // A heap of serial items. Sorts by serial number.
 type serialHeap[T any] struct {
 	next int
-	data *gheap.Heap[serialItemComparator[T], serialItem[T]]
+	data *heaps.Heap[serialItemComparator[T], serialItem[T]]
 }
 
 // Checks whether the minimal element in the heap is the next in the series.

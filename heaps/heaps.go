@@ -1,5 +1,5 @@
-// Package gheap provides generic slice-based heaps.
-package gheap
+// Package heaps provides generic heaps.
+package heaps
 
 import (
 	"container/heap"
@@ -8,24 +8,39 @@ import (
 )
 
 // New returns a new heap that uses the given comparator.
-func New[C Comparator[T], T any](c C) *Heap[C, T] {
+func New[C Comparator[T], T any]() *Heap[C, T] {
+	var c C
 	return &Heap[C, T]{backheap[C, T]{c, nil}}
 }
 
-// NewOrdered returns a new heap of an ordered type by its natural order.
-func NewOrdered[T constraints.Ordered]() *Heap[orderedComparator[T], T] {
-	return New[orderedComparator[T], T](orderedComparator[T]{})
+// NewMin returns a new min-heap of an ordered type by its natural order.
+func NewMin[T constraints.Ordered]() *Heap[Min[T], T] {
+	return New[Min[T], T]()
+}
+
+// NewMax returns a new max-heap of an ordered type by its natural order.
+func NewMax[T constraints.Ordered]() *Heap[Max[T], T] {
+	return New[Max[T], T]()
 }
 
 // Comparator provides the comparison function for a heap.
+// Less should determine whether a should be popped before b.
 type Comparator[T any] interface {
 	Less(a, b T) bool
 }
 
-type orderedComparator[T constraints.Ordered] struct{}
+// Min is a comparator that places the minimal value at the top of the heap.
+type Min[T constraints.Ordered] struct{}
 
-func (c orderedComparator[T]) Less(a, b T) bool {
+func (_ Min[T]) Less(a, b T) bool {
 	return a < b
+}
+
+// Max is a comparator that places the maximal value at the top of the heap.
+type Max[T constraints.Ordered] struct{}
+
+func (_ Max[T]) Less(a, b T) bool {
+	return a > b
 }
 
 // backheap is used for communicating with the heap package.
@@ -62,7 +77,7 @@ func (h *backheap[C, T]) Pop() any {
 	return x
 }
 
-// Heap is a slice-based heap.
+// Heap is a generic heap.
 type Heap[C Comparator[T], T any] struct {
 	h backheap[C, T]
 }
@@ -85,4 +100,10 @@ func (h *Heap[C, T]) Pop() T {
 // Head returns the minimal element in h.
 func (h *Heap[C, T]) Head() T {
 	return h.h.a[0]
+}
+
+// View returns the underlying slice of h, containing all of its elements.
+// Modifying the slice may invalidate the heap.
+func (h *Heap[C, T]) View() []T {
+	return h.h.a
 }

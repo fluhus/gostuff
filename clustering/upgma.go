@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/fluhus/gostuff/gheap"
 	"github.com/fluhus/gostuff/gnum"
+	"github.com/fluhus/gostuff/heaps"
 )
 
+// distPyramid is a distance half-matrix.
 type distPyramid [][]float64
 
+// dist returns the distance between a and b.
 func (d distPyramid) dist(a, b int) float64 {
 	if a > b {
 		return d[a][b]
@@ -17,6 +19,7 @@ func (d distPyramid) dist(a, b int) float64 {
 	return d[b][a]
 }
 
+// makePyramid creates a distance half-matrix.
 func makePyramid(n int, f func(int, int) float64) distPyramid {
 	nn := n * (n - 1) / 2
 	d := make([]float64, 0, nn)
@@ -34,6 +37,8 @@ func makePyramid(n int, f func(int, int) float64) distPyramid {
 	return result
 }
 
+// upgma is an implementation of UPGMA clustering. The distance between clusters
+// is the average distance between pairs of their individual elements.
 func upgma(n int, f func(int, int) float64) *AggloResult {
 	pi := make([]int, n)         // Index of first merge target of each element.
 	lambda := make([]float64, n) // Distance of first merge target of each element.
@@ -43,15 +48,14 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 
 	// Calculate raw distances.
 	d := makePyramid(n, f)
-	heaps := make([]*gheap.Heap[upgmaClusterComparator, upgmaCluster], n)
-	for i := range heaps {
-		heaps[i] = gheap.New[upgmaClusterComparator, upgmaCluster](
-			upgmaClusterComparator{})
+	heapss := make([]*heaps.Heap[upgmaByDistance, upgmaCluster], n)
+	for i := range heapss {
+		heapss[i] = heaps.New[upgmaByDistance, upgmaCluster]()
 	}
 	for i := 1; i < n; i++ {
 		for j := 0; j < i; j++ {
-			heaps[i].Push(upgmaCluster{j, d[i][j]})
-			heaps[j].Push(upgmaCluster{i, d[i][j]})
+			heapss[i].Push(upgmaCluster{j, d[i][j]})
+			heapss[j].Push(upgmaCluster{i, d[i][j]})
 		}
 	}
 
@@ -66,7 +70,7 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 		// Find lowest distance.
 		min := math.MaxFloat64
 		a, b := -1, -1
-		for hi, h := range heaps {
+		for hi, h := range heapss {
 			if h == nil {
 				continue
 			}
@@ -74,7 +78,7 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 			if h.Len() == 0 {
 				panic(fmt.Sprintf("heap %d with length 0", hi))
 			}
-			for heaps[h.Head().i] == nil {
+			for heapss[h.Head().i] == nil {
 				h.Pop()
 			}
 			if h.Head().d < min {
@@ -93,12 +97,11 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 		// Merge clusters.
 		names = append(names, nmax)
 		sizes = append(sizes, sizes[a]+sizes[b])
-		heaps[a] = nil
-		heaps[b] = nil
+		heapss[a] = nil
+		heapss[b] = nil
 		var cdist []float64
-		cheap := gheap.New[upgmaClusterComparator, upgmaCluster](
-			upgmaClusterComparator{})
-		for hi, h := range heaps {
+		cheap := heaps.New[upgmaByDistance, upgmaCluster]()
+		for hi, h := range heapss {
 			if h == nil {
 				cdist = append(cdist, 0)
 				continue
@@ -111,7 +114,7 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 			cheap.Push(upgmaCluster{hi, dd})
 		}
 		d = append(d, cdist)
-		heaps = append(heaps, cheap)
+		heapss = append(heapss, cheap)
 	}
 
 	return newAggloResult(pi, lambda)
@@ -124,8 +127,9 @@ type upgmaCluster struct {
 }
 
 // Compares clusters by their distance.
-type upgmaClusterComparator struct{}
+type upgmaByDistance struct{}
 
-func (upgmaClusterComparator) Less(a, b upgmaCluster) bool {
+// Less implements the heaps.Comparator interface.
+func (upgmaByDistance) Less(a, b upgmaCluster) bool {
 	return a.d < b.d
 }

@@ -1,4 +1,4 @@
-package gheap
+package heaps
 
 import (
 	"testing"
@@ -9,7 +9,7 @@ import (
 func TestHeap(t *testing.T) {
 	input := []string{"bb", "a", "ffff", "ddddd"}
 	want := []string{"a", "bb", "ddddd", "ffff"}
-	h := NewOrdered[string]()
+	h := NewMin[string]()
 	for _, v := range input {
 		h.Push(v)
 	}
@@ -36,7 +36,7 @@ func TestHeap_big(t *testing.T) {
 		11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
 		21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
 	}
-	h := NewOrdered[int]()
+	h := NewMin[int]()
 	for _, v := range input {
 		h.Push(v)
 	}
