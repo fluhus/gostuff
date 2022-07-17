@@ -1,24 +1,8 @@
+// Package vectors is deprecated.
+//
 // Package vectors provides basic vector operations.
 //
 // Deprecated: generic numerical operations are available in package gnum.
-//
-//  Example 1
-//
-// Summing vectors and calculating distances:
-//  a, b, c, d := {some vectors}
-//
-// Giving a nil result vector to Sum() allocates a new result, and thus does
-// not change a, b, c or d.
-//  dist := L2(Sum(nil, a, b), Sum(nil, c, d))
-//
-// Giving a non-nil result vector to Sum() changes it. The following call will
-// give the same distance but will modify a and c.
-//  dist := L2(Sum(a, b), Sum(c, d))
-//
-// Example 2
-//
-// Creating a vector of -1's of length 10:
-//  v := Mul(Ones(10), -1)
 package vectors
 
 import (

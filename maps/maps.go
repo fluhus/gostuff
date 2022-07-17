@@ -1,5 +1,4 @@
-// Package maps provides utility functions for handling maps, and transitioning between maps and
-// slices.
+// Package maps is deprecated.
 //
 // Deprecated: use https://pkg.go.dev/golang.org/x/exp/maps
 package maps
