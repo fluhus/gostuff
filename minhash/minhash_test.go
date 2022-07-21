@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/fluhus/gostuff/gnum"
+	"golang.org/x/exp/slices"
 )
 
 func TestCollection(t *testing.T) {
@@ -68,7 +69,7 @@ func TestJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("UnmarshalJSON(%q) failed: %v", jsn, err)
 	}
-	if !reflect.DeepEqual(got, input) {
+	if !slices.Equal(got.View(), input.View()) {
 		t.Fatalf("UnmarshalJSON(%q)=%v, want %v", jsn, got, input)
 	}
 }

@@ -73,7 +73,9 @@ func Serial[T1 any, T2 any](
 	}
 	go func() {
 		items := &serialHeap[T2]{
-			data: heaps.New[serialItemComparator[T2], serialItem[T2]](),
+			data: heaps.New(func(a, b serialItem[T2]) bool {
+				return a.i < b.i
+			}),
 		}
 		for item := range pull {
 			if stopper.Stopped() {
@@ -101,16 +103,10 @@ type serialItem[T any] struct {
 	data T
 }
 
-type serialItemComparator[T any] struct{}
-
-func (_ serialItemComparator[T]) Less(a, b serialItem[T]) bool {
-	return a.i < b.i
-}
-
 // A heap of serial items. Sorts by serial number.
 type serialHeap[T any] struct {
 	next int
-	data *heaps.Heap[serialItemComparator[T], serialItem[T]]
+	data *heaps.Heap[serialItem[T]]
 }
 
 // Checks whether the minimal element in the heap is the next in the series.

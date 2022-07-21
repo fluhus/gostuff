@@ -48,9 +48,9 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 
 	// Calculate raw distances.
 	d := makePyramid(n, f)
-	heapss := make([]*heaps.Heap[upgmaByDistance, upgmaCluster], n)
+	heapss := make([]*heaps.Heap[upgmaCluster], n)
 	for i := range heapss {
-		heapss[i] = heaps.New[upgmaByDistance, upgmaCluster]()
+		heapss[i] = heaps.New(compareUpgmaClusters)
 	}
 	for i := 1; i < n; i++ {
 		for j := 0; j < i; j++ {
@@ -100,7 +100,7 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 		heapss[a] = nil
 		heapss[b] = nil
 		var cdist []float64
-		cheap := heaps.New[upgmaByDistance, upgmaCluster]()
+		cheap := heaps.New(compareUpgmaClusters)
 		for hi, h := range heapss {
 			if h == nil {
 				cdist = append(cdist, 0)
@@ -126,10 +126,6 @@ type upgmaCluster struct {
 	d float64 // Distance from cluster i
 }
 
-// Compares clusters by their distance.
-type upgmaByDistance struct{}
-
-// Less implements the heaps.Comparator interface.
-func (upgmaByDistance) Less(a, b upgmaCluster) bool {
+func compareUpgmaClusters(a, b upgmaCluster) bool {
 	return a.d < b.d
 }

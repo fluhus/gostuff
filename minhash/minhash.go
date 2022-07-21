@@ -16,10 +16,10 @@ import (
 // A MinHash is a min-hash collection. Retains the k lowest unique values out of all
 // the values that were added to it.
 type MinHash[T constraints.Integer] struct {
-	h *heaps.Heap[heaps.Max[T], T] // Min-hash heap
-	s sets.Set[T]                  // Keeps elements unique
-	k int                          // Max size of the collection
-	n int                          // Number of calls to Push
+	h *heaps.Heap[T] // Min-hash heap
+	s sets.Set[T]    // Keeps elements unique
+	k int            // Max size of the collection
+	n int            // Number of calls to Push
 }
 
 // New returns an empty collection that stores k values.
@@ -28,7 +28,7 @@ func New[T constraints.Integer](k int) *MinHash[T] {
 		panic(fmt.Sprintf("invalid n: %d, should be positive", k))
 	}
 	return &MinHash[T]{
-		heaps.NewMax[T](),
+		heaps.Max[T](),
 		sets.Set[T]{},
 		k, 0,
 	}
