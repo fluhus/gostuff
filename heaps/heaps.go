@@ -75,6 +75,14 @@ func (h *Heap[T]) Push(x T) {
 	heap.Push(&h.h, x)
 }
 
+// PushSlice adds the elements of s to h while maintaining its heap invariants.
+// The complexity is O(new n), so it should be typically used to initialize a
+// new heap.
+func (h *Heap[T]) PushSlice(s []T) {
+	h.h.a = append(h.h.a, s...)
+	heap.Init(&h.h)
+}
+
 // Pop removes and returns the minimal element in h.
 func (h *Heap[T]) Pop() T {
 	return heap.Pop(&h.h).(T)
