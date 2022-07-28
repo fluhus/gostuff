@@ -15,30 +15,46 @@ const (
 // Serial starts a multi-goroutine transformation pipeline that maintains the
 // order of the inputs.
 //
-// Pusher should call push on every input value.
+// Pusher should call push on every input value. Stop indicates if an error was
+// returned and pushing should stop.
 // Mapper receives an input (a), 0-based input serial number (i), 0-based
-// goroutine number (g), and a Stopper, and returns the result of processing a.
+// goroutine number (g), and returns the result of processing a.
 // Puller acts on a single result, and will be called by the same
 // order of pusher's input.
+//
+// If one of the functions returns a non-nil error, the process stops and the
+// error is returned. Otherwise returns nil.
 func Serial[T1 any, T2 any](
 	ngoroutines int,
-	pusher func(push func(T1), s Stopper),
-	mapper func(a T1, i int, g int, s Stopper) T2,
-	puller func(a T2, s Stopper)) {
+	pusher func(push func(T1), stop func() bool) error,
+	mapper func(a T1, i int, g int) (T2, error),
+	puller func(a T2) error) error {
 	if ngoroutines < 1 {
 		panic(fmt.Sprintf("bad number of goroutines: %d", ngoroutines))
 	}
 
-	stopper := make(Stopper)
+	var err error
 
 	// An optimization for a single thread.
 	if ngoroutines == 1 {
 		i := 0
 		pusher(func(a T1) {
-			puller(mapper(a, i, 0, stopper), stopper)
+			if err != nil {
+				return
+			}
+			t2, merr := mapper(a, i, 0)
+			if merr != nil {
+				err = merr
+				return
+			}
+			perr := puller(t2)
+			if perr != nil {
+				err = perr
+				return
+			}
 			i++
-		}, stopper)
-		return
+		}, func() bool { return err != nil })
+		return err
 	}
 
 	push := make(chan serialItem[T1], ngoroutines*chanLenCoef)
@@ -48,25 +64,33 @@ func Serial[T1 any, T2 any](
 
 	go func() {
 		i := 0
-		pusher(func(a T1) {
+		perr := pusher(func(a T1) {
+			if err != nil {
+				return
+			}
 			push <- serialItem[T1]{i, a}
 			i++
-		}, stopper)
+		}, func() bool { return err != nil })
+		if perr != nil && err == nil {
+			err = perr
+		}
 		close(push)
 	}()
 	for i := 0; i < ngoroutines; i++ {
 		i := i
 		go func() {
 			for item := range push {
-				if stopper.Stopped() {
-					break
+				if err != nil {
+					continue // Drain channel.
 				}
-				pull <- serialItem[T2]{
-					item.i,
-					mapper(item.data, item.i, i, stopper),
+				t2, merr := mapper(item.data, item.i, i)
+				if merr != nil {
+					if err == nil {
+						err = merr
+					}
+					continue
 				}
-			}
-			for range push { // Drain channel.
+				pull <- serialItem[T2]{item.i, t2}
 			}
 			wait.Done()
 		}()
@@ -78,15 +102,16 @@ func Serial[T1 any, T2 any](
 			}),
 		}
 		for item := range pull {
-			if stopper.Stopped() {
-				break
+			if err != nil {
+				continue // Drain channel.
 			}
 			items.put(item)
 			for items.ok() {
-				puller(items.pop(), stopper)
+				perr := puller(items.pop())
+				if perr != nil && err == nil {
+					err = perr
+				}
 			}
-		}
-		for range pull { // Drain channel.
 		}
 		wait.Done()
 	}()
@@ -95,6 +120,8 @@ func Serial[T1 any, T2 any](
 	wait.Add(1)
 	close(pull)
 	wait.Wait() // Wait for pull.
+
+	return err
 }
 
 // General data with a serial number.
