@@ -1,6 +1,12 @@
 // Package sets provides generic sets.
 package sets
 
+import (
+	"encoding/json"
+
+	"golang.org/x/exp/maps"
+)
+
 // Set is a convenience wrapper around map[T]struct{}.
 type Set[T comparable] map[T]struct{}
 
@@ -55,4 +61,22 @@ func (s Set[T]) Intersect(t Set[T]) Set[T] {
 		}
 	}
 	return result
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (s Set[T]) MarshalJSON() ([]byte, error) {
+	return json.Marshal(maps.Keys(s))
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (s *Set[T]) UnmarshalJSON(b []byte) error {
+	var slice []T
+	if err := json.Unmarshal(b, &slice); err != nil {
+		return err
+	}
+	if *s == nil {
+		*s = Set[T]{}
+	}
+	s.Add(slice...)
+	return nil
 }
