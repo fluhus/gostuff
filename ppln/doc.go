@@ -15,10 +15,9 @@
 //
 // Stopping
 //
-// Each user-function (pusher, mapper, puller) receives a Stopper instance.
-// It can be used to stop the pipeline prematurely, and to check whether Stop
-// was called. After calling this function no further calls to mapper and puller
-// will be made. Pusher should check for Stopped and stop itself if necessary.
+// Each user-function (pusher, mapper, puller) may return an error.
+// Returning a non-nil error stops the pipeline prematurely, and that
+// error will be propagated to the caller.
 //
 // Number of goroutines
 //
