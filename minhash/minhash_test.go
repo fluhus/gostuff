@@ -101,3 +101,23 @@ func TestJaccard(t *testing.T) {
 		}
 	}
 }
+
+func FuzzCollection(f *testing.F) {
+	f.Add(1, 2, 3, 4, 5, 6)
+	f.Fuzz(func(t *testing.T, a int, b int, c int, d int, e int, f int) {
+		col := New[int](2)
+		col.Push(a)
+		col.Push(b)
+		col.Push(c)
+		col.Push(d)
+		col.Push(e)
+		col.Push(f)
+		v := col.View()
+		if len(v) != 2 {
+			t.Errorf("len()=%d, want %d", len(v), 2)
+		}
+		if v[0] < v[1] {
+			t.Errorf("v[0]<v[1]: %d<%d, want >=", v[0], v[1])
+		}
+	})
+}
