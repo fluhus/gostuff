@@ -1,10 +1,7 @@
-// Package binio provides high-performance functionality for binary IO.
+// Package binio is deprecated, use the bnry package instead.
 //
-// The package is currently thread-unsafe, even when writing to different
-// writers.
+// Deprecated: use the bnry package instead.
 package binio
-
-// TODO(amit): Make the package thread-safe.
 
 import (
 	"fmt"
@@ -12,7 +9,6 @@ import (
 )
 
 var (
-	// TODO(amit): This renders the package thread-unsafe.
 	buf = make([]byte, 10)
 )
 
