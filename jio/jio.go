@@ -1,8 +1,8 @@
-// Package jsonf provides convenience functions for saving and loading
-// JSON-encoded values to and from the hard drive.
+// Package jio provides convenience functions for saving and loading
+// JSON-encoded values.
 //
 // Uses the [aio] package for I/O.
-package jsonf
+package jio
 
 import (
 	"encoding/json"
