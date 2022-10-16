@@ -4,62 +4,60 @@
 // the mess of opening files and checking errors.
 //
 // A typical use of this package looks like:
-//  ezpprof.Start("myfile.pprof")
-//  {... some complicated code ...}
-//  ezpprof.Stop()
+//
+//	ezpprof.Start("myfile.pprof")
+//	{... some complicated code ...}
+//	ezpprof.Stop()
 //
 // Or alternatively:
-//  const profile = true
 //
-//  if profile {
-//    ezpprof.Start("myfile.pprof")
-//    defer ezpprof.Stop()
-//  }
+//	const profile = true
+//
+//	if profile {
+//	  ezpprof.Start("myfile.pprof")
+//	  defer ezpprof.Stop()
+//	}
 package ezpprof
 
 import (
-	"bufio"
-	"os"
+	"io"
 	"runtime/pprof"
+
+	"github.com/fluhus/gostuff/aio"
 )
 
-var fout *os.File
-var bout *bufio.Writer
+var fout io.WriteCloser
 
-// Start starts CPU profiling and writes to the given file. Panics if an error
-// occurs.
+// Start starts CPU profiling and writes to the given file.
+// Panics if an error occurs.
 func Start(file string) {
 	if fout != nil {
-		panic("Already profiling.")
+		panic("already profiling")
 	}
-
-	var err error
-	fout, err = os.Create(file)
+	f, err := aio.CreateRaw(file)
 	if err != nil {
-		fout, bout = nil, nil
 		panic(err)
 	}
-
-	bout = bufio.NewWriter(fout)
-	pprof.StartCPUProfile(bout)
+	fout = f
+	pprof.StartCPUProfile(fout)
 }
 
-// Stop stops CPU profiling and closes the output file. Panics if called
-// without calling Start.
+// Stop stops CPU profiling and closes the output file.
+// Panics if called without calling Start.
 func Stop() {
 	if fout == nil {
-		panic("Stop called without calling Start.")
+		panic("Stop called without calling Start")
 	}
-
 	pprof.StopCPUProfile()
-	bout.Flush()
-	fout.Close()
-	fout, bout = nil, nil
+	if err := fout.Close(); err != nil {
+		panic(err)
+	}
+	fout = nil
 }
 
 // Heap writes heap profile to the given file. Panics if an error occurs.
 func Heap(file string) {
-	f, err := os.Create(file)
+	f, err := aio.Create(file)
 	if err != nil {
 		panic(err)
 	}
