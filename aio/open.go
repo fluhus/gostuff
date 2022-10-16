@@ -17,23 +17,32 @@ const (
 )
 
 // OpenRaw opens a file for reading, with a buffer.
-func OpenRaw(file string) (io.ReadCloser, error) {
+func OpenRaw(file string) (*Reader, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		return nil, err
 	}
-	return &readerWrapper{bufio.NewReader(f), f}, nil
+	return &Reader{*bufio.NewReader(f), f}, nil
 }
 
 // CreateRaw opens a file for writing, with a buffer.
 // Erases any previously existing content.
-func CreateRaw(file string) (io.WriteCloser, error) {
+func CreateRaw(file string) (*Writer, error) {
 	f, err := os.Create(file)
 	if err != nil {
 		return nil, err
 	}
-	b := bufio.NewWriter(f)
-	return &writerWrapper{&flusherWrapper{b}, f}, nil
+	return &Writer{*bufio.NewWriter(f), f}, nil
+}
+
+// AppendRaw opens a file for writing, with a buffer.
+// Appends to previously existing content if any.
+func AppendRaw(file string) (*Writer, error) {
+	f, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0o644)
+	if err != nil {
+		return nil, err
+	}
+	return &Writer{*bufio.NewWriter(f), f}, nil
 }
 
 var (
@@ -43,7 +52,7 @@ var (
 
 // Open opens a file for reading, with a buffer.
 // Decompresses the data according to the file's suffix.
-func Open(file string) (io.ReadCloser, error) {
+func Open(file string) (*Reader, error) {
 	f, err := OpenRaw(file)
 	if err != nil {
 		return nil, err
@@ -56,13 +65,13 @@ func Open(file string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &readerWrapper{ff, f}, nil
+	return &Reader{*bufio.NewReader(ff), f}, nil
 }
 
 // Create opens a file for writing, with a buffer.
 // Erases any previously existing content.
 // Compresses the data according to the file's suffix.
-func Create(file string) (io.WriteCloser, error) {
+func Create(file string) (*Writer, error) {
 	f, err := CreateRaw(file)
 	if err != nil {
 		return nil, err
@@ -75,7 +84,28 @@ func Create(file string) (io.WriteCloser, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &writerWrapper{ff, f}, nil
+	wrapper := &writerWrapper{ff, f}
+	return &Writer{*bufio.NewWriter(ff), wrapper}, nil
+}
+
+// Append opens a file for writing, with a buffer.
+// Appends to previously existing content if any.
+// Compresses the data according to the file's suffix.
+func Append(file string) (*Writer, error) {
+	f, err := AppendRaw(file)
+	if err != nil {
+		return nil, err
+	}
+	fn := wsuffixes[filepath.Ext(file)]
+	if fn == nil {
+		return f, nil
+	}
+	ff, err := fn(f)
+	if err != nil {
+		return nil, err
+	}
+	wrapper := &writerWrapper{ff, f}
+	return &Writer{*bufio.NewWriter(ff), wrapper}, nil
 }
 
 // AddReadSuffix adds a supported suffix for automatic decompression.

@@ -1,22 +1,9 @@
 package aio
 
 import (
+	"bufio"
 	"io"
 )
-
-// Wraps a reader and its underlying closer.
-type readerWrapper struct {
-	top    io.Reader
-	bottom io.ReadCloser
-}
-
-func (r *readerWrapper) Read(p []byte) (int, error) {
-	return r.top.Read(p)
-}
-
-func (r *readerWrapper) Close() error {
-	return r.bottom.Close()
-}
 
 // Wraps a writer and its underlying closer.
 type writerWrapper struct {
@@ -34,21 +21,23 @@ func (w *writerWrapper) Close() error {
 	return w.bottom.Close()
 }
 
-// A writer with a Flush method, to convert to a Closer.
-type flusher interface {
-	io.Writer
-	Flush() error
+type Reader struct {
+	bufio.Reader
+	r io.ReadCloser
 }
 
-// Converts a flusher to a Closer.
-type flusherWrapper struct {
-	f flusher
+func (r *Reader) Close() error {
+	return r.r.Close()
 }
 
-func (f *flusherWrapper) Write(p []byte) (int, error) {
-	return f.f.Write(p)
+type Writer struct {
+	bufio.Writer
+	w io.WriteCloser
 }
 
-func (f *flusherWrapper) Close() error {
-	return f.f.Flush()
+func (w *Writer) Close() error {
+	if err := w.Flush(); err != nil {
+		return err
+	}
+	return w.w.Close()
 }
