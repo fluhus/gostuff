@@ -8,7 +8,7 @@ import (
 	"math"
 	_ "unsafe"
 
-	"github.com/fluhus/gostuff/binio"
+	"github.com/fluhus/gostuff/bnry"
 	"github.com/spaolacci/murmur3"
 )
 
@@ -56,7 +56,7 @@ func (f *Filter) Has(v []byte) bool {
 		f.h[i].Reset()
 		f.h[i].Write(v)
 		hash := int(f.h[i].Sum64() % uint64(len(f.b)*8))
-		if binio.GetBit(f.b, hash) == 0 {
+		if getBit(f.b, hash) == 0 {
 			return false
 		}
 	}
@@ -71,9 +71,9 @@ func (f *Filter) Add(v []byte) bool {
 		f.h[i].Reset()
 		f.h[i].Write(v)
 		hash := int(f.h[i].Sum64() % uint64(len(f.b)*8))
-		if binio.GetBit(f.b, hash) == 0 {
+		if getBit(f.b, hash) == 0 {
 			has = false
-			binio.SetBit(f.b, hash, 1)
+			setBit(f.b, hash, 1)
 		}
 	}
 	return has
@@ -127,40 +127,20 @@ func (f *Filter) SetSeed(seed uint32) {
 // Encode writes this filter to the stream. Can be reproduced later with Decode.
 func (f *Filter) Encode(w io.Writer) error {
 	// Order is k, seed, bytes.
-	if err := binio.WriteUint64(w, uint64(len(f.h))); err != nil {
-		return err
-	}
-	if err := binio.WriteUint64(w, uint64(f.seed)); err != nil {
-		return err
-	}
-	if err := binio.WriteBytes(w, f.b); err != nil {
-		return err
-	}
-	return nil
+	return bnry.Write(w, uint64(len(f.h)), f.seed, f.b)
 }
 
 // Decode reads an encoded filter from the stream and sets this filter's state
 // to match it. Destroys the previously existing state of this filter.
-func (f *Filter) Decode(r io.Reader) error {
-	k, err := binio.ReadUint64(r)
-	if err != nil {
+func (f *Filter) Decode(r io.ByteReader) error {
+	var k uint64
+	var seed uint32
+	var b []byte
+	if err := bnry.Read(r, &k, &seed, &b); err != nil {
 		return err
 	}
 	f.h = make([]hash.Hash64, k)
-	seed, err := binio.ReadUint64(r)
-	if err != nil {
-		return err
-	}
-	if seed >= 1<<32 {
-		return fmt.Errorf("seed is too large: %v, want at most %v",
-			seed, 1<<32-1)
-	}
-	f.b = nil
 	f.SetSeed(uint32(seed))
-	b, err := binio.ReadBytes(r)
-	if err != nil {
-		return err
-	}
 	f.b = b
 
 	return nil
@@ -195,4 +175,20 @@ func NewOptimal(n int, p float64) *Filter {
 	m := math.Round(-float64(n) * math.Log(p) / math.Ln2 / math.Ln2)
 	k := math.Round(-math.Log2(p))
 	return New(int(m), int(k))
+}
+
+// Returns the value of the n'th bit in a byte slice.
+func getBit(b []byte, n int) int {
+	return int(b[n/8] >> (n % 8) & 1)
+}
+
+// Sets the value of the n'th bit in a byte slice.
+func setBit(b []byte, n, v int) {
+	if v == 0 {
+		b[n/8] &= ^(byte(1) << (n % 8))
+	} else if v == 1 {
+		b[n/8] |= byte(1) << (n % 8)
+	} else {
+		panic(fmt.Sprintf("bad value: %v, expected 0 or 1", v))
+	}
 }

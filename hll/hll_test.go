@@ -6,15 +6,14 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/fluhus/gostuff/binio"
+	"github.com/fluhus/gostuff/bnry"
 )
 
 func TestCount_short(t *testing.T) {
-	buf := make([]byte, 8)
 	hll := New()
 	next := 1
 	for i := 1; i <= 100_000; i++ {
-		binio.Uint64ToBytes(uint64(i), buf)
+		buf, _ := bnry.MarshalBinary(uint64(i))
 		hll.Add(buf)
 		if i != next { // Check only a sample.
 			continue
@@ -34,13 +33,12 @@ func TestCount_long(t *testing.T) {
 		t.Skip("Skipping long test")
 	}
 
-	buf := make([]byte, 8)
 	hll := New()
 	next := 1
 	checked := 0
 	failed := 0
 	for i := 1; i <= 1000_000_000; i++ {
-		binio.Uint64ToBytes(uint64(i), buf)
+		buf, _ := bnry.MarshalBinary(uint64(i))
 		hll.Add(buf)
 		if i != next { // Check only a sample.
 			continue

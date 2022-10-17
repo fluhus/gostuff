@@ -6,7 +6,7 @@ import (
 	"math"
 	"math/rand"
 
-	"github.com/fluhus/gostuff/vectors"
+	"github.com/fluhus/gostuff/gnum"
 )
 
 // Kmeans performs k-means clustering on the given data. Each vector is an
@@ -57,7 +57,7 @@ func tag(vecs, means [][]float64, oldTags []int) []int {
 	for i := range meansd {
 		meansd[i] = make([]float64, len(means))
 		for j := range means {
-			meansd[i][j] = vectors.L2(means[i], means[j])
+			meansd[i][j] = gnum.L2(means[i], means[j])
 		}
 	}
 
@@ -67,7 +67,7 @@ func tag(vecs, means [][]float64, oldTags []int) []int {
 	for i := range vecs {
 		// Find nearest centroid.
 		tags[i] = oldTags[i]
-		d := vectors.L2(means[oldTags[i]], vecs[i])
+		d := gnum.L2(means[oldTags[i]], vecs[i])
 
 		for j := 0; j < len(means); j++ {
 			// Use triangle inequality to skip means that are too distant.
@@ -75,7 +75,7 @@ func tag(vecs, means [][]float64, oldTags []int) []int {
 				continue
 			}
 
-			dj := vectors.L2(means[j], vecs[i])
+			dj := gnum.L2(means[j], vecs[i])
 			if dj < d {
 				d = dj
 				tags[i] = j
@@ -99,13 +99,13 @@ func findMeans(vecs [][]float64, tags []int, k int) [][]float64 {
 	// Sum all vectors according to tags.
 	for i := range vecs {
 		counts[tags[i]]++
-		vectors.Add(means[tags[i]], vecs[i])
+		gnum.Add(means[tags[i]], vecs[i])
 	}
 
 	// Divide by count.
 	for i := range means {
 		if counts[i] != 0 {
-			vectors.Mul(means[i], 1/float64(counts[i]))
+			gnum.Mul1(means[i], 1/float64(counts[i]))
 		}
 	}
 
@@ -134,7 +134,7 @@ func initialMeans(vecs [][]float64, k int) [][]float64 {
 		if i == 0 {
 			copy(result[0], vecs[perm[0]])
 			for _, j := range perm {
-				distance[j] = vectors.L2(vecs[j], result[0])
+				distance[j] = gnum.L2(vecs[j], result[0])
 			}
 			continue
 		}
@@ -160,7 +160,7 @@ func initialMeans(vecs [][]float64, k int) [][]float64 {
 
 			// Update distances from new mean to other means.
 			for j := range mdistance[:i] {
-				mdistance[j][i] = vectors.L2(result[i], result[j])
+				mdistance[j][i] = gnum.L2(result[i], result[j])
 				mdistance[i][j] = mdistance[j][i]
 			}
 
@@ -168,7 +168,7 @@ func initialMeans(vecs [][]float64, k int) [][]float64 {
 			newImprovement := 0.0
 			for j := range vecs {
 				if mdistance[i][nearest[j]] < 2*distance[j] {
-					d := vectors.L2(vecs[j], result[i])
+					d := gnum.L2(vecs[j], result[i])
 					d = math.Min(distance[j], d)
 					newImprovement += distance[j] - d
 				}
@@ -183,12 +183,12 @@ func initialMeans(vecs [][]float64, k int) [][]float64 {
 
 		// Update distances.
 		for j := range mdistance[:i] { // From new mean to other means.
-			mdistance[j][i] = vectors.L2(result[i], result[j])
+			mdistance[j][i] = gnum.L2(result[i], result[j])
 			mdistance[i][j] = mdistance[j][i]
 		}
 		for j := range vecs { // From vecs to nearest means.
 			if mdistance[i][nearest[j]] < 2*distance[j] {
-				d := vectors.L2(vecs[j], result[i])
+				d := gnum.L2(vecs[j], result[i])
 				if d < distance[j] {
 					distance[j] = math.Min(distance[j], d)
 					nearest[j] = i
@@ -213,7 +213,7 @@ func MeanSquaredError(vecs, means [][]float64, tags []int) float64 {
 
 	d := 0.0
 	for i := range tags {
-		dist := vectors.L2(means[tags[i]], vecs[i])
+		dist := gnum.L2(means[tags[i]], vecs[i])
 		d += dist * dist
 	}
 

@@ -12,13 +12,13 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/fluhus/gostuff/maps"
 	"github.com/fluhus/gostuff/nlp"
+	"golang.org/x/exp/maps"
 )
 
 var (
 	k          = flag.Int("k", 0, "Number of topics")
-	numThreads = flag.Int("t", 0, "Number of therads to use (default: number of CPUs)")
+	numThreads = flag.Int("t", 1, "Number of therads to use")
 	js         = flag.Bool("j", false, "Output as JSON instead of default format")
 )
 
@@ -42,7 +42,7 @@ func main() {
 		j, _ := json.MarshalIndent(lda, "", "\t")
 		fmt.Println(string(j))
 	} else {
-		for _, w := range maps.Keys(lda).([]string) {
+		for _, w := range maps.Keys(lda) {
 			fmt.Print(w)
 			for _, x := range lda[w] {
 				fmt.Printf(" %v", x)
@@ -55,7 +55,7 @@ func main() {
 // readDocs reads documents, one per line, from the input reader.
 // It splits and lowercases the documents, and returns them as a 2d slice.
 func readDocs(r io.Reader) ([][]string, error) {
-	wordsRe := regexp.MustCompile("\\w+")
+	wordsRe := regexp.MustCompile(`\w+`)
 	scanner := bufio.NewScanner(r)
 	var result [][]string
 	for scanner.Scan() {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/fluhus/gostuff/binio"
+	"github.com/fluhus/gostuff/bnry"
 	"github.com/fluhus/gostuff/gnum"
 )
 
@@ -67,10 +67,9 @@ func TestNewOptimal(t *testing.T) {
 	p := 0.01
 	f := NewOptimal(n, p)
 	t.Logf("bits=%v, k=%v", f.NBits(), f.NHash())
-	buf := make([]byte, 8)
 	fp := 0
 	for i := 0; i < n; i++ {
-		binio.Uint64ToBytes(uint64(i), buf)
+		buf, _ := bnry.MarshalBinary(uint64(i))
 		if f.Add(buf) {
 			fp++
 		}
@@ -150,7 +149,7 @@ func TestNElements(t *testing.T) {
 	errs := 0
 	for i := 1; i <= n; i++ {
 		bf.Add([]byte{byte(i)})
-		if gnum.Diff( bf.NElements(), i)>1 {
+		if gnum.Diff(bf.NElements(), i) > 1 {
 			errs++
 		}
 	}
