@@ -146,7 +146,6 @@ func readString(r io.ByteReader, s *string) error {
 	if err := readUint8Slice(r, &buf); err != nil {
 		return err
 	}
-	// TODO(amit): optimize with string builder
 	*s = string(buf)
 	return nil
 }

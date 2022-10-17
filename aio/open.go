@@ -9,11 +9,9 @@ import (
 	"path/filepath"
 )
 
-// BUG(amit): Append is not yet supported.
-
 const (
 	// If true, .gz files are automatically compressed/decompressed.
-	GZipSupport = true
+	gzipSupport = true
 )
 
 // OpenRaw opens a file for reading, with a buffer.
@@ -124,7 +122,7 @@ func AddWriteSuffix(suffix string, f func(io.WriteCloser) (
 }
 
 func init() {
-	if GZipSupport {
+	if gzipSupport {
 		AddReadSuffix(".gz", func(r io.Reader) (io.Reader, error) {
 			z, err := gzip.NewReader(r)
 			return z, err
