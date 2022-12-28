@@ -138,7 +138,7 @@ type serialHeap[T any] struct {
 
 // Checks whether the minimal element in the heap is the next in the series.
 func (s *serialHeap[T]) ok() bool {
-	return s.data.Len() > 0 && s.data.Head().i == s.next
+	return s.data.Len() > 0 && s.data.View()[0].i == s.next
 }
 
 // Removes and returns the minimal element in the heap. Panics if the element

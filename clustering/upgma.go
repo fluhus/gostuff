@@ -78,13 +78,13 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 			if h.Len() == 0 {
 				panic(fmt.Sprintf("heap %d with length 0", hi))
 			}
-			for heapss[h.Head().i] == nil {
+			for heapss[h.View()[0].i] == nil {
 				h.Pop()
 			}
-			if h.Head().d < min {
+			if h.View()[0].d < min {
 				a = hi
-				min = h.Head().d
-				b = h.Head().i
+				min = h.View()[0].d
+				b = h.View()[0].i
 			}
 		}
 
