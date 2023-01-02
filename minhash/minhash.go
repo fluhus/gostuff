@@ -113,16 +113,16 @@ func (mh *MinHash[T]) intersect(other *MinHash[T]) (int, int) {
 		panic("other is not sorted")
 	}
 	intersection := 0
-	i, j, m := 0, 0, 0
-	for ; i < len(a) && j < len(b) && m < mh.k; m++ {
+	i, j, m := len(a)-1, len(b)-1, 0
+	for ; i >= 0 && j >= 0 && m < mh.k; m++ {
 		if a[i] > b[j] {
-			i++
+			j--
 		} else if a[i] < b[j] {
-			j++
+			i--
 		} else { // a[i] == b[j]
 			intersection++
-			i++
-			j++
+			i--
+			j--
 		}
 	}
 	union := gnum.Min2(mh.k, m+len(a)-i+len(b)-j)

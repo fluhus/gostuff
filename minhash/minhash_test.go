@@ -1,6 +1,8 @@
 package minhash
 
 import (
+	"fmt"
+	"hash/crc64"
 	"reflect"
 	"sort"
 	"testing"
@@ -98,6 +100,39 @@ func TestJaccard(t *testing.T) {
 		if got := a.Jaccard(b); gnum.Abs(got-test.want) > 0.00001 {
 			t.Errorf("Jaccard(%v,%v)=%f, want %f",
 				test.a, test.b, got, test.want)
+		}
+	}
+}
+
+func TestCollection_largeInput(t *testing.T) {
+	const k = 10000
+	tests := []struct {
+		from1, to1, from2, to2 int
+	}{
+		{1, 75000, 25000, 100000},
+		{1, 60000, 40000, 60000},
+		{1, 60000, 20000, 60000},
+		{1, 40000, 40001, 60000},
+	}
+	for _, test := range tests {
+		a, b := New[uint64](k), New[uint64](k)
+		h := crc64.New(crc64.MakeTable(crc64.ECMA))
+		for i := test.from1; i <= test.to1; i++ {
+			h.Reset()
+			fmt.Fprint(h, i)
+			a.Push(h.Sum64())
+		}
+		for i := test.from2; i <= test.to2; i++ {
+			h.Reset()
+			fmt.Fprint(h, i)
+			b.Push(h.Sum64())
+		}
+		a.Sort()
+		b.Sort()
+		want := float64(test.to1-test.from2+1) / float64(
+			test.to2-test.from1+1)
+		if got := a.Jaccard(b); gnum.Abs(got-want) > want/100 {
+			t.Errorf("Jaccard(...)=%f, want %f", got, want)
 		}
 	}
 }
