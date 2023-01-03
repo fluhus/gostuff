@@ -1,13 +1,12 @@
 package heaps
 
 import (
-	"math/rand"
 	"testing"
 
 	"golang.org/x/exp/slices"
 )
 
-func TestHeap2(t *testing.T) {
+func TestHeap(t *testing.T) {
 	input := []string{"bb", "a", "ffff", "ddddd"}
 	want := []string{"a", "bb", "ddddd", "ffff"}
 	h := Min[string]()
@@ -26,7 +25,7 @@ func TestHeap2(t *testing.T) {
 	}
 }
 
-func TestHeap2_big(t *testing.T) {
+func TestHeap_big(t *testing.T) {
 	input := []int{
 		5, 8, 25, 21, 22, 15, 13, 20, 1, 14,
 		24, 12, 7, 18, 27, 3, 30, 28, 23, 29,
@@ -55,7 +54,7 @@ func TestHeap2_big(t *testing.T) {
 	}
 }
 
-func TestHeap2_pushSlice(t *testing.T) {
+func TestHeap_pushSlice(t *testing.T) {
 	input := []int{
 		5, 8, 25, 21, 22, 15, 13, 20, 1, 14,
 		24, 12, 7, 18, 27, 3, 30, 28, 23, 29,
@@ -72,63 +71,4 @@ func TestHeap2_pushSlice(t *testing.T) {
 			t.Errorf("h[%d] < h[%d]: %d < %d", i, ia, h.a[i], h.a[ia])
 		}
 	}
-}
-
-func BenchmarkHeaps_push(b *testing.B) {
-	b.Run("heap", func(b *testing.B) {
-		nums := rand.Perm(b.N)
-		h := Min[int]()
-		b.ResetTimer()
-		for _, n := range nums {
-			h.Push(n)
-		}
-	})
-	b.Run("heap2", func(b *testing.B) {
-		nums := rand.Perm(b.N)
-		h := Min[int]()
-		b.ResetTimer()
-		for _, n := range nums {
-			h.Push(n)
-		}
-	})
-}
-
-func BenchmarkHeaps_pop(b *testing.B) {
-	b.Run("heap", func(b *testing.B) {
-		nums := rand.Perm(b.N)
-		h := Min[int]()
-		for _, n := range nums {
-			h.Push(n)
-		}
-		b.ResetTimer()
-		for h.Len() > 0 {
-			h.Pop()
-		}
-	})
-	b.Run("heap2", func(b *testing.B) {
-		nums := rand.Perm(b.N)
-		h := Min[int]()
-		for _, n := range nums {
-			h.Push(n)
-		}
-		b.ResetTimer()
-		for h.Len() > 0 {
-			h.Pop()
-		}
-	})
-}
-
-func BenchmarkHeaps_addSlice(b *testing.B) {
-	b.Run("heap", func(b *testing.B) {
-		nums := rand.Perm(b.N)
-		h := Min[int]()
-		b.ResetTimer()
-		h.PushSlice(nums)
-	})
-	b.Run("heap2", func(b *testing.B) {
-		nums := rand.Perm(b.N)
-		h := Min[int]()
-		b.ResetTimer()
-		h.PushSlice(nums)
-	})
 }

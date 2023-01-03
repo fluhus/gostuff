@@ -39,7 +39,7 @@ func New[T constraints.Integer](k int) *MinHash[T] {
 // Returns true if x was added and false if not.
 func (mh *MinHash[T]) Push(x T) bool {
 	mh.n++
-	if mh.h.Len() == mh.k && x >= mh.h.View()[0] {
+	if mh.h.Len() == mh.k && x >= mh.h.Head() {
 		// x is too large.
 		return false
 	}

@@ -1,3 +1,4 @@
+// Package heaps provides generic heaps.
 package heaps
 
 import "golang.org/x/exp/constraints"
@@ -113,4 +114,9 @@ func (h *Heap[T]) bubbleUp(i int) int {
 // Modifying the slice may invalidate the heap.
 func (h *Heap[T]) View() []T {
 	return h.a
+}
+
+// Head returns the minimal element in h.
+func (h *Heap[T]) Head() T {
+	return h.a[0]
 }
