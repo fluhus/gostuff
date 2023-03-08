@@ -1,4 +1,6 @@
 // Package heaps provides generic heaps.
+//
+// This package provides better run speeds than the standard [heap] package.
 package heaps
 
 import "golang.org/x/exp/constraints"
