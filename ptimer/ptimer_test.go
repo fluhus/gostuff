@@ -3,6 +3,7 @@ package ptimer
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"regexp"
 	"testing"
 	"time"
@@ -85,6 +86,15 @@ func TestDone(t *testing.T) {
 
 	if match, _ := regexp.MatchString(want, got.String()); !match {
 		t.Fatalf("Done()=%q, want %q", got.String(), want)
+	}
+}
+
+func BenchmarkTimer_inc(b *testing.B) {
+	pt := New()
+	pt.W = io.Discard
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		pt.Inc()
 	}
 }
 
