@@ -67,7 +67,7 @@ func ExampleSerial_parallelAggregation() {
 }
 
 func TestSerial(t *testing.T) {
-	for _, nt := range []int{1, 2, 4, 8} {
+	for _, nt := range []int{0, 1, 2, 4, 8} {
 		t.Run(fmt.Sprint(nt), func(t *testing.T) {
 			n := nt * 100
 			var result []int
@@ -96,7 +96,7 @@ func TestSerial(t *testing.T) {
 }
 
 func TestSerial_error(t *testing.T) {
-	for _, nt := range []int{1, 2, 4, 8} {
+	for _, nt := range []int{0, 1, 2, 4, 8} {
 		t.Run(fmt.Sprint(nt), func(t *testing.T) {
 			n := nt * 100
 			var result []int

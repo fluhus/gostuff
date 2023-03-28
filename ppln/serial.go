@@ -29,14 +29,14 @@ func Serial[T1 any, T2 any](
 	pusher func(push func(T1), stop func() bool) error,
 	mapper func(a T1, i int, g int) (T2, error),
 	puller func(a T2) error) error {
-	if ngoroutines < 1 {
+	if ngoroutines < 0 {
 		panic(fmt.Sprintf("bad number of goroutines: %d", ngoroutines))
 	}
 
 	var err error
 
 	// An optimization for a single thread.
-	if ngoroutines == 1 {
+	if ngoroutines == 0 {
 		i := 0
 		pusher(func(a T1) {
 			if err != nil {

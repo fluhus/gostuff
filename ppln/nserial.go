@@ -22,14 +22,14 @@ func NonSerial[T1 any, T2 any](
 	pusher func(push func(T1), stop func() bool) error,
 	mapper func(a T1, push func(T2), g int) error,
 	puller func(a T2) error) error {
-	if ngoroutines < 1 {
+	if ngoroutines < 0 {
 		panic(fmt.Sprintf("bad number of goroutines: %d", ngoroutines))
 	}
 
 	var err error
 
 	// An optimization for a single thread.
-	if ngoroutines == 1 {
+	if ngoroutines == 0 {
 		perr := pusher(func(a T1) {
 			if err != nil {
 				return
