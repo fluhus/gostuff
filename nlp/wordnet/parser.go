@@ -50,6 +50,7 @@ func parseIndexFiles(path string) (map[string][]string, error) {
 			return nil, fmt.Errorf("%v: %v", file, err)
 		}
 		m, err := parseIndex(f)
+		f.Close()
 		if err != nil {
 			return nil, fmt.Errorf("%v: %v", file, err)
 		}
@@ -156,6 +157,7 @@ func parseExampleFile(path string) (map[string]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %v", exampleFile, err)
 	}
+	defer f.Close()
 	return parseExamples(f)
 }
 
@@ -187,6 +189,7 @@ func parseExampleIndexFile(path string) (map[string][]int, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %v", exampleIndexFile, err)
 	}
+	defer f.Close()
 	return parseExampleIndex(f)
 }
 
@@ -343,6 +346,7 @@ func parseDataFiles(path string, examples map[string][]int) (
 			return nil, fmt.Errorf("%s: %v", file, err)
 		}
 		err = parseDataFile(f, pos, examples, result)
+		f.Close()
 		if err != nil {
 			return nil, fmt.Errorf("%s: %v", file, err)
 		}
