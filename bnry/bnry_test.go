@@ -15,11 +15,7 @@ func TestMarshal(t *testing.T) {
 	e := []int32{1, 11, 100, 433223}
 	f := true
 	g := false
-	buf, err := MarshalBinary(a, b, c, d, e, f, g)
-	if err != nil {
-		t.Fatalf("MarshalBinary(%v,%v,%v,%v,%v,%v,%v) failed: %v",
-			a, b, c, d, e, f, g, err)
-	}
+	buf := MarshalBinary(a, b, c, d, e, f, g)
 	var aa byte
 	var bb uint64
 	var cc string
@@ -58,10 +54,7 @@ func FuzzMarshal(f *testing.F) {
 	f.Add(uint8(1), int16(1), uint32(1), int64(1), "", true, 1.0, float32(1))
 	f.Fuzz(func(t *testing.T, a uint8, b int16, c uint32, d int64, e string,
 		g bool, h float64, i float32) {
-		buf, err := MarshalBinary(a, b, c, d, e, g, h, i)
-		if err != nil {
-			t.Fatal(err)
-		}
+		buf := MarshalBinary(a, b, c, d, e, g, h, i)
 		var (
 			aa uint8
 			bb int16
@@ -72,7 +65,7 @@ func FuzzMarshal(f *testing.F) {
 			hh float64
 			ii float32
 		)
-		err = UnmarshalBinary(buf, &aa, &bb, &cc, &dd, &ee, &gg, &hh, &ii)
+		err := UnmarshalBinary(buf, &aa, &bb, &cc, &dd, &ee, &gg, &hh, &ii)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -108,18 +101,15 @@ func TestMarshal_slices(t *testing.T) {
 	b := []string{"this", "is", "", "a", "slice"}
 	c := []int8{100, 9, 0, -21}
 	d := []bool{true, false, false, true, true}
-	buf, err := MarshalBinary(slices.Clone(a), slices.Clone(b),
+	buf := MarshalBinary(slices.Clone(a), slices.Clone(b),
 		slices.Clone(c), slices.Clone(d))
-	if err != nil {
-		t.Fatal("MarshalBinary(...) failed:", err)
-	}
 	var (
 		aa []uint32
 		bb []string
 		cc []int8
 		dd []bool
 	)
-	err = UnmarshalBinary(buf, &aa, &bb, &cc, &dd)
+	err := UnmarshalBinary(buf, &aa, &bb, &cc, &dd)
 	if err != nil {
 		t.Fatal("UnmarshalBinary(...) failed:", err)
 	}
@@ -130,4 +120,48 @@ func TestMarshal_slices(t *testing.T) {
 			t.Fatalf("UnmarshalBinary(...)=%v, want %v", outputs[i], inputs[i])
 		}
 	}
+}
+
+func TestMarshal_single(t *testing.T) {
+	testMarshalSingle(t, int8(123))
+	testMarshalSingle(t, uint8(123))
+	testMarshalSingle(t, int32(12345))
+	testMarshalSingle(t, uint32(12345))
+	testMarshalSingle(t, int(12345))
+	testMarshalSingle(t, uint(12345))
+	testMarshalSingle(t, float64(33.33))
+	testMarshalSingle(t, float32(33.33))
+	testMarshalSingle(t, "amit")
+}
+
+func testMarshalSingle[T comparable](t *testing.T, val T) {
+	buf := MarshalBinary(val)
+	var got T
+	if err := UnmarshalBinary(buf, &got); err != nil {
+		t.Errorf("UnmarshalBinary(%#v) failed: %s", val, err)
+		return
+	}
+	if got != val {
+		t.Errorf("UnmarshalBinary(%#v)=%#v, want %#v", val, got, val)
+	}
+}
+
+type byteArray interface {
+	[4]byte | [5]byte | [6]byte | [7]byte | [8]byte
+}
+
+func benchmarkMaps[T byteArray](b *testing.B) {
+	m := map[T]int{}
+	var t T
+	for i := 0; i < b.N; i++ {
+		m[t]++
+	}
+}
+
+func BenchmarkMaps(b *testing.B) {
+	b.Run("4", benchmarkMaps[[4]byte])
+	b.Run("5", benchmarkMaps[[5]byte])
+	b.Run("6", benchmarkMaps[[6]byte])
+	b.Run("7", benchmarkMaps[[7]byte])
+	b.Run("8", benchmarkMaps[[8]byte])
 }

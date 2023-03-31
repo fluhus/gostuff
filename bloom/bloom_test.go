@@ -69,7 +69,7 @@ func TestNewOptimal(t *testing.T) {
 	t.Logf("bits=%v, k=%v", f.NBits(), f.NHash())
 	fp := 0
 	for i := 0; i < n; i++ {
-		buf, _ := bnry.MarshalBinary(uint64(i))
+		buf := bnry.MarshalBinary(uint64(i))
 		if f.Add(buf) {
 			fp++
 		}

@@ -13,7 +13,7 @@ func TestCount_short(t *testing.T) {
 	hll := New()
 	next := 1
 	for i := 1; i <= 100_000; i++ {
-		buf, _ := bnry.MarshalBinary(uint64(i))
+		buf := bnry.MarshalBinary(uint64(i))
 		hll.Add(buf)
 		if i != next { // Check only a sample.
 			continue
@@ -38,7 +38,7 @@ func TestCount_long(t *testing.T) {
 	checked := 0
 	failed := 0
 	for i := 1; i <= 1000_000_000; i++ {
-		buf, _ := bnry.MarshalBinary(uint64(i))
+		buf := bnry.MarshalBinary(uint64(i))
 		hll.Add(buf)
 		if i != next { // Check only a sample.
 			continue

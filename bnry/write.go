@@ -1,163 +1,233 @@
 package bnry
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"math"
 	"reflect"
+	"strings"
 
 	"golang.org/x/exp/constraints"
 )
 
 // Write writes the given values to the given writer.
 // Values should be of any of the supported types.
-// Returns an error if a value is of an unsupported type.
+// Panics if a value is of an unsupported type.
 func Write(w io.Writer, vals ...any) error {
-	buf, err := MarshalBinary(vals...)
-	if err != nil {
-		return err
-	}
-	_, err = w.Write(buf)
-	return err
+	return NewWriter(w).Write(vals...)
 }
 
 // MarshalBinary writes the given values to a byte slice.
 // Values should be of any of the supported types.
-// Returns an error if a value is of an unsupported type.
-func MarshalBinary(vals ...any) ([]byte, error) {
-	var buf []byte
-	var err error
-	for i, val := range vals {
-		buf, err = appendSingle(buf, val)
-		if err != nil {
-			return nil, fmt.Errorf("argument #%d: %w", i+1, err)
+// Panics if a value is of an unsupported type.
+func MarshalBinary(vals ...any) []byte {
+	buf := bytes.NewBuffer(nil)
+	NewWriter(buf).Write(vals...)
+	return buf.Bytes()
+}
+
+type Writer struct {
+	w   io.Writer
+	buf [binary.MaxVarintLen64]byte
+}
+
+func NewWriter(w io.Writer) *Writer {
+	return &Writer{w: w}
+}
+
+// Write writes the given values.
+// Values should be of any of the supported types.
+// Panics if a value is of an unsupported type.
+func (w *Writer) Write(vals ...any) error {
+	for _, v := range vals {
+		if err := w.writeSingle(v); err != nil {
+			return err
 		}
 	}
-	return buf, nil
+	return nil
 }
 
-// Appends a single value as binary to buf.
-func appendSingle(buf []byte, val any) ([]byte, error) {
+// Writes a single value as binary.
+func (w *Writer) writeSingle(val any) error {
 	switch val := val.(type) {
 	case uint8:
-		return append(buf, val), nil
+		return w.writeByte(val)
 	case uint16:
-		return binary.AppendUvarint(buf, uint64(val)), nil
+		return writeUint(w, val)
 	case uint32:
-		return binary.AppendUvarint(buf, uint64(val)), nil
+		return writeUint(w, val)
 	case uint64:
-		return binary.AppendUvarint(buf, uint64(val)), nil
+		return writeUint(w, val)
+	case uint:
+		return writeUint(w, val)
 	case int8:
-		return append(buf, byte(val)), nil
+		return w.writeByte(byte(val))
 	case int16:
-		return binary.AppendVarint(buf, int64(val)), nil
+		return writeInt(w, val)
 	case int32:
-		return binary.AppendVarint(buf, int64(val)), nil
+		return writeInt(w, val)
 	case int64:
-		return binary.AppendVarint(buf, int64(val)), nil
+		return writeInt(w, val)
+	case int:
+		return writeInt(w, val)
 	case float32:
-		return binary.AppendUvarint(buf, uint64(math.Float32bits(val))), nil
+		return writeUint(w, math.Float32bits(val))
 	case float64:
-		return binary.AppendUvarint(buf, math.Float64bits(val)), nil
+		return writeUint(w, math.Float64bits(val))
 	case bool:
-		return append(buf, boolToByte(val)), nil
+		return w.writeByte(boolToByte(val))
 	case string:
-		return appendString(buf, val), nil
+		return w.writeString(val)
 	case []uint8:
-		return appendUint8Slice(buf, val), nil
+		return w.writeUint8Slice(val)
 	case []uint16:
-		return appendUintSlice(buf, val), nil
+		return writeUintSlice(w, val)
 	case []uint32:
-		return appendUintSlice(buf, val), nil
+		return writeUintSlice(w, val)
 	case []uint64:
-		return appendUintSlice(buf, val), nil
+		return writeUintSlice(w, val)
+	case []uint:
+		return writeUintSlice(w, val)
 	case []int8:
-		return appendInt8Slice(buf, val), nil
+		return w.writeInt8Slice(val)
 	case []int16:
-		return appendIntSlice(buf, val), nil
+		return writeIntSlice(w, val)
 	case []int32:
-		return appendIntSlice(buf, val), nil
+		return writeIntSlice(w, val)
 	case []int64:
-		return appendIntSlice(buf, val), nil
+		return writeIntSlice(w, val)
+	case []int:
+		return writeIntSlice(w, val)
 	case []float32:
-		return appendFloat32Slice(buf, val), nil
+		return w.writeFloat32Slice(val)
 	case []float64:
-		return appendFloat64Slice(buf, val), nil
+		return w.writeFloat64Slice(val)
 	case []bool:
-		return appendBoolSlice(buf, val), nil
+		return w.writeBoolSlice(val)
 	case []string:
-		return appendStringSlice(buf, val), nil
+		return w.writeStringSlice(val)
 	default:
-		return nil, fmt.Errorf("unsupported type: %v",
-			reflect.TypeOf(val).Name())
+		panic(fmt.Sprintf("unsupported type: %v",
+			reflect.TypeOf(val).Name()))
 	}
 }
 
-func appendUint8Slice(buf []byte, s []uint8) []byte {
-	buf = binary.AppendUvarint(buf, uint64(len(s)))
-	return append(buf, s...)
+func (w *Writer) writeByte(b byte) error {
+	w.buf[0] = b
+	_, err := w.w.Write(w.buf[:1])
+	return err
 }
 
-func appendString(buf []byte, s string) []byte {
-	buf = binary.AppendUvarint(buf, uint64(len(s)))
-	return append(buf, s...)
+func writeUint[T constraints.Unsigned](w *Writer, i T) error {
+	_, err := w.w.Write(binary.AppendUvarint(w.buf[:0], uint64(i)))
+	return err
 }
 
-func appendInt8Slice(buf []byte, s []int8) []byte {
-	buf = binary.AppendUvarint(buf, uint64(len(s)))
+func writeInt[T constraints.Signed](w *Writer, i T) error {
+	_, err := w.w.Write(binary.AppendVarint(w.buf[:0], int64(i)))
+	return err
+}
+
+func (w *Writer) writeUint8Slice(s []uint8) error {
+	if err := writeUint(w, uint(len(s))); err != nil {
+		return err
+	}
+	_, err := w.w.Write(s)
+	return err
+}
+
+func (w *Writer) writeString(s string) error {
+	if err := writeUint(w, uint(len(s))); err != nil {
+		return err
+	}
+	_, err := strings.NewReader(s).WriteTo(w.w)
+	return err
+}
+
+func (w *Writer) writeInt8Slice(s []int8) error {
+	if err := writeUint(w, uint(len(s))); err != nil {
+		return err
+	}
 	for _, x := range s {
-		buf = append(buf, byte(x))
+		if err := w.writeByte(byte(x)); err != nil {
+			return err
+		}
 	}
-	return buf
+	return nil
 }
 
-func appendUintSlice[T constraints.Unsigned](buf []byte, s []T) []byte {
-	buf = binary.AppendUvarint(buf, uint64(len(s)))
-	for _, x := range s {
-		buf = binary.AppendUvarint(buf, uint64(x))
+func writeUintSlice[T constraints.Unsigned](w *Writer, s []T) error {
+	if err := writeUint(w, uint(len(s))); err != nil {
+		return err
 	}
-	return buf
+	for _, x := range s {
+		if err := writeUint(w, x); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func appendIntSlice[T constraints.Signed](buf []byte, s []T) []byte {
-	buf = binary.AppendUvarint(buf, uint64(len(s)))
-	for _, x := range s {
-		buf = binary.AppendVarint(buf, int64(x))
+func writeIntSlice[T constraints.Signed](w *Writer, s []T) error {
+	if err := writeUint(w, uint(len(s))); err != nil {
+		return err
 	}
-	return buf
+	for _, x := range s {
+		if err := writeInt(w, x); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func appendFloat32Slice(buf []byte, s []float32) []byte {
-	buf = binary.AppendUvarint(buf, uint64(len(s)))
-	for _, x := range s {
-		buf = binary.AppendUvarint(buf, uint64(math.Float32bits(x)))
+func (w *Writer) writeFloat32Slice(s []float32) error {
+	if err := writeUint(w, uint(len(s))); err != nil {
+		return err
 	}
-	return buf
+	for _, x := range s {
+		if err := writeUint(w, math.Float32bits(x)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func appendFloat64Slice(buf []byte, s []float64) []byte {
-	buf = binary.AppendUvarint(buf, uint64(len(s)))
-	for _, x := range s {
-		buf = binary.AppendUvarint(buf, math.Float64bits(x))
+func (w *Writer) writeFloat64Slice(s []float64) error {
+	if err := writeUint(w, uint(len(s))); err != nil {
+		return err
 	}
-	return buf
+	for _, x := range s {
+		if err := writeUint(w, math.Float64bits(x)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func appendBoolSlice(buf []byte, s []bool) []byte {
-	buf = binary.AppendUvarint(buf, uint64(len(s)))
-	for _, x := range s {
-		buf = append(buf, boolToByte(x))
+func (w *Writer) writeBoolSlice(s []bool) error {
+	if err := writeUint(w, uint(len(s))); err != nil {
+		return err
 	}
-	return buf
+	for _, x := range s {
+		if err := w.writeByte(boolToByte(x)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func appendStringSlice(buf []byte, s []string) []byte {
-	buf = binary.AppendUvarint(buf, uint64(len(s)))
-	for _, x := range s {
-		buf = appendString(buf, x)
+func (w *Writer) writeStringSlice(s []string) error {
+	if err := writeUint(w, uint(len(s))); err != nil {
+		return err
 	}
-	return buf
+	for _, x := range s {
+		if err := w.writeString(x); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func boolToByte(b bool) byte {

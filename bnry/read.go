@@ -13,19 +13,22 @@ import (
 
 // UnmarshalBinary decodes binary data into the given values.
 // Values should be pointers to any of the supported types.
-// Returns an error if a value is of an unsupported type.
+// Panics if a value is of an unsupported type.
 func UnmarshalBinary(data []byte, vals ...any) error {
 	return Read(bytes.NewBuffer(data), vals...)
 }
 
 // Read reads and decodes binary data into the given values.
 // Values should be pointers to any of the supported types.
-// Returns an error if a value is of an unsupported type.
+// Panics if a value is of an unsupported type.
 func Read(r io.ByteReader, vals ...any) error {
 	for i, val := range vals {
 		if err := readSingle(r, val); err != nil {
 			if i > 0 {
 				err = notExpectingEOF(err)
+			}
+			if err != io.EOF {
+				err = fmt.Errorf("reading value #%d: %w", i+1, err)
 			}
 			return err
 		}
@@ -44,6 +47,8 @@ func readSingle(r io.ByteReader, val any) error {
 		return readUvarint(r, val)
 	case *uint64:
 		return readUvarint(r, val)
+	case *uint:
+		return readUvarint(r, val)
 	case *int8:
 		return readInt8(r, val)
 	case *int16:
@@ -51,6 +56,8 @@ func readSingle(r io.ByteReader, val any) error {
 	case *int32:
 		return readVarint(r, val)
 	case *int64:
+		return readVarint(r, val)
+	case *int:
 		return readVarint(r, val)
 	case *float32:
 		return readFloat32(r, val)
@@ -68,6 +75,8 @@ func readSingle(r io.ByteReader, val any) error {
 		return readUintSlice(r, val)
 	case *[]uint64:
 		return readUintSlice(r, val)
+	case *[]uint:
+		return readUintSlice(r, val)
 	case *[]int8:
 		return readInt8Slice(r, val)
 	case *[]int16:
@@ -75,6 +84,8 @@ func readSingle(r io.ByteReader, val any) error {
 	case *[]int32:
 		return readIntSlice(r, val)
 	case *[]int64:
+		return readIntSlice(r, val)
+	case *[]int:
 		return readIntSlice(r, val)
 	case *[]float32:
 		return readFloat32Slice(r, val)
@@ -85,7 +96,7 @@ func readSingle(r io.ByteReader, val any) error {
 	case *[]string:
 		return readStringSlice(r, val)
 	default:
-		return fmt.Errorf("unsupported type: %v", reflect.TypeOf(val).Name())
+		panic(fmt.Sprintf("unsupported type: %v", reflect.TypeOf(val).Name()))
 	}
 }
 
@@ -155,12 +166,13 @@ func readUint8Slice(r io.ByteReader, val *[]uint8) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]uint8, n)
-	for i := range buf {
-		buf[i], err = r.ReadByte()
+	buf := (*val)[:0]
+	for i := uint64(0); i < n; i++ {
+		b, err := r.ReadByte()
 		if err != nil {
 			return notExpectingEOF(err)
 		}
+		buf = append(buf, b)
 	}
 	*val = buf
 	return nil
@@ -171,13 +183,13 @@ func readInt8Slice(r io.ByteReader, val *[]int8) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]int8, n)
-	for i := range buf {
+	buf := (*val)[:0]
+	for i := uint64(0); i < n; i++ {
 		b, err := r.ReadByte()
-		buf[i] = int8(b)
 		if err != nil {
 			return notExpectingEOF(err)
 		}
+		buf = append(buf, int8(b))
 	}
 	*val = buf
 	return nil
@@ -188,13 +200,13 @@ func readUintSlice[T constraints.Unsigned](r io.ByteReader, val *[]T) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]T, n)
-	for i := range buf {
+	buf := (*val)[:0]
+	for i := uint64(0); i < n; i++ {
 		x, err := binary.ReadUvarint(r)
 		if err != nil {
 			return notExpectingEOF(err)
 		}
-		buf[i] = T(x)
+		buf = append(buf, T(x))
 	}
 	*val = buf
 	return nil
@@ -205,13 +217,13 @@ func readIntSlice[T constraints.Signed](r io.ByteReader, val *[]T) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]T, n)
-	for i := range buf {
+	buf := (*val)[:0]
+	for i := uint64(0); i < n; i++ {
 		x, err := binary.ReadVarint(r)
 		if err != nil {
 			return notExpectingEOF(err)
 		}
-		buf[i] = T(x)
+		buf = append(buf, T(x))
 	}
 	*val = buf
 	return nil
