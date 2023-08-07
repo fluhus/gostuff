@@ -1,6 +1,7 @@
 package snm
 
 import (
+	"fmt"
 	"testing"
 
 	"golang.org/x/exp/maps"
@@ -46,5 +47,35 @@ func TestMapToMap_equalKeys(t *testing.T) {
 	})
 	if !maps.Equal(got, want1) && !maps.Equal(got, want2) {
 		t.Fatalf("MapToMap(%v)=%v, want %v or %v", input, got, want1, want2)
+	}
+}
+
+func ExampleSliceFMT() {
+	a := []float64{50, 33.3, 25.7}
+	b := SliceFMT(a, "%.0f%%")
+	fmt.Println(b)
+	//Output:
+	// [50% 33% 26%]
+}
+
+func TestDefaultMap(t *testing.T) {
+	m := NewDefaultMap[int, string](func(i int) string {
+		return fmt.Sprint(i + 1)
+	})
+	if got, want := m.Get(2), "3"; got != want {
+		t.Fatalf("Get(%d)=%s, want %s", 2, got, want)
+	}
+	if got, want := m.Get(6), "7"; got != want {
+		t.Fatalf("Get(%d)=%s, want %s", 6, got, want)
+	}
+	m.Set(2, "a")
+	if got, want := m.Get(2), "a"; got != want {
+		t.Fatalf("Get(%d)=%s, want %s", 2, got, want)
+	}
+	if got, want := m.Get(6), "7"; got != want {
+		t.Fatalf("Get(%d)=%s, want %s", 6, got, want)
+	}
+	if got, want := len(m.M), 2; got != want {
+		t.Fatalf("Len=%d, want %d", got, want)
 	}
 }

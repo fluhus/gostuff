@@ -2,6 +2,8 @@
 package snm
 
 import (
+	"fmt"
+
 	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/slices"
 )
@@ -83,4 +85,41 @@ func At[T any, I constraints.Integer](t []T, at []I) []T {
 		result = append(result, t[i])
 	}
 	return result
+}
+
+// DefaultMap wraps a map with a function that generates values for missing keys.
+type DefaultMap[K comparable, V any] struct {
+	M map[K]V   // Underlying map. Can be safely read from and written to.
+	F func(K) V // Generator function.
+}
+
+// Get returns the value associated with key k.
+// If k is missing from the map, the generator function is called with k and the
+// result becomes k's value.
+func (m DefaultMap[K, V]) Get(k K) V {
+	if v, ok := m.M[k]; ok {
+		return v
+	}
+	v := m.F(k)
+	m.M[k] = v
+	return v
+}
+
+// Set sets v as k's value.
+func (m DefaultMap[K, V]) Set(k K, v V) {
+	m.M[k] = v
+}
+
+// NewDefaultMap returns an empty map with the given function as the missing
+// value generator.
+func NewDefaultMap[K comparable, V any](f func(K) V) DefaultMap[K, V] {
+	return DefaultMap[K, V]{map[K]V{}, f}
+}
+
+// SliceFMT formats each element in a slice and returns a slice of formatted
+// strings.
+func SliceFMT[T any](a []T, format string) []string {
+	return SliceToSlice(a, func(t T) string {
+		return fmt.Sprintf(format, t)
+	})
 }
