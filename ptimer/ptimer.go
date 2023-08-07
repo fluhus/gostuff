@@ -29,31 +29,16 @@ import (
 	"os"
 	"strings"
 	"time"
-
-	"github.com/fluhus/gostuff/sets"
 )
 
 // A Timer measures time during iterative processes and prints the progress on
 // exponential checkpoints.
 type Timer struct {
-	N int       // Current count, incremented with each call to Inc
-	W io.Writer // Timer's output, defaults to stderr
-	t time.Time
-	f func(int) string
-}
-
-// Indexes of checkpoints.
-var checkpoints = sets.Set[int]{}
-
-// Initializes the checkpoints set.
-func init() {
-	exp := 1
-	for i := 0; i < 10; i++ {
-		for j := 1; j <= 9; j++ {
-			checkpoints.Add(exp * j)
-		}
-		exp *= 10
-	}
+	N int              // Current count, incremented with each call to Inc
+	W io.Writer        // Timer's output, defaults to stderr
+	t time.Time        // Start time
+	f func(int) string // Message function
+	c int              // Next checkpoint
 }
 
 // Prints the progress.
@@ -80,7 +65,7 @@ func fmtDuration(d time.Duration) string {
 // NewFunc returns a new timer that calls f with the current count on checkpoints,
 // and prints its output.
 func NewFunc(f func(i int) string) *Timer {
-	return &Timer{0, os.Stderr, time.Now(), f}
+	return &Timer{0, os.Stderr, time.Now(), f, 0}
 }
 
 // NewMessasge returns a new timer that prints msg on checkpoints.
@@ -99,8 +84,11 @@ func New() *Timer {
 // Inc increments t's counter and prints progress if reached a checkpoint.
 func (t *Timer) Inc() {
 	t.N++
-	if checkpoints.Has(t.N) {
+	if t.N >= t.c {
 		t.print()
+		for t.c <= t.N {
+			t.c = nextCheckpoint(t.c)
+		}
 	}
 }
 
@@ -108,4 +96,17 @@ func (t *Timer) Inc() {
 func (t *Timer) Done() {
 	t.print()
 	fmt.Fprintln(t.W)
+}
+
+// Returns the next i in which the timer should print, given the current i.
+func nextCheckpoint(i int) int {
+	m := 1
+	for m*10 <= i {
+		m *= 10
+	}
+	if i%m != 0 {
+		panic(fmt.Sprintf(
+			"bad checkpoint: %d, should be a multiple of a power of 10", i))
+	}
+	return i + m
 }

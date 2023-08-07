@@ -7,6 +7,8 @@ import (
 	"regexp"
 	"testing"
 	"time"
+
+	"golang.org/x/exp/slices"
 )
 
 const timePattern = "\\d\\d:\\d\\d:\\d\\d\\.\\d\\d\\d\\d\\d\\d"
@@ -86,6 +88,22 @@ func TestDone(t *testing.T) {
 
 	if match, _ := regexp.MatchString(want, got.String()); !match {
 		t.Fatalf("Done()=%q, want %q", got.String(), want)
+	}
+}
+
+func TestNextCheckpoint(t *testing.T) {
+	want := []int{
+		1, 2, 3, 4, 5, 6, 7, 8, 9,
+		10, 20, 30, 40, 50, 60, 70, 80, 90,
+		100, 200, 300, 400, 500}
+	var got []int
+	i := 0
+	for range want {
+		i = nextCheckpoint(i)
+		got = append(got, i)
+	}
+	if !slices.Equal(got, want) {
+		t.Fatalf("nextCheckpoint(...)=%v, want %v", got, want)
 	}
 }
 
