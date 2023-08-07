@@ -1,104 +1,60 @@
 package hll
 
 import (
-	"fmt"
 	"math"
-	"math/rand"
 	"testing"
 
 	"github.com/fluhus/gostuff/bnry"
+	"github.com/spaolacci/murmur3"
 )
 
 func TestCount_short(t *testing.T) {
-	hll := New()
-	next := 1
-	for i := 1; i <= 100_000; i++ {
-		buf := bnry.MarshalBinary(uint64(i))
-		hll.Add(buf)
-		if i != next { // Check only a sample.
-			continue
-		}
-		next *= 3
-		count := hll.ApproxCount()
-		wantMin := int(math.Round(float64(i) * 0.99))
-		wantMax := int(math.Round(float64(i) * 1.01))
-		if count < wantMin || count > wantMax {
-			t.Errorf("ApproxCount(%v)=%v, want %v-%v", i, count, wantMin, wantMax)
-		}
-	}
-}
-
-func TestCount_long(t *testing.T) {
+	upto := 10000000
 	if testing.Short() {
-		t.Skip("Skipping long test")
+		upto = 1000
 	}
 
-	hll := New()
+	hll := newIntHLL()
 	next := 1
-	checked := 0
-	failed := 0
-	for i := 1; i <= 1000_000_000; i++ {
-		buf := bnry.MarshalBinary(uint64(i))
-		hll.Add(buf)
+	ratioSum := 0.0
+	ratioCount := 0.0
+	for i := 1; i <= upto; i++ {
+		hll.Add(i)
 		if i != next { // Check only a sample.
 			continue
 		}
-		next *= 3
-		checked++
-		count := hll.ApproxCount()
-		wantMin := int(math.Round(float64(i) * 0.99))
-		wantMax := int(math.Round(float64(i) * 1.01))
-		if count < wantMin || count > wantMax {
-			t.Logf("ApproxCount(%v)=%v, want %v-%v", i, count, wantMin, wantMax)
-			failed++
-		}
+		next = (next + 1) * 21 / 20
+		ratio := float64(i) / float64(hll.ApproxCount())
+		ratioSum += math.Abs(math.Log(ratio))
+		ratioCount++
 	}
-	if failed > 1 {
-		t.Error("Checked", checked, "failed", failed)
+	avg := math.Exp(ratioSum / ratioCount)
+	want := 1.003
+	if avg > want {
+		t.Errorf("average error=%f, want at most %f",
+			avg, want)
 	}
 }
 
 func TestCount_zero(t *testing.T) {
-	hll := New()
+	hll := newIntHLL()
 	if count := hll.ApproxCount(); count != 0 {
 		t.Fatalf("ApproxCount()=%v, want 0", count)
 	}
 }
 
-func TestMarshalJSON(t *testing.T) {
-	hll := New()
-	for i := 1; i <= 10; i++ {
-		hll.Add([]byte{byte(i)})
-	}
-	if count := hll.ApproxCount(); count != 10 {
-		t.Fatalf("ApproxCount()=%v, want 0", count)
-	}
-	b, err := hll.MarshalJSON()
-	if err != nil {
-		t.Fatalf("MarshalJSON failed: %v", err)
-	}
-	hll2 := New()
-	err = hll2.UnmarshalJSON(b)
-	if err != nil {
-		t.Fatalf("UnmarshalJSON failed: %v", err)
-	}
-	if count := hll2.ApproxCount(); count != 10 {
-		t.Fatalf("ApproxCount()=%v, want 0", count)
-	}
-}
-
 func TestAddHLL(t *testing.T) {
-	hll1 := NewSeed(0)
+	hll1 := newIntHLL()
 	for i := 1; i <= 5; i++ {
-		hll1.Add([]byte{byte(i)})
+		hll1.Add(i)
 	}
 	if count := hll1.ApproxCount(); count != 5 {
 		t.Fatalf("ApproxCount()=%v, want 5", count)
 	}
 
-	hll2 := NewSeed(0)
+	hll2 := newIntHLL()
 	for i := 4; i <= 9; i++ {
-		hll2.Add([]byte{byte(i)})
+		hll2.Add(i)
 	}
 	if count := hll2.ApproxCount(); count != 6 {
 		t.Fatalf("ApproxCount()=%v, want 6", count)
@@ -111,33 +67,38 @@ func TestAddHLL(t *testing.T) {
 }
 
 func BenchmarkAdd(b *testing.B) {
-	for _, n := range []int{10, 30, 100} {
-		b.Run(fmt.Sprintf("%v byte elements", n), func(b *testing.B) {
-			hll := New()
-			r := rand.New(rand.NewSource(0))
-			bufs := make([][]byte, b.N) // Elements to add.
-			for i := 0; i < b.N; i++ {
-				bufs[i] = make([]byte, n)
-				r.Read(bufs[i])
-			}
-			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				hll.Add(bufs[i])
-			}
-		})
+	hll := New2(16, func(i int) uint64 { return uint64(i) })
+	for i := 0; i < b.N; i++ {
+		hll.Add(i)
+	}
+}
+
+func BenchmarkAdd_intHLL(b *testing.B) {
+	hll := newIntHLL()
+	for i := 0; i < b.N; i++ {
+		hll.Add(i)
 	}
 }
 
 func BenchmarkCount(b *testing.B) {
 	const nelements = 1000000
-	hll := New()
-	buf := make([]byte, 8)
-	for i := 0; i < nelements; i++ { // Add some random elements.
-		rand.Read(buf)
-		hll.Add(buf)
+	hll := newIntHLL()
+	for i := 0; i < nelements; i++ {
+		hll.Add(i)
 	}
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		hll.ApproxCount()
-	}
+	b.Run("", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			hll.ApproxCount()
+		}
+	})
+}
+
+func newIntHLL() *HLL2[int] {
+	h := murmur3.New64()
+	w := bnry.NewWriter(h)
+	return New2(16, func(i int) uint64 {
+		h.Reset()
+		w.Write(i)
+		return h.Sum64()
+	})
 }

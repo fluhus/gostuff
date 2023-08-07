@@ -3,18 +3,26 @@
 // A HyperLogLog counter can approximate the cardinality of a set with high
 // accuracy and little memory.
 //
-// Accuracy
+// # Accuracy
 //
-// The counter is built to be accurate up to +-1% for any cardinality starting
-// from 0, with a high probability. This is verified in the tests.
+// Average error for 1,000,000,000 elements for different values of logSize:
 //
-// Performance
+//	logSize    average error %
+//	4          21
+//	5          12
+//	6          10
+//	7          8.1
+//	8          4.8
+//	9          3.6
+//	10         1.9
+//	11         1.2
+//	12         1.0
+//	13         0.7
+//	14         0.5
+//	15         0.33
+//	16         0.25
 //
-// An HLL counter uses 65kb memory. Adding an element of size up to 100
-// bytes takes an order of 100ns. Calculating the approximate count takes an
-// order of 4ms.
-//
-// Citation
+// # Citation
 //
 // Flajolet, Philippe; Fusy, Éric; Gandouet, Olivier; Meunier, Frédéric (2007).
 // "Hyperloglog: The analysis of a near-optimal cardinality estimation
@@ -43,6 +51,8 @@ const (
 func fastrand() uint32
 
 // An HLL is a HyperLogLog counter for arbitrary values.
+//
+// Deprecated: use HLL2.
 type HLL struct {
 	counters []byte
 	h        hash.Hash64
