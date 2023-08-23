@@ -31,7 +31,8 @@ func L2[S ~[]N, N Number](a, b S) float64 {
 }
 
 // Lp returns an Lp distance function. Lp is calculated as follows:
-//  Lp(v) = (sum_i(v[i]^p))^(1/p)
+//
+//	Lp(v) = (sum_i(v[i]^p))^(1/p)
 func Lp[S ~[]N, N Number](p int) func(S, S) float64 {
 	if p < 1 {
 		panic(fmt.Sprintf("invalid p: %d", p))
@@ -43,7 +44,7 @@ func Lp[S ~[]N, N Number](p int) func(S, S) float64 {
 		}
 	}
 	if p == 2 {
-		return L2[S]
+		return L2[S, N]
 	}
 
 	return func(a, b S) float64 {
