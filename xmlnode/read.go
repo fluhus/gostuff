@@ -3,15 +3,16 @@
 //
 // Each node has an underlying concrete type, but calling all functions is
 // legal. For example, here is how you can traverse the node tree:
-//  func traverse(n Node) {
-//    // Text() returns an empty string for non-text nodes.
-//    doSomeTextSearch(n.Text())
 //
-//    // Children() returns nil for non-parent nodes.
-//    for _, child := range n.Children() {
-//      traverse(child)
-//    }
-//  }
+//	func traverse(n Node) {
+//	  // Text() returns an empty string for non-text nodes.
+//	  doSomeTextSearch(n.Text())
+//
+//	  // Children() returns nil for non-parent nodes.
+//	  for _, child := range n.Children() {
+//	    traverse(child)
+//	  }
+//	}
 package xmlnode
 
 import (

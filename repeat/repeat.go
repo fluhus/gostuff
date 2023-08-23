@@ -3,14 +3,15 @@
 //
 // This package was originally written for testing and profiling parsers.
 // A typical use may look something like this:
-//  input := "some line to be parsed\n"
-//  r := NewReader([]byte(input), 1000)
-//  parser := myparse.NewParser(r)
 //
-//  (start profiling)
-//  // Parse 1000 lines until non-nil error.
-//  for parser.ParseNext() == nil {}
-//  (stop profiling)
+//	input := "some line to be parsed\n"
+//	r := NewReader([]byte(input), 1000)
+//	parser := myparse.NewParser(r)
+//
+//	(start profiling)
+//	// Parse 1000 lines until non-nil error.
+//	for parser.ParseNext() == nil {}
+//	(stop profiling)
 package repeat
 
 import "io"
@@ -60,7 +61,7 @@ func (r *Reader) Read(p []byte) (int, error) {
 	return m, nil
 }
 
-// Close is a no-op. Implements the io.ReadCloser interface.
+// Close is a no-op. Implements [io.ReadCloser].
 func (r *Reader) Close() error {
 	return nil
 }

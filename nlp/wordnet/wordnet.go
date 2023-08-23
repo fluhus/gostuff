@@ -1,38 +1,42 @@
 // Package wordnet provides a WordNet parser and interface.
 //
-// Basic usage
+// # Basic usage
 //
 // The main entry point is the WordNet type. It holds all the data of a
 // WordNet dictionary, and provides search methods.
 //
 // To search for the noun meanings of 'cat':
-//  wn, _ := wordnet.Parse(...)
-//  catNouns := wn.Search("cat")["n"]
-//  // = slice of all synsets that contain the word "cat" and are nouns.
+//
+//	wn, _ := wordnet.Parse(...)
+//	catNouns := wn.Search("cat")["n"]
+//	// = slice of all synsets that contain the word "cat" and are nouns.
 //
 // To calculate similarity between words:
-//  wn, _ := wordnet.Parse(...)
-//  cat := wn.Search("cat")["n"][0]
-//  dog := wn.Search("dog")["n"][0]
-//  similarity := wn.PathSimilarity(cat, dog, false)
-//  // = 0.2
+//
+//	wn, _ := wordnet.Parse(...)
+//	cat := wn.Search("cat")["n"][0]
+//	dog := wn.Search("dog")["n"][0]
+//	similarity := wn.PathSimilarity(cat, dog, false)
+//	// = 0.2
 //
 // To get usage examples for verbs:
-//  wn, _ := wordnet.Parse(...)
-//  eat := wn.Search("eat")["v"][1]
-//  examples := wn.Examples(eat)
-//  // = string slice of examples for the words in the 'eat' synset.
 //
-// Parts of speech
+//	wn, _ := wordnet.Parse(...)
+//	eat := wn.Search("eat")["v"][1]
+//	examples := wn.Examples(eat)
+//	// = string slice of examples for the words in the 'eat' synset.
+//
+// # Parts of speech
 //
 // Some data refers to parts of speech (POS). Everywhere a part of speech is
 // expected, it is a single letter as follows:
-//  a: adjective
-//  n: noun
-//  r: adverb
-//  v: verb
 //
-// Citation
+//	a: adjective
+//	n: noun
+//	r: adverb
+//	v: verb
+//
+// # Citation
 //
 // This API is based on: Princeton University "About WordNet." WordNet.
 // Princeton University. 2010. http://wordnet.princeton.edu

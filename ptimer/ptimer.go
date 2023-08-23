@@ -2,7 +2,7 @@
 //
 // A timer prints how much time passed since its creation at exponentially
 // growing time-points.
-// Percisely, prints are triggered after i calls to Inc, if i has only one non-zero
+// Precisely, prints are triggered after i calls to Inc, if i has only one non-zero
 // digit. That is: 1, 2, 3 .. 9, 10, 20, 30 .. 90, 100, 200, 300...
 //
 // # Output Format
