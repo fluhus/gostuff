@@ -116,9 +116,9 @@ func NewDefaultMap[K comparable, V any](f func(K) V) DefaultMap[K, V] {
 	return DefaultMap[K, V]{map[K]V{}, f}
 }
 
-// SliceFMT formats each element in a slice and returns a slice of formatted
+// SliceFmt formats each element in a slice and returns a slice of formatted
 // strings.
-func SliceFMT[T any](a []T, format string) []string {
+func SliceFmt[T any](a []T, format string) []string {
 	return SliceToSlice(a, func(t T) string {
 		return fmt.Sprintf(format, t)
 	})
