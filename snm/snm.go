@@ -3,9 +3,9 @@ package snm
 
 import (
 	"fmt"
+	"slices"
 
 	"golang.org/x/exp/constraints"
-	"golang.org/x/exp/slices"
 )
 
 // Slice returns a new slice of size n whose values are the results
@@ -73,7 +73,7 @@ func Sorted[T constraints.Ordered](s []T) []T {
 }
 
 // SortedFunc sorts the input and returns it.
-func SortedFunc[T any](s []T, less func(T, T) bool) []T {
+func SortedFunc[T any](s []T, less func(T, T) int) []T {
 	slices.SortFunc(s, less)
 	return s
 }
