@@ -1,6 +1,6 @@
 module github.com/fluhus/gostuff
 
-go 1.19
+go 1.21
 
 require (
 	github.com/agonopol/go-stem v0.0.0-20150630113328-985885018250
