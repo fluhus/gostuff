@@ -1,9 +1,8 @@
 package heaps
 
 import (
+	"slices"
 	"testing"
-
-	"golang.org/x/exp/slices"
 )
 
 func TestHeap(t *testing.T) {

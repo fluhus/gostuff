@@ -2,9 +2,8 @@ package bnry
 
 import (
 	"reflect"
+	"slices"
 	"testing"
-
-	"golang.org/x/exp/slices"
 )
 
 func TestMarshal(t *testing.T) {

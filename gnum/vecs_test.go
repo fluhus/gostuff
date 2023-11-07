@@ -1,9 +1,8 @@
 package gnum
 
 import (
+	"slices"
 	"testing"
-
-	"golang.org/x/exp/slices"
 )
 
 func TestOnes(t *testing.T) {
