@@ -2,10 +2,10 @@ package snm
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 func TestSlice(t *testing.T) {
