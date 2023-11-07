@@ -68,9 +68,9 @@ func NewFunc(f func(i int) string) *Timer {
 	return &Timer{0, os.Stderr, time.Now(), f, 0}
 }
 
-// NewMessasge returns a new timer that prints msg on checkpoints.
+// NewMessage returns a new timer that prints msg on checkpoints.
 // A "{}" in msg will be replaced with the current count.
-func NewMessasge(msg string) *Timer {
+func NewMessage(msg string) *Timer {
 	return NewFunc(func(i int) string {
 		return strings.ReplaceAll(msg, "{}", fmt.Sprint(i))
 	})
@@ -78,7 +78,7 @@ func NewMessasge(msg string) *Timer {
 
 // New returns a new timer that prints the current count on checkpoints.
 func New() *Timer {
-	return NewMessasge("{}")
+	return NewMessage("{}")
 }
 
 // Inc increments t's counter and prints progress if reached a checkpoint.

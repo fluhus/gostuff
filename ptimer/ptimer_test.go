@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"slices"
 	"testing"
 	"time"
-
-	"golang.org/x/exp/slices"
 )
 
 const timePattern = "\\d\\d:\\d\\d:\\d\\d\\.\\d\\d\\d\\d\\d\\d"
@@ -42,7 +41,7 @@ func TestNewMessage(t *testing.T) {
 	want += "\n$"
 
 	got := bytes.NewBuffer(nil)
-	pt := NewMessasge("hey {} ho")
+	pt := NewMessage("hey {} ho")
 	pt.W = got
 	for i := 0; i < 35; i++ {
 		pt.Inc()
@@ -82,7 +81,7 @@ func TestDone(t *testing.T) {
 	want := "^" + timePattern + " hello\n$"
 
 	got := bytes.NewBuffer(nil)
-	pt := NewMessasge("hello")
+	pt := NewMessage("hello")
 	pt.W = got
 	pt.Done()
 
