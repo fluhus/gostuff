@@ -123,3 +123,20 @@ func SliceFmt[T any](a []T, format string) []string {
 		return fmt.Sprintf(format, t)
 	})
 }
+
+// Compare is a generic comparator function for ordered types.
+func Compare[T constraints.Ordered](a, b T) int {
+	if a < b {
+		return -1
+	}
+	if a > b {
+		return 1
+	}
+	return 0
+}
+
+// CompareReverse is a generic comparator function for ordered types,
+// that orders values from big to small.
+func CompareReverse[T constraints.Ordered](a, b T) int {
+	return -1 * Compare(a, b)
+}
