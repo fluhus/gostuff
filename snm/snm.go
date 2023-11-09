@@ -2,7 +2,6 @@
 package snm
 
 import (
-	"fmt"
 	"slices"
 
 	"golang.org/x/exp/constraints"
@@ -73,8 +72,8 @@ func Sorted[T constraints.Ordered](s []T) []T {
 }
 
 // SortedFunc sorts the input and returns it.
-func SortedFunc[T any](s []T, less func(T, T) int) []T {
-	slices.SortFunc(s, less)
+func SortedFunc[T any](s []T, cmp func(T, T) int) []T {
+	slices.SortFunc(s, cmp)
 	return s
 }
 
@@ -114,14 +113,6 @@ func (m DefaultMap[K, V]) Set(k K, v V) {
 // value generator.
 func NewDefaultMap[K comparable, V any](f func(K) V) DefaultMap[K, V] {
 	return DefaultMap[K, V]{map[K]V{}, f}
-}
-
-// SliceFmt formats each element in a slice and returns a slice of formatted
-// strings.
-func SliceFmt[T any](a []T, format string) []string {
-	return SliceToSlice(a, func(t T) string {
-		return fmt.Sprintf(format, t)
-	})
 }
 
 // Compare is a generic comparator function for ordered types.

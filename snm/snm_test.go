@@ -50,14 +50,6 @@ func TestMapToMap_equalKeys(t *testing.T) {
 	}
 }
 
-func ExampleSliceFmt() {
-	a := []float64{50, 33.3, 25.7}
-	b := SliceFmt(a, "%.0f%%")
-	fmt.Println(b)
-	//Output:
-	// [50% 33% 26%]
-}
-
 func TestDefaultMap(t *testing.T) {
 	m := NewDefaultMap[int, string](func(i int) string {
 		return fmt.Sprint(i + 1)
