@@ -71,3 +71,23 @@ func TestDefaultMap(t *testing.T) {
 		t.Fatalf("Len=%d, want %d", got, want)
 	}
 }
+
+func TestCompare(t *testing.T) {
+	input := []int{3, 4, 2, 1, 5}
+	want := []int{1, 2, 3, 4, 5}
+	wantr := []int{5, 4, 3, 2, 1}
+
+	cp := slices.Clone(input)
+	slices.SortFunc(cp, Compare)
+	if !slices.Equal(cp, want) {
+		t.Errorf("SortFunc(%v, Compare)=%v, want %v",
+			input, cp, want)
+	}
+
+	cp = slices.Clone(input)
+	slices.SortFunc(cp, CompareReverse)
+	if !slices.Equal(cp, wantr) {
+		t.Errorf("SortFunc(%v, Compare)=%v, want %v",
+			input, cp, wantr)
+	}
+}
