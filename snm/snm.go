@@ -55,7 +55,7 @@ func FilterSlice[S any](s []S, keep func(S) bool) []S {
 
 // FilterMap returns a map containing only the elements
 // for which keep returns true.
-func FilterMap[K comparable, V any](m map[K]V, keep func(K, V) bool) map[K]V {
+func FilterMap[K comparable, V any](m map[K]V, keep func(k K, v V) bool) map[K]V {
 	mm := map[K]V{}
 	for k, v := range m {
 		if keep(k, v) {
