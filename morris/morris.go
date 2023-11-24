@@ -48,5 +48,5 @@ func Restore[T constraints.Unsigned](i T, m uint) uint {
 	if ui <= m {
 		return ui
 	}
-	return m*(1<<(ui/m)-1) + (ui%m)*(1<<(ui/m))
+	return m*(1<<(ui/m)-1) + (ui%m)*(1<<(ui/m)) + (1 << (uint(i)/m - 2))
 }
