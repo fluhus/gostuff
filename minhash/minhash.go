@@ -5,12 +5,12 @@ package minhash
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 
-	"github.com/fluhus/gostuff/gnum"
 	"github.com/fluhus/gostuff/heaps"
 	"github.com/fluhus/gostuff/sets"
+	"github.com/fluhus/gostuff/snm"
 	"golang.org/x/exp/constraints"
-	"golang.org/x/exp/slices"
 )
 
 // A MinHash is a min-hash collection. Retains the k lowest unique values out of all
@@ -29,7 +29,7 @@ func New[T constraints.Integer](k int) *MinHash[T] {
 	}
 	return &MinHash[T]{
 		heaps.Max[T](),
-		sets.Set[T]{},
+		make(sets.Set[T], k),
 		k, 0,
 	}
 }
@@ -90,9 +90,8 @@ func (mh *MinHash[T]) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	ss := New[T](raw.K)
-	for _, v := range raw.H {
-		ss.Push(v)
-	}
+	ss.h.PushSlice(raw.H)
+	ss.s.Add(raw.H...)
 	ss.n = raw.N
 	*mh = *ss
 	return nil
@@ -102,14 +101,10 @@ func (mh *MinHash[T]) UnmarshalJSON(b []byte) error {
 // in min-hash terms.
 func (mh *MinHash[T]) intersect(other *MinHash[T]) (int, int) {
 	a, b := mh.View(), other.View()
-	if !slices.IsSortedFunc(a, func(x, y T) bool {
-		return x > y
-	}) {
+	if !slices.IsSortedFunc(a, snm.CompareReverse) {
 		panic("receiver is not sorted")
 	}
-	if !slices.IsSortedFunc(b, func(x, y T) bool {
-		return x > y
-	}) {
+	if !slices.IsSortedFunc(b, snm.CompareReverse) {
 		panic("other is not sorted")
 	}
 	intersection := 0
@@ -125,7 +120,7 @@ func (mh *MinHash[T]) intersect(other *MinHash[T]) (int, int) {
 			j--
 		}
 	}
-	union := gnum.Min2(mh.k, m+len(a)-i+len(b)-j)
+	union := min(mh.k, m+len(a)-i+len(b)-j)
 	return intersection, union
 }
 
@@ -152,7 +147,5 @@ func (mh *MinHash[T]) SoftJaccard(other *MinHash[T]) float64 {
 // Sort sorts the collection, making it ready for Jaccard calculation.
 // The collection is still valid after calling Sort.
 func (mh *MinHash[T]) Sort() {
-	slices.SortFunc(mh.View(), func(x, y T) bool {
-		return x > y
-	})
+	slices.SortFunc(mh.h.View(), snm.CompareReverse)
 }

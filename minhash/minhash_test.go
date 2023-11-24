@@ -3,12 +3,13 @@ package minhash
 import (
 	"fmt"
 	"hash/crc64"
+	"math/rand"
 	"reflect"
+	"slices"
 	"sort"
 	"testing"
 
 	"github.com/fluhus/gostuff/gnum"
-	"golang.org/x/exp/slices"
 )
 
 func TestCollection(t *testing.T) {
@@ -155,4 +156,13 @@ func FuzzCollection(f *testing.F) {
 			t.Errorf("v[0]<v[1]: %d<%d, want >=", v[0], v[1])
 		}
 	})
+}
+
+func BenchmarkPush(b *testing.B) {
+	nums := rand.Perm(b.N)
+	mh := New[int](b.N)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		mh.Push(nums[i])
+	}
 }

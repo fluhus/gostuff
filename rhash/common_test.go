@@ -87,7 +87,7 @@ func test64bigN(t *testing.T, f func(n int) hash.Hash64) {
 	for i := range buf {
 		h.Write(buf[i : i+1])
 		hashes.Add(h.Sum64())
-		want := gnum.Min2(i+1, n*2-1)
+		want := min(i+1, n*2-1)
 		if len(hashes) != want {
 			t.Fatalf("got %d unique hashes, want %d", len(hashes), want)
 		}

@@ -68,7 +68,7 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 	}
 	for i := 0; i < n-1; i++ {
 		// Find lowest distance.
-		min := math.MaxFloat64
+		fmin := math.MaxFloat64
 		a, b := -1, -1
 		for hi, h := range heapss {
 			if h == nil {
@@ -81,18 +81,18 @@ func upgma(n int, f func(int, int) float64) *AggloResult {
 			for heapss[h.Head().i] == nil {
 				h.Pop()
 			}
-			if h.Head().d < min {
+			if h.Head().d < fmin {
 				a = hi
-				min = h.Head().d
+				fmin = h.Head().d
 				b = h.Head().i
 			}
 		}
 
 		// Create agglo step.
-		nmin := gnum.Min2(names[a], names[b])
-		nmax := gnum.Max2(names[a], names[b])
+		nmin := min(names[a], names[b])
+		nmax := max(names[a], names[b])
 		pi[nmin] = nmax
-		lambda[nmin] = min
+		lambda[nmin] = fmin
 
 		// Merge clusters.
 		names = append(names, nmax)

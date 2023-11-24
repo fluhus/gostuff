@@ -35,22 +35,6 @@ func Min[S ~[]N, N constraints.Ordered](s S) N {
 	return e
 }
 
-// Max2 returns the maximal out of two values.
-func Max2[N constraints.Ordered](a, b N) N {
-	if a > b {
-		return a
-	}
-	return b
-}
-
-// Min2 returns the maximal out of two values.
-func Min2[N constraints.Ordered](a, b N) N {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // Abs returns the absolute value of n.
 func Abs[N Number](n N) N {
 	if n < 0 {
