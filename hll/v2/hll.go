@@ -1,3 +1,33 @@
+// Package hll provides an implementation of the HyperLogLog algorithm.
+//
+// A HyperLogLog counter can approximate the cardinality of a set with high
+// accuracy and little memory.
+//
+// # Accuracy
+//
+// Average error for 1,000,000,000 elements for different values of logSize:
+//
+//	logSize    average error %
+//	4          21
+//	5          12
+//	6          10
+//	7          8.1
+//	8          4.8
+//	9          3.6
+//	10         1.9
+//	11         1.2
+//	12         1.0
+//	13         0.7
+//	14         0.5
+//	15         0.33
+//	16         0.25
+//
+// # Citation
+//
+// Flajolet, Philippe; Fusy, Éric; Gandouet, Olivier; Meunier, Frédéric (2007).
+// "Hyperloglog: The analysis of a near-optimal cardinality estimation
+// algorithm". Discrete Mathematics and Theoretical Computer Science
+// Proceedings.
 package hll
 
 import (
@@ -5,10 +35,8 @@ import (
 	"math"
 )
 
-// An HLL2 is a HyperLogLog counter for arbitrary values.
-//
-// Deprecated: use the hll/v2 package.
-type HLL2[T any] struct {
+// An HLL is a HyperLogLog counter for arbitrary values.
+type HLL[T any] struct {
 	counters []byte
 	h        func(T) uint64
 	nbits    int
@@ -16,15 +44,15 @@ type HLL2[T any] struct {
 	mask     uint64
 }
 
-// New2 creates a new HyperLogLog counter.
+// New creates a new HyperLogLog counter.
 // The counter will use 2^logSize bytes.
 // h is the hash function to use for added values.
-func New2[T any](logSize int, h func(T) uint64) *HLL2[T] {
+func New[T any](logSize int, h func(T) uint64) *HLL[T] {
 	if logSize < 4 {
 		panic(fmt.Sprintf("logSize=%v, should be at least 4", logSize))
 	}
 	m := 1 << logSize
-	return &HLL2[T]{
+	return &HLL[T]{
 		counters: make([]byte, m),
 		h:        h,
 		nbits:    logSize,
@@ -34,7 +62,7 @@ func New2[T any](logSize int, h func(T) uint64) *HLL2[T] {
 }
 
 // Add adds v to the counter. Calls hash once.
-func (h *HLL2[T]) Add(t T) {
+func (h *HLL[T]) Add(t T) {
 	hash := h.h(t)
 	idx := hash & h.mask
 	fp := hash >> h.nbits
@@ -46,7 +74,7 @@ func (h *HLL2[T]) Add(t T) {
 
 // ApproxCount returns the current approximate count.
 // Does not alter the state of the counter.
-func (h *HLL2[T]) ApproxCount() int {
+func (h *HLL[T]) ApproxCount() int {
 	z := 0.0
 	for _, v := range h.counters {
 		z += math.Pow(2, -float64(v))
@@ -72,7 +100,7 @@ func (h *HLL2[T]) ApproxCount() int {
 }
 
 // Returns the alpha value to use depending on m.
-func (h *HLL2[T]) alpha() float64 {
+func (h *HLL[T]) alpha() float64 {
 	switch h.m {
 	case 16:
 		return 0.673
@@ -85,7 +113,7 @@ func (h *HLL2[T]) alpha() float64 {
 }
 
 // nzeros counts the number of zeros on the right side of a binary number.
-func (h *HLL2[T]) nzeros(a uint64) int {
+func (h *HLL[T]) nzeros(a uint64) int {
 	if a == 0 {
 		return 64 - h.nbits // Number of bits after using the first nbits.
 	}
@@ -100,7 +128,7 @@ func (h *HLL2[T]) nzeros(a uint64) int {
 // AddHLL adds the state of another counter to h,
 // assuming they use the same hash function.
 // The result is equivalent to adding all the values of other to h.
-func (h *HLL2[T]) AddHLL(other *HLL2[T]) {
+func (h *HLL[T]) AddHLL(other *HLL[T]) {
 	if len(h.counters) != len(other.counters) {
 		panic("merging HLLs with different sizes")
 	}
