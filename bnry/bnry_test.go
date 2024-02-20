@@ -144,23 +144,3 @@ func testMarshalSingle[T comparable](t *testing.T, val T) {
 		t.Errorf("UnmarshalBinary(%#v)=%#v, want %#v", val, got, val)
 	}
 }
-
-type byteArray interface {
-	[4]byte | [5]byte | [6]byte | [7]byte | [8]byte
-}
-
-func benchmarkMaps[T byteArray](b *testing.B) {
-	m := map[T]int{}
-	var t T
-	for i := 0; i < b.N; i++ {
-		m[t]++
-	}
-}
-
-func BenchmarkMaps(b *testing.B) {
-	b.Run("4", benchmarkMaps[[4]byte])
-	b.Run("5", benchmarkMaps[[5]byte])
-	b.Run("6", benchmarkMaps[[6]byte])
-	b.Run("7", benchmarkMaps[[7]byte])
-	b.Run("8", benchmarkMaps[[8]byte])
-}

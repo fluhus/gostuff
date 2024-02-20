@@ -7,6 +7,7 @@ import (
 	"io"
 	"math"
 	"reflect"
+	"slices"
 
 	"golang.org/x/exp/constraints"
 )
@@ -166,8 +167,8 @@ func readUint8Slice(r io.ByteReader, val *[]uint8) error {
 	if err != nil {
 		return err
 	}
-	buf := (*val)[:0]
-	for i := uint64(0); i < n; i++ {
+	buf := slices.Grow(*val, int(n))[:0]
+	for range n {
 		b, err := r.ReadByte()
 		if err != nil {
 			return notExpectingEOF(err)
@@ -183,8 +184,8 @@ func readInt8Slice(r io.ByteReader, val *[]int8) error {
 	if err != nil {
 		return err
 	}
-	buf := (*val)[:0]
-	for i := uint64(0); i < n; i++ {
+	buf := slices.Grow(*val, int(n))[:0]
+	for range n {
 		b, err := r.ReadByte()
 		if err != nil {
 			return notExpectingEOF(err)
@@ -200,8 +201,8 @@ func readUintSlice[T constraints.Unsigned](r io.ByteReader, val *[]T) error {
 	if err != nil {
 		return err
 	}
-	buf := (*val)[:0]
-	for i := uint64(0); i < n; i++ {
+	buf := slices.Grow(*val, int(n))[:0]
+	for range n {
 		x, err := binary.ReadUvarint(r)
 		if err != nil {
 			return notExpectingEOF(err)
@@ -217,8 +218,8 @@ func readIntSlice[T constraints.Signed](r io.ByteReader, val *[]T) error {
 	if err != nil {
 		return err
 	}
-	buf := (*val)[:0]
-	for i := uint64(0); i < n; i++ {
+	buf := slices.Grow(*val, int(n))[:0]
+	for range n {
 		x, err := binary.ReadVarint(r)
 		if err != nil {
 			return notExpectingEOF(err)
@@ -234,11 +235,13 @@ func readFloat32Slice(r io.ByteReader, val *[]float32) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]float32, n)
-	for i := range buf {
-		if err := readFloat32(r, &buf[i]); err != nil {
+	buf := slices.Grow(*val, int(n))[:0]
+	for range n {
+		var x float32
+		if err := readFloat32(r, &x); err != nil {
 			return notExpectingEOF(err)
 		}
+		buf = append(buf, x)
 	}
 	*val = buf
 	return nil
@@ -249,11 +252,13 @@ func readFloat64Slice(r io.ByteReader, val *[]float64) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]float64, n)
-	for i := range buf {
-		if err := readFloat64(r, &buf[i]); err != nil {
+	buf := slices.Grow(*val, int(n))[:0]
+	for range n {
+		var x float64
+		if err := readFloat64(r, &x); err != nil {
 			return notExpectingEOF(err)
 		}
+		buf = append(buf, x)
 	}
 	*val = buf
 	return nil
@@ -264,11 +269,13 @@ func readBoolSlice(r io.ByteReader, val *[]bool) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]bool, n)
-	for i := range buf {
-		if err := readBool(r, &buf[i]); err != nil {
+	buf := slices.Grow(*val, int(n))[:0]
+	for range n {
+		var x bool
+		if err := readBool(r, &x); err != nil {
 			return notExpectingEOF(err)
 		}
+		buf = append(buf, x)
 	}
 	*val = buf
 	return nil
@@ -279,11 +286,13 @@ func readStringSlice(r io.ByteReader, val *[]string) error {
 	if err != nil {
 		return err
 	}
-	buf := make([]string, n)
-	for i := range buf {
-		if err := readString(r, &buf[i]); err != nil {
+	buf := slices.Grow(*val, int(n))[:0]
+	for range n {
+		var x string
+		if err := readString(r, &x); err != nil {
 			return notExpectingEOF(err)
 		}
+		buf = append(buf, x)
 	}
 	*val = buf
 	return nil
