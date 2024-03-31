@@ -2,9 +2,11 @@
 package snm
 
 import (
+	"cmp"
 	"slices"
 
 	"golang.org/x/exp/constraints"
+	"golang.org/x/exp/maps"
 )
 
 // Slice returns a new slice of size n whose values are the results
@@ -41,7 +43,7 @@ func MapToMap[K comparable, V any, K2 comparable, V2 any](
 	return mm
 }
 
-// FilterSlice returns a slice containing only the elements
+// FilterSlice returns a new slice containing only the elements
 // for which keep returns true.
 func FilterSlice[S any](s []S, keep func(S) bool) []S {
 	var result []S
@@ -53,7 +55,7 @@ func FilterSlice[S any](s []S, keep func(S) bool) []S {
 	return result
 }
 
-// FilterMap returns a map containing only the elements
+// FilterMap returns a new map containing only the elements
 // for which keep returns true.
 func FilterMap[K comparable, V any](m map[K]V, keep func(k K, v V) bool) map[K]V {
 	mm := map[K]V{}
@@ -116,6 +118,8 @@ func NewDefaultMap[K comparable, V any](f func(K) V) DefaultMap[K, V] {
 }
 
 // Compare is a generic comparator function for ordered types.
+//
+// Deprecated: use [cmp.Compare] instead.
 func Compare[T constraints.Ordered](a, b T) int {
 	if a < b {
 		return -1
@@ -126,8 +130,34 @@ func Compare[T constraints.Ordered](a, b T) int {
 	return 0
 }
 
-// CompareReverse is a generic comparator function for ordered types,
-// that orders values from big to small.
+// CompareReverse orders values from big to small.
+// Should be generally used as a parameter, not called.
 func CompareReverse[T constraints.Ordered](a, b T) int {
-	return -1 * Compare(a, b)
+	return -1 * cmp.Compare(a, b)
+}
+
+// SortedKeys sorts a map's keys according to their values' natural order.
+func SortedKeys[K comparable, V constraints.Ordered](
+	m map[K]V) []K {
+	return SortedFunc(maps.Keys(m), func(a, b K) int {
+		return Compare(m[a], m[b])
+	})
+}
+
+// SortedKeysFunc sorts a map's keys by comparing their values.
+func SortedKeysFunc[K comparable, V constraints.Ordered](
+	m map[K]V, cmp func(V, V) int) []K {
+	return SortedFunc(maps.Keys(m), func(a, b K) int {
+		return cmp(m[a], m[b])
+	})
+}
+
+// Number is an integer or a float.
+type Number interface {
+	constraints.Integer | constraints.Float
+}
+
+// Cast casts each element in the slice.
+func Cast[TO Number, FROM Number](s []FROM) []TO {
+	return SliceToSlice(s, func(x FROM) TO { return TO(x) })
 }

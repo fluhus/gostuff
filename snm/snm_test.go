@@ -91,3 +91,34 @@ func TestCompare(t *testing.T) {
 			input, cp, wantr)
 	}
 }
+
+func ExampleSortedKeys() {
+	ages := map[string]int{
+		"Alice":   30,
+		"Bob":     20,
+		"Charlie": 25,
+	}
+	for _, name := range SortedKeys(ages) {
+		fmt.Printf("%s: %d\n", name, ages[name])
+	}
+	// Output:
+	// Bob: 20
+	// Charlie: 25
+	// Alice: 30
+}
+
+func ExampleSortedKeysFunc_reverse() {
+	ages := map[string]int{
+		"Alice":   30,
+		"Bob":     20,
+		"Charlie": 25,
+	}
+	// Sort by reverse natural order.
+	for _, name := range SortedKeysFunc(ages, CompareReverse) {
+		fmt.Printf("%s: %d\n", name, ages[name])
+	}
+	// Output:
+	// Alice: 30
+	// Charlie: 25
+	// Bob: 20
+}
