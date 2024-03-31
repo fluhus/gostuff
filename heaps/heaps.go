@@ -122,3 +122,26 @@ func (h *Heap[T]) View() []T {
 func (h *Heap[T]) Head() T {
 	return h.a[0]
 }
+
+// Fix fixes the heap after a single value had been modified.
+// i is the index of the modified value.
+func (h *Heap[T]) Fix(i int) {
+	wentUp := false
+	for {
+		j := h.bubbleUp(i)
+		if j == -1 {
+			break
+		}
+		i = j
+		wentUp = true
+	}
+	if !wentUp {
+		for {
+			j := h.bubbleDown(i)
+			if j == -1 {
+				break
+			}
+			i = j
+		}
+	}
+}

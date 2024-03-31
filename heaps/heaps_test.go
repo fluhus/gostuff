@@ -1,8 +1,12 @@
 package heaps
 
 import (
+	"fmt"
+	"math/rand/v2"
 	"slices"
 	"testing"
+
+	"github.com/fluhus/gostuff/snm"
 )
 
 func TestHeap(t *testing.T) {
@@ -70,4 +74,47 @@ func TestHeap_pushSlice(t *testing.T) {
 			t.Errorf("h[%d] < h[%d]: %d < %d", i, ia, h.a[i], h.a[ia])
 		}
 	}
+}
+
+func Benchmark(b *testing.B) {
+	for _, n := range []int{1000, 10000, 100000, 1000000} {
+		nums := snm.Slice(n, func(i int) int {
+			return rand.Int()
+		})
+		b.Run(fmt.Sprint("Heap.Push.", n), func(b *testing.B) {
+			for range b.N {
+				h := Min[int]()
+				for _, i := range nums {
+					h.Push(i)
+				}
+			}
+		})
+		b.Run(fmt.Sprint("Heap.PushSlice.", n), func(b *testing.B) {
+			for range b.N {
+				h := Min[int]()
+				h.PushSlice(nums)
+			}
+		})
+	}
+}
+
+func FuzzHeap(f *testing.F) {
+	f.Add(0, 0, 0, 0, 0, 0, 0)
+	f.Fuzz(func(t *testing.T, a, b, c, d, e, f, g int) {
+		h := Min[int]()
+		h.Push(a)
+		h.Push(b)
+		h.Push(c)
+		h.Push(d)
+		h.Push(e)
+		h.Push(f)
+		h.Push(g)
+		got := make([]int, 0, 7)
+		for h.Len() > 0 {
+			got = append(got, h.Pop())
+		}
+		if !slices.IsSorted(got) {
+			t.Fatalf("Min().Pop()=%v, want sorted", got)
+		}
+	})
 }
