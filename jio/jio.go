@@ -6,6 +6,7 @@ package jio
 
 import (
 	"encoding/json"
+	"io"
 
 	"github.com/fluhus/gostuff/aio"
 )
@@ -33,4 +34,34 @@ func Load(file string, v interface{}) error {
 	}
 	defer f.Close()
 	return json.NewDecoder(f).Decode(v)
+}
+
+// Iter returns an iterator over sequential JSON values in a file.
+//
+// Note: a file with several independent JSON values is not a valid JSON file.
+func Iter[T any](file string) func(yield func(T, error) bool) {
+	return func(yield func(T, error) bool) {
+		f, err := aio.Open(file)
+		if err != nil {
+			var t T
+			yield(t, err)
+			return
+		}
+		defer f.Close()
+		j := json.NewDecoder(f)
+		for {
+			var t T
+			err := j.Decode(&t)
+			if err == io.EOF {
+				return
+			}
+			if err != nil {
+				yield(t, err)
+				return
+			}
+			if !yield(t, nil) {
+				return
+			}
+		}
+	}
 }
