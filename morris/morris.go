@@ -11,6 +11,20 @@
 // A single counter should use the same m for all calls to Raise and Restore.
 //
 // This package is experimental.
+//
+// # Error rates
+//
+// Average error rates for different values of m:
+//
+//	    1: 54.2%
+//	    3: 31.1%
+//	   10: 15.5%
+//	   30: 8.8%
+//	  100: 4.6%
+//	  300: 2.5%
+//	 1000: 1.6%
+//	 3000: 0.9%
+//	10000: 0.5%
 package morris
 
 import (
