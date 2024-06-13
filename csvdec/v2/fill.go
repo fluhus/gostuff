@@ -6,8 +6,6 @@ import (
 	"strconv"
 )
 
-//go:generate go run github.com/fluhus/goat -i fillslice.got -o fillslice.go
-
 // TODO(amit): Support bool slices.
 
 // Populates a value's fields with the values in slice s.
@@ -29,7 +27,7 @@ func fillStruct(value reflect.Value, s []string) error {
 		kind := field.Kind()
 
 		if !field.CanSet() {
-			panic(fmt.Errorf("Field %d cannot be set. Is it unexported?", i))
+			panic(fmt.Errorf("field %d cannot be set. Is it unexported?", i))
 		}
 
 		// Assign value according to type.
@@ -67,7 +65,7 @@ func fillStruct(value reflect.Value, s []string) error {
 
 		case kind == reflect.Slice:
 			if i != value.NumField()-1 {
-				panic(fmt.Sprintf("Field %v is a slice. A slice may only be"+
+				panic(fmt.Sprintf("field %v is a slice. A slice may only be"+
 					" the last field.", i))
 			}
 			if err := fillSlice(field, s[i:]); err != nil {
@@ -75,7 +73,7 @@ func fillStruct(value reflect.Value, s []string) error {
 			}
 
 		default:
-			panic(fmt.Sprintf("Field %d is of an unsupported type: %v",
+			panic(fmt.Sprintf("field %d is of an unsupported type: %v",
 				i, kind))
 		}
 	}
