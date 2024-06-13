@@ -111,3 +111,8 @@ func Entropy[S ~[]N, N Number](a S) float64 {
 	}
 	return result
 }
+
+// Idiv divides a by b, rounded to the nearest integer.
+func Idiv[T constraints.Integer](a, b T) T {
+	return T(math.Round(float64(a) / float64(b)))
+}
