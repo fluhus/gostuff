@@ -85,3 +85,53 @@ func TestMinMax(t *testing.T) {
 		}
 	}
 }
+
+func TestSum(t *testing.T) {
+	tests := []struct {
+		input []int
+		want  int
+	}{
+		{nil, 0},
+		{[]int{1}, 1},
+		{[]int{1, 1}, 2},
+		{[]int{1, 1, 1, 1}, 4},
+		{[]int{6, 4, 1}, 11},
+	}
+	for _, test := range tests {
+		if got := Sum(test.input); got != test.want {
+			t.Errorf("Sum(%v)=%v, want %v", test.input, got, test.want)
+		}
+	}
+}
+
+func TestMean(t *testing.T) {
+	tests := []struct {
+		input []int
+		want  float64
+	}{
+		{[]int{1}, 1},
+		{[]int{1, 1}, 1},
+		{[]int{1, 1, 1, 1}, 1},
+		{[]int{6, 4, -1}, 3},
+	}
+	for _, test := range tests {
+		if got := Mean(test.input); got != test.want {
+			t.Errorf("Mean(%v)=%v, want %v", test.input, got, test.want)
+		}
+	}
+}
+
+func FuzzSumMean(f *testing.F) {
+	f.Add(0.0, 0.0, 0.0, 0.0)
+	f.Fuzz(func(t *testing.T, a float64, b float64, c float64, d float64) {
+		slice := []float64{a, b, c, d}
+		want := a + b + c + d
+		if got := Sum(slice); got != want {
+			t.Fatalf("Sum([%v,%v,%v,%v])=%v, want %v", a, b, c, d, got, want)
+		}
+		want /= 4
+		if got := Mean(slice); got != want {
+			t.Fatalf("Mean([%v,%v,%v,%v])=%v, want %v", a, b, c, d, got, want)
+		}
+	})
+}
