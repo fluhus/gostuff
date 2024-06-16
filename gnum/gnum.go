@@ -15,24 +15,56 @@ type Number interface {
 
 // Max returns the maximal value in the slice or zero if the slice is empty.
 func Max[S ~[]N, N constraints.Ordered](s S) N {
-	var e N
-	for i, v := range s {
-		if i == 0 || v > e {
-			e = v
-		}
+	if len(s) == 0 {
+		var zero N
+		return zero
+	}
+	e := s[0]
+	for _, v := range s[1:] {
+		e = max(e, v)
 	}
 	return e
 }
 
 // Min returns the maximal value in the slice or zero if the slice is empty.
 func Min[S ~[]N, N constraints.Ordered](s S) N {
-	var e N
-	for i, v := range s {
-		if i == 0 || v < e {
-			e = v
-		}
+	if len(s) == 0 {
+		var zero N
+		return zero
+	}
+	e := s[0]
+	for _, v := range s[1:] {
+		e = min(e, v)
 	}
 	return e
+}
+
+// ArgMax returns the index of the maximal value in the slice or -1 if the slice is empty.
+func ArgMax[S ~[]E, E constraints.Ordered](s S) int {
+	if len(s) == 0 {
+		return -1
+	}
+	imax, max := 0, s[0]
+	for i, v := range s {
+		if v > max {
+			imax, max = i, v
+		}
+	}
+	return imax
+}
+
+// ArgMin returns the index of the minimal value in the slice or -1 if the slice is empty.
+func ArgMin[S ~[]E, E constraints.Ordered](s S) int {
+	if len(s) == 0 {
+		return -1
+	}
+	imin, min := 0, s[0]
+	for i, v := range s {
+		if v < min {
+			imin, min = i, v
+		}
+	}
+	return imin
 }
 
 // Abs returns the absolute value of n.

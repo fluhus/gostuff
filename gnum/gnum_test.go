@@ -52,3 +52,36 @@ func TestIdiv(t *testing.T) {
 		}
 	}
 }
+
+func TestMinMax(t *testing.T) {
+	tests := []struct {
+		input            []int
+		mn, mx, amn, amx int
+	}{
+		{nil, 0, 0, -1, -1},
+		{[]int{42}, 42, 42, 0, 0},
+		{[]int{42, 42}, 42, 42, 0, 0},
+		{[]int{42, 42, 42}, 42, 42, 0, 0},
+		{[]int{1, 2, 3}, 1, 3, 0, 2},
+		{[]int{1, 3, 2}, 1, 3, 0, 1},
+		{[]int{2, 1, 3}, 1, 3, 1, 2},
+		{[]int{2, 3, 1}, 1, 3, 2, 1},
+		{[]int{3, 1, 2}, 1, 3, 1, 0},
+		{[]int{3, 2, 1}, 1, 3, 2, 0},
+	}
+	for _, test := range tests {
+		mn, mx, amn, amx := Min(test.input), Max(test.input), ArgMin(test.input), ArgMax(test.input)
+		if mn != test.mn {
+			t.Errorf("Min(%v)=%v, want %v", test.input, mn, test.mn)
+		}
+		if mx != test.mx {
+			t.Errorf("Max(%v)=%v, want %v", test.input, mx, test.mx)
+		}
+		if amn != test.amn {
+			t.Errorf("ArgMin(%v)=%v, want %v", test.input, amn, test.amn)
+		}
+		if amx != test.amx {
+			t.Errorf("ArgMax(%v)=%v, want %v", test.input, amx, test.amx)
+		}
+	}
+}
