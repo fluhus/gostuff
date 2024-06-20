@@ -51,13 +51,13 @@ func (s Set[T]) Has(t T) bool {
 // Intersect returns a new set holding the elements that are common
 // to s and t.
 func (s Set[T]) Intersect(t Set[T]) Set[T] {
-	if len(s) > len(t) {
+	if len(s) > len(t) { // Iterate over the smaller one.
 		s, t = t, s
 	}
 	result := Set[T]{}
 	for v := range s {
 		if t.Has(v) {
-			result[v] = struct{}{}
+			result.Add(v)
 		}
 	}
 	return result
@@ -79,4 +79,35 @@ func (s *Set[T]) UnmarshalJSON(b []byte) error {
 	}
 	s.Add(slice...)
 	return nil
+}
+
+// AddKeys adds the keys of a map to a set.
+func AddKeys[K comparable, V any](s Set[K], m map[K]V) Set[K] {
+	for k := range m {
+		s.Add(k)
+	}
+	return s
+}
+
+// AddValues adds the values of a map to a set.
+func AddValues[K comparable, V comparable](s Set[V], m map[K]V) Set[V] {
+	for _, v := range m {
+		s.Add(v)
+	}
+	return s
+}
+
+// Of returns a new set containing the given elements.
+func Of[T comparable](t ...T) Set[T] {
+	return Set[T]{}.Add(t...)
+}
+
+// FromKeys returns a new set containing the keys of the given map.
+func FromKeys[K comparable, V any](m map[K]V) Set[K] {
+	return AddKeys(make(Set[K], len(m)), m)
+}
+
+// FromValues returns a new set containing the values of the given map.
+func FromValues[K comparable, V comparable](m map[K]V) Set[V] {
+	return AddValues(Set[V]{}, m)
 }
