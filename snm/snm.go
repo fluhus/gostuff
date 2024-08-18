@@ -161,3 +161,63 @@ type Number interface {
 func Cast[TO Number, FROM Number](s []FROM) []TO {
 	return SliceToSlice(s, func(x FROM) TO { return TO(x) })
 }
+
+// CapMap is a wrapper over a regular map,
+// for reusing maps in order to reduce garbage generation.
+// The allocated memory for the map is expanded and shrunk as needed.
+type CapMap[K comparable, V any] struct {
+	m map[K]V // Underlying map
+	c int     // Capacity
+}
+
+func NewCapMap[K comparable, V any]() *CapMap[K, V] {
+	return &CapMap[K, V]{map[K]V{}, 0}
+}
+
+// Map returns the underlying map for regular use.
+func (s *CapMap[K, V]) Map() map[K]V {
+	return s.m
+}
+
+// Update records the map's length and
+// reduces its capacity if its length is too small
+// compared to its highest recorded length.
+//
+// Does not modify the contents of the map,
+// but may change which object is returned by Map.
+func (s *CapMap[K, V]) Update() {
+	s.c = max(s.c, len(s.m))
+	if s.c > 64 && len(s.m) <= s.c/3 {
+		newCap := s.c / 2
+		m := make(map[K]V, newCap)
+		maps.Copy(m, s.m)
+		s.m = m
+		s.c = newCap
+	}
+}
+
+// Enumerator enumerates values by their order of appearance.
+type Enumerator[T comparable] map[T]int
+
+// IndexOf returns the index of t, possibly allocating a new one.
+//
+// Equal values always have the same index, while different values
+// always have different indexes.
+// Indexes are sequential.
+func (e Enumerator[T]) IndexOf(t T) int {
+	if i, ok := e[t]; ok {
+		return i
+	}
+	i := len(e)
+	e[t] = i
+	return i
+}
+
+// Elements returns the enumerated elements, by order of appearance.
+func (e Enumerator[T]) Elements() []T {
+	result := make([]T, len(e))
+	for t, i := range e {
+		result[i] = t
+	}
+	return result
+}

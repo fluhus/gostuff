@@ -1,6 +1,7 @@
 package snm
 
 import (
+	"encoding/json"
 	"fmt"
 	"slices"
 	"testing"
@@ -121,4 +122,50 @@ func ExampleSortedKeysFunc_reverse() {
 	// Alice: 30
 	// Charlie: 25
 	// Bob: 20
+}
+
+func TestEnumerator(t *testing.T) {
+	tests := []struct {
+		i, want int
+	}{
+		{6, 0}, {3, 1}, {6, 0}, {2, 2}, {3, 1}, {10, 3}, {10, 3}, {2, 2},
+		{6, 0}, {3, 1},
+	}
+	e := Enumerator[int]{}
+	for _, test := range tests {
+		if got := e.IndexOf(test.i); got != test.want {
+			t.Fatalf("%v.IndexOf(%v)=%v, want %v", e, test.i, got, test.want)
+		}
+	}
+
+	wantElem := []int{6, 3, 2, 10}
+	if got := e.Elements(); !slices.Equal(got, wantElem) {
+		t.Fatalf("%v.Elements()=%v, want %v", e, got, wantElem)
+	}
+}
+
+func ExampleCapMap() {
+	data := [][]string{
+		{"a", "b", "c", "a", "b", "b"},
+		// ...
+	}
+	counter := NewCapMap[string, int]()
+	for _, x := range data {
+		m := counter.Map()
+		clear(m)
+		countValues(x, m)
+		counter.Update() // Shrink the contained if needed.
+
+		// Do something with m.
+		j, _ := json.Marshal(m)
+		fmt.Println(string(j))
+	}
+	//Output:
+	//{"a":2,"b":3,"c":1}
+}
+
+func countValues(vals []string, out map[string]int) {
+	for _, v := range vals {
+		out[v]++
+	}
 }
