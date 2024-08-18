@@ -3,15 +3,19 @@ package aio
 
 import (
 	"bufio"
+	"compress/bzip2"
 	"compress/gzip"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/klauspost/compress/zstd"
 )
 
 const (
-	// If true, .gz files are automatically compressed/decompressed.
-	gzipSupport = true
+	gzipSupport = true // If true, .gz files are automatically compressed/decompressed.
+	zstdSupport = true // If true, .zst files are automatically compressed/decompressed.
+	bzipSupport = true // If true, .bz2 files are automatically decompressed.
 )
 
 // OpenRaw opens a file for reading, with a buffer.
@@ -124,12 +128,23 @@ func AddWriteSuffix(suffix string, f func(io.WriteCloser) (
 func init() {
 	if gzipSupport {
 		AddReadSuffix(".gz", func(r io.Reader) (io.Reader, error) {
-			z, err := gzip.NewReader(r)
-			return z, err
+			return gzip.NewReader(r)
 		})
 		AddWriteSuffix(".gz", func(w io.WriteCloser) (io.WriteCloser, error) {
-			z, err := gzip.NewWriterLevel(w, 1)
-			return z, err
+			return gzip.NewWriterLevel(w, 1)
+		})
+	}
+	if bzipSupport {
+		AddReadSuffix(".bz2", func(r io.Reader) (io.Reader, error) {
+			return bzip2.NewReader(r), nil
+		})
+	}
+	if zstdSupport {
+		AddReadSuffix(".zst", func(r io.Reader) (io.Reader, error) {
+			return zstd.NewReader(r)
+		})
+		AddWriteSuffix(".zst", func(w io.WriteCloser) (io.WriteCloser, error) {
+			return zstd.NewWriter(w, zstd.WithEncoderLevel(1))
 		})
 	}
 }
