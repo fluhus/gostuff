@@ -99,7 +99,7 @@ func AddValues[K comparable, V comparable](s Set[V], m map[K]V) Set[V] {
 
 // Of returns a new set containing the given elements.
 func Of[T comparable](t ...T) Set[T] {
-	return Set[T]{}.Add(t...)
+	return make(Set[T], len(t)).Add(t...)
 }
 
 // FromKeys returns a new set containing the keys of the given map.
