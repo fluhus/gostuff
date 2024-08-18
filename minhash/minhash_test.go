@@ -158,6 +158,53 @@ func FuzzCollection(f *testing.F) {
 	})
 }
 
+func TestFrozen(t *testing.T) {
+	mh := New[int](3)
+	mh.Push(27872)
+	mh.Push(16978)
+	mh.Push(28696)
+	mh.Sort()
+
+	fr := mh.Frozen()
+	if !slices.Equal(mh.View(), fr.View()) {
+		t.Fatalf("View()=%v, want %v", fr.View(), mh.View())
+	}
+
+	mh2 := New[int](3)
+	mh.Push(27872)
+	mh.Push(16978)
+	mh.Push(28697)
+	mh2.Sort()
+
+	want := mh.Jaccard(mh2)
+	got := fr.Jaccard(mh2.Frozen())
+	if got != want {
+		t.Fatalf("Jaccard=%v, want %v", got, want)
+	}
+}
+
+func TestFrozen_modifySort(t *testing.T) {
+	mh := New[int](1)
+	mh.Push(27872)
+	mh = mh.Frozen()
+	defer func() {
+		recover()
+	}()
+	mh.Sort()
+	t.Fatalf(".Frozen().Sort() succeeded, want panic")
+}
+
+func TestFrozen_modifyPush(t *testing.T) {
+	mh := New[int](1)
+	mh.Push(27872)
+	mh = mh.Frozen()
+	defer func() {
+		recover()
+	}()
+	mh.Push(123)
+	t.Fatalf(".Frozen().Sort() succeeded, want panic")
+}
+
 func BenchmarkPush(b *testing.B) {
 	nums := rand.Perm(b.N)
 	mh := New[int](b.N)

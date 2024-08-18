@@ -3,7 +3,10 @@
 // This package provides better run speeds than the standard [heap] package.
 package heaps
 
-import "golang.org/x/exp/constraints"
+import (
+	"golang.org/x/exp/constraints"
+	"golang.org/x/exp/slices"
+)
 
 // Heap is a generic heap.
 type Heap[T any] struct {
@@ -144,4 +147,9 @@ func (h *Heap[T]) Fix(i int) {
 			i = j
 		}
 	}
+}
+
+// Clip removes unused capacity from the heap.
+func (h *Heap[T]) Clip() {
+	h.a = slices.Clip(h.a)
 }

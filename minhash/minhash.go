@@ -38,6 +38,9 @@ func New[T constraints.Integer](k int) *MinHash[T] {
 // already exist, and there are less than k elements lesser than x.
 // Returns true if x was added and false if not.
 func (mh *MinHash[T]) Push(x T) bool {
+	if mh.frozen() {
+		panic("called Push on a frozen MinHash")
+	}
 	mh.n++
 	if mh.h.Len() == mh.k && x >= mh.h.Head() {
 		// x is too large.
@@ -67,6 +70,9 @@ func (mh *MinHash[T]) N() int {
 
 // View returns the underlying slice of values.
 func (mh *MinHash[T]) View() []T {
+	if mh.frozen() {
+		return slices.Clone(mh.h.View())
+	}
 	return mh.h.View()
 }
 
@@ -101,10 +107,10 @@ func (mh *MinHash[T]) UnmarshalJSON(b []byte) error {
 // in min-hash terms.
 func (mh *MinHash[T]) intersect(other *MinHash[T]) (int, int) {
 	a, b := mh.View(), other.View()
-	if !slices.IsSortedFunc(a, snm.CompareReverse) {
+	if !mh.frozen() && !slices.IsSortedFunc(a, snm.CompareReverse) {
 		panic("receiver is not sorted")
 	}
-	if !slices.IsSortedFunc(b, snm.CompareReverse) {
+	if !other.frozen() && !slices.IsSortedFunc(b, snm.CompareReverse) {
 		panic("other is not sorted")
 	}
 	intersection := 0
@@ -147,5 +153,29 @@ func (mh *MinHash[T]) SoftJaccard(other *MinHash[T]) float64 {
 // Sort sorts the collection, making it ready for Jaccard calculation.
 // The collection is still valid after calling Sort.
 func (mh *MinHash[T]) Sort() {
+	if mh.frozen() {
+		panic("called Sort on a frozen MinHash " +
+			"(frozen instances are already sorted)")
+	}
 	slices.SortFunc(mh.h.View(), snm.CompareReverse)
+}
+
+// Frozen returns an immutable version of this instance.
+// The original instance is unchanged.
+//
+// Frozen instances are sorted, take up less memory
+// and calculate Jaccard faster.
+// Calls to View are slower because the data is cloned.
+func (mh *MinHash[T]) Frozen() *MinHash[T] {
+	h := heaps.Max[T]()
+	h.PushSlice(mh.View())
+	h.Clip()
+	slices.SortFunc(h.View(), snm.CompareReverse)
+	result := &MinHash[T]{h, nil, mh.k, mh.n}
+	return result
+}
+
+// Returns whether this minhash is frozen.
+func (mh *MinHash[T]) frozen() bool {
+	return mh.s == nil
 }
