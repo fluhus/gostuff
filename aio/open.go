@@ -141,10 +141,11 @@ func init() {
 	}
 	if zstdSupport {
 		AddReadSuffix(".zst", func(r io.Reader) (io.Reader, error) {
-			return zstd.NewReader(r)
+			return zstd.NewReader(r, zstd.WithDecoderConcurrency(1))
 		})
 		AddWriteSuffix(".zst", func(w io.WriteCloser) (io.WriteCloser, error) {
-			return zstd.NewWriter(w, zstd.WithEncoderLevel(1))
+			return zstd.NewWriter(w, zstd.WithEncoderConcurrency(1),
+				zstd.WithEncoderLevel(1))
 		})
 	}
 }
