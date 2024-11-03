@@ -84,3 +84,76 @@ func TestStringFrom(t *testing.T) {
 		}()
 	}
 }
+
+func TestOneOf_string(t *testing.T) {
+	fs := flag.NewFlagSet("", flag.PanicOnError)
+
+	vals := []string{"blue", "yellow", "red"}
+	ss := OneOfFlagSet(fs, "s", vals[0], "", vals...)
+	if *ss != vals[0] {
+		t.Errorf("StringFromFlagSet(...)=%v, want %v", ss, vals[0])
+	}
+
+	// Valid values.
+	for _, s := range vals {
+		args := []string{"-s", s}
+		fs.Parse(args)
+		if *ss != s {
+			t.Errorf("Parse(%v)=%v, want %v", args, ss, s)
+		}
+	}
+
+	// Invalid values.
+	for _, s := range vals {
+		func() {
+			args := []string{"-s", s + "."}
+			defer func() {
+				recover()
+			}()
+			fs.Parse(args)
+			t.Errorf("Parse(%v)=%v, want error", args, ss)
+		}()
+	}
+}
+
+func TestOneOf_int(t *testing.T) {
+	fs := flag.NewFlagSet("", flag.PanicOnError)
+
+	vals := []int{3, 55, 888}
+	oct := []string{"0o3", "0o67", "0o1570"}
+	ss := OneOfFlagSet(fs, "s", vals[0], "", vals...)
+	if *ss != vals[0] {
+		t.Errorf("StringFromFlagSet(...)=%v, want %v", ss, vals[0])
+	}
+
+	// Valid values.
+	for _, i := range vals {
+		args := []string{"-s", fmt.Sprint(i)}
+		fs.Parse(args)
+		if *ss != i {
+			t.Errorf("Parse(%v)=%v, want %v", args, ss, i)
+		}
+	}
+
+	// Octal representation.
+	for i, s := range oct {
+		args := []string{"-s", s}
+		fs.Parse(args)
+		want := vals[i]
+		if *ss != want {
+			t.Errorf("Parse(%v)=%v, want %v", args, ss, want)
+		}
+	}
+
+	// Invalid values.
+	for _, i := range vals {
+		func() {
+			args := []string{"-s", fmt.Sprint(i) + "aaa"}
+			defer func() {
+				recover()
+			}()
+			fs.Parse(args)
+			t.Errorf("Parse(%v)=%v, want error", args, *ss)
+		}()
+	}
+}

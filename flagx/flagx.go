@@ -4,7 +4,9 @@ package flagx
 import (
 	"flag"
 	"fmt"
+	"os"
 	"regexp"
+	"slices"
 	"strconv"
 
 	"github.com/fluhus/gostuff/sets"
@@ -115,6 +117,8 @@ func FloatBetween(name string, value float64, usage string,
 // default value, usage string and allowed values.
 // The return value is the address of a string variable that
 // stores the value of the flag.
+//
+// Deprecated: Use [OneOfFlagSet].
 func StringFromFlagSet(fs *flag.FlagSet, name string, value string,
 	usage string, from ...string) *string {
 	p := &value
@@ -133,6 +137,60 @@ func StringFromFlagSet(fs *flag.FlagSet, name string, value string,
 // default value, usage string and allowed values.
 // The return value is the address of a string variable that
 // stores the value of the flag.
+//
+// Deprecated: Use [OneOf].
 func StringFrom(name string, value string, usage string, from ...string) *string {
 	return StringFromFlagSet(flag.CommandLine, name, value, usage, from...)
+}
+
+// FileExistsFlagSet defines a string flag that represents
+// an existing file. Returns an error if the file does not exist.
+func FileExistsFlagSet(fs *flag.FlagSet, name string, value string,
+	usage string) *string {
+	v := &value
+	fs.Func(name, usage, func(s string) error {
+		f, err := os.Stat(s)
+		if err != nil {
+			return err
+		}
+		if f.IsDir() {
+			return fmt.Errorf("path is a directory")
+		}
+		*v = s
+		return nil
+	})
+	return v
+}
+
+// FileExists defines a string flag that represents
+// an existing file. Returns an error if the file does not exist.
+func FileExists(name string, value string, usage string) *string {
+	return FileExistsFlagSet(flag.CommandLine, name, value, usage)
+}
+
+// OneOfFlagSet defines a flag that must have one of the given values.
+// The type must be one that can be read by [fmt.Scan].
+func OneOfFlagSet[T comparable](fs *flag.FlagSet, name string,
+	value T, usage string, of ...T) *T {
+	if len(of) == 0 {
+		panic("called with 0 possible values")
+	}
+	v := value
+	fs.Func(name, usage, func(s string) error {
+		_, err := fmt.Sscanln(s, &v)
+		if err != nil {
+			return err
+		}
+		if slices.Index(of, v) == -1 {
+			return fmt.Errorf("unexpected value for: %v", v)
+		}
+		return nil
+	})
+	return &v
+}
+
+// OneOf defines a flag that must have one of the given values.
+// The type must be one that can be read by [fmt.Scan].
+func OneOf[T comparable](name string, value T, usage string, of ...T) *T {
+	return OneOfFlagSet(flag.CommandLine, name, value, usage, of...)
 }
