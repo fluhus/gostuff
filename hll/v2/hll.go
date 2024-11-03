@@ -138,3 +138,8 @@ func (h *HLL[T]) AddHLL(other *HLL[T]) {
 		}
 	}
 }
+
+// LogSize returns the logSize parameter that was used to create this counter.
+func (h *HLL[T]) LogSize() int {
+	return h.nbits
+}
