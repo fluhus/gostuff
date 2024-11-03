@@ -6,7 +6,10 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"iter"
 	"reflect"
+
+	"github.com/fluhus/gostuff/aio"
 )
 
 // A Reader reads CSV lines and converts them to data objects. Embeds a
@@ -77,7 +80,7 @@ func (d *Reader) ReadInto(a interface{}) error {
 }
 
 // Iter iterates over the remaining entries, yielding instances of T.
-func Iter[T any](r *Reader) func(yield func(T, error) bool) {
+func Iter[T any](r *Reader) iter.Seq2[T, error] {
 	return func(yield func(T, error) bool) {
 		for {
 			var t T
@@ -90,6 +93,32 @@ func Iter[T any](r *Reader) func(yield func(T, error) bool) {
 				return
 			}
 			if !yield(t, nil) {
+				return
+			}
+		}
+	}
+}
+
+// IterFile iterates over the contents of the given file,
+// yielding an instance of T for each row.
+// If readerFunc is non-nil, applies it to the reader before
+// going over the file (for changing delimiter, etc.).
+func IterFile[T any](file string, readerFunc func(*Reader),
+) iter.Seq2[T, error] {
+	return func(yield func(T, error) bool) {
+		f, err := aio.Open(file)
+		if err != nil {
+			var t T
+			yield(t, err)
+			return
+		}
+		defer f.Close()
+		r := New(f)
+		if readerFunc != nil {
+			readerFunc(r)
+		}
+		for t, err := range Iter[T](r) {
+			if !yield(t, err) {
 				return
 			}
 		}
