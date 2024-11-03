@@ -46,7 +46,7 @@ func IntHashx[I constraints.Integer](h *Hashx, i I) uint64 {
 	h.h.Reset()
 	u := uint64(i)
 	for j := range 8 {
-		h.buf[j] = byte(u >> j)
+		h.buf[j] = byte(u >> (j * 8))
 	}
 	h.h.Write(h.buf)
 	return h.h.Sum64()
