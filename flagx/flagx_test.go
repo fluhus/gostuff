@@ -54,37 +54,6 @@ func TestIntBetween(t *testing.T) {
 	}
 }
 
-func TestStringFrom(t *testing.T) {
-	fs := flag.NewFlagSet("", flag.PanicOnError)
-
-	vals := []string{"blue", "yellow", "red"}
-	ss := StringFromFlagSet(fs, "s", vals[0], "", vals...)
-	if *ss != vals[0] {
-		t.Errorf("StringFromFlagSet(...)=%v, want %v", ss, vals[0])
-	}
-
-	// Valid values.
-	for _, s := range vals {
-		args := []string{"-s", s}
-		fs.Parse(args)
-		if *ss != s {
-			t.Errorf("Parse(%v)=%v, want %v", args, ss, s)
-		}
-	}
-
-	// Invalid values.
-	for _, s := range vals {
-		func() {
-			args := []string{"-s", s + "."}
-			defer func() {
-				recover()
-			}()
-			fs.Parse(args)
-			t.Errorf("Parse(%v)=%v, want error", args, ss)
-		}()
-	}
-}
-
 func TestOneOf_string(t *testing.T) {
 	fs := flag.NewFlagSet("", flag.PanicOnError)
 

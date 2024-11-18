@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
-
-	"github.com/fluhus/gostuff/sets"
 )
 
 // RegexpFlagSet defines a regular expression flag with specified name,
@@ -111,36 +109,6 @@ func FloatBetween(name string, value float64, usage string,
 	return FloatBetweenFlagSet(
 		flag.CommandLine, name, value, usage,
 		minVal, maxVal, incMin, incMax)
-}
-
-// StringFromFlagSet defines a string flag with specified name,
-// default value, usage string and allowed values.
-// The return value is the address of a string variable that
-// stores the value of the flag.
-//
-// Deprecated: Use [OneOfFlagSet].
-func StringFromFlagSet(fs *flag.FlagSet, name string, value string,
-	usage string, from ...string) *string {
-	p := &value
-	set := sets.Set[string]{}.Add(from...)
-	fs.Func(name, value, func(s string) error {
-		if !set.Has(s) {
-			return fmt.Errorf("got %s, want one of: %v", s, from)
-		}
-		*p = s
-		return nil
-	})
-	return p
-}
-
-// StringFrom defines a string flag with specified name,
-// default value, usage string and allowed values.
-// The return value is the address of a string variable that
-// stores the value of the flag.
-//
-// Deprecated: Use [OneOf].
-func StringFrom(name string, value string, usage string, from ...string) *string {
-	return StringFromFlagSet(flag.CommandLine, name, value, usage, from...)
 }
 
 // FileExistsFlagSet defines a string flag that represents
