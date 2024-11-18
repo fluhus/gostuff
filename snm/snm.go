@@ -117,30 +117,17 @@ func NewDefaultMap[K comparable, V any](f func(K) V) DefaultMap[K, V] {
 	return DefaultMap[K, V]{map[K]V{}, f}
 }
 
-// Compare is a generic comparator function for ordered types.
-//
-// Deprecated: use [cmp.Compare] instead.
-func Compare[T constraints.Ordered](a, b T) int {
-	if a < b {
-		return -1
-	}
-	if a > b {
-		return 1
-	}
-	return 0
-}
-
 // CompareReverse orders values from big to small.
 // Should be generally used as a parameter, not called.
 func CompareReverse[T constraints.Ordered](a, b T) int {
-	return -1 * cmp.Compare(a, b)
+	return cmp.Compare(b, a)
 }
 
 // SortedKeys sorts a map's keys according to their values' natural order.
 func SortedKeys[K comparable, V constraints.Ordered](
 	m map[K]V) []K {
 	return SortedFunc(maps.Keys(m), func(a, b K) int {
-		return Compare(m[a], m[b])
+		return cmp.Compare(m[a], m[b])
 	})
 }
 

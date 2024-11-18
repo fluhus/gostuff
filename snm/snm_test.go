@@ -73,23 +73,15 @@ func TestDefaultMap(t *testing.T) {
 	}
 }
 
-func TestCompare(t *testing.T) {
+func TestCompareReverse(t *testing.T) {
 	input := []int{3, 4, 2, 1, 5}
-	want := []int{1, 2, 3, 4, 5}
-	wantr := []int{5, 4, 3, 2, 1}
+	want := []int{5, 4, 3, 2, 1}
 
 	cp := slices.Clone(input)
-	slices.SortFunc(cp, Compare)
+	slices.SortFunc(cp, CompareReverse)
 	if !slices.Equal(cp, want) {
 		t.Errorf("SortFunc(%v, Compare)=%v, want %v",
 			input, cp, want)
-	}
-
-	cp = slices.Clone(input)
-	slices.SortFunc(cp, CompareReverse)
-	if !slices.Equal(cp, wantr) {
-		t.Errorf("SortFunc(%v, Compare)=%v, want %v",
-			input, cp, wantr)
 	}
 }
 
