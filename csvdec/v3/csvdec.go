@@ -1,3 +1,63 @@
+// Package csvdec provides a generic CSV decoder. Wraps the encoding/csv
+// package with a decoder that can populate structs.
+//
+// # Accepted Types
+//
+// The T type parameter for this package's functions accepts structs.
+// Field may be of types bool, int*, uint*, float* or string
+// for automatic parsing.
+// For manual parsing with a method, any type is allowed.
+// Unexported fields are ignored.
+//
+// # Default Behavior
+//
+// [File] and [Reader] match column to field according to their order.
+// For example:
+//
+//	type a struct {
+//	  Name   string  // Matches first column
+//	  Age    int     // Matches second column
+//	  Height float64 // Matches third column
+//	}
+//
+// [FileHeader] and [ReaderHeader] match column to field according to
+// the first line and the field's name, case insensitively.
+// For example:
+//
+//	type a struct {
+//	  Name   string  // Matches a column titled name, Name, nAmE, etc.
+//	  Age    int     // Matches a column titled age, Age, aGe, etc.
+//	  Height float64 // Matches a column titled height, Height, hEiGhT, etc.
+//	}
+//
+// Note that the Header functions use the first line as metadata,
+// while the other two functions expect data starting from the first line.
+// In all functions yielding continues upon parsing errors,
+// so that a caller may choose to skip lines.
+//
+// # Field Tags
+//
+// Field tags can be used to change the default behavior.
+// The format for a field tag is as follows:
+//
+//	Field int `csvdec:"column,modifier1,modifier2..."`
+//
+// The column part may be:
+//   - empty: use the default behavior
+//   - column name or index: associate this field with the column with this
+//     name or at this index, case sensitively
+//   - "-": a single hyphen, ignore this field entirely
+//
+// Modifiers may be:
+//   - "allowempty": the input value may be empty, in which case no parsing
+//     will be attempted
+//   - "optional": don't err if the column for this field is missing
+//   - exported method name: use T's method with this name to parse the
+//     input value
+//
+// A custom parsing method will replace the default parsing.
+// The method's signature must take a string as input,
+// and return the field's type and an error.
 package csvdec
 
 import (
@@ -12,37 +72,59 @@ import (
 	"github.com/fluhus/gostuff/iterx"
 )
 
-// TODO(amit): Change to 1-based column index
-// TODO(amit): Struct pointers
-// TODO(amit): Handle slices
-// TODO(amit): Rename stuff
-// TODO(amit): Write comments
+// TODO(amit): Add examples.
+// TODO(amit): Change to 1-based column index?
+// TODO(amit): Struct pointers?
+// TODO(amit): Handle slices?
 
+// File returns an iterator over parsed instances of T,
+// using column numbers for matching columns to fields.
+//
+// fn is an optional function for modifying the CSV parser,
+// for example for changing the delimiter.
 func File[T any](file string, fn func(*csv.Reader)) iter.Seq2[T, error] {
-	return yalla[T](iterx.CSVFile(file, fn), false)
+	return read[T](iterx.CSVFile(file, fn), false)
 }
 
+// Reader returns an iterator over parsed instances of T,
+// using column numbers for matching columns to fields.
+//
+// fn is an optional function for modifying the CSV parser,
+// for example for changing the delimiter.
 func Reader[T any](r io.Reader, fn func(*csv.Reader)) iter.Seq2[T, error] {
-	return yalla[T](iterx.CSVReader(r, fn), false)
+	return read[T](iterx.CSVReader(r, fn), false)
 }
 
+// FileHeader returns an iterator over parsed instances of T,
+// using the first line for matching columns to fields.
+//
+// fn is an optional function for modifying the CSV parser,
+// for example for changing the delimiter.
 func FileHeader[T any](file string, fn func(*csv.Reader)) iter.Seq2[T, error] {
-	return yalla[T](iterx.CSVFile(file, fn), true)
+	return read[T](iterx.CSVFile(file, fn), true)
 }
 
+// ReaderHeader returns an iterator over parsed instances of T,
+// using the first line for matching columns to fields.
+//
+// fn is an optional function for modifying the CSV parser,
+// for example for changing the delimiter.
 func ReaderHeader[T any](r io.Reader, fn func(*csv.Reader)) iter.Seq2[T, error] {
-	return yalla[T](iterx.CSVReader(r, fn), true)
+	return read[T](iterx.CSVReader(r, fn), true)
 }
 
-func yalla[T any](r iter.Seq2[[]string, error], header bool) iter.Seq2[T, error] {
+// Turns an iterator over string slices into an iterator over T.
+func read[T any](r iter.Seq2[[]string, error], header bool) iter.Seq2[T, error] {
 	return func(yield func(T, error) bool) {
 		var zero T
 		var m map[int][]setter
 		first := true
 		for line, err := range r {
 			if err != nil {
-				yield(zero, err)
-				return
+				if !yield(zero, err) {
+					return
+				}
+				continue
 			}
 			if first {
 				first = false
@@ -71,6 +153,8 @@ func yalla[T any](r iter.Seq2[[]string, error], header bool) iter.Seq2[T, error]
 	}
 }
 
+// Creates a map from column number to setter functions that
+// should run on that column's value, based on the type's metadata.
 func matchColToField(t reflect.Type, cols []string) (map[int][]setter, error) {
 	if t.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("expected struct, got %v", t)
@@ -221,6 +305,8 @@ func matchColToField(t reflect.Type, cols []string) (map[int][]setter, error) {
 	return m, nil
 }
 
+// Creates a map from column number to setter functions that
+// should run on that column's value, based on the type's metadata.
 func matchColToFieldNoHeader(t reflect.Type) (map[int][]setter, error) {
 	if t.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("expected struct, got %v", t)
@@ -344,6 +430,7 @@ func matchColToFieldNoHeader(t reflect.Type) (map[int][]setter, error) {
 	return m, nil
 }
 
+// Populates a's fields given the input values and setter-map.
 func populateStruct(a any, vals []string, setters map[int][]setter) error {
 	v := reflect.ValueOf(a).Elem()
 	for i, ss := range setters {
@@ -360,9 +447,14 @@ func populateStruct(a any, vals []string, setters map[int][]setter) error {
 	return nil
 }
 
+// A function that parses a string and sets the given value accordingly.
 type setter func(dst reflect.Value, src string) error
 
+// Returns true if the given string contains only digits.
 func numeric(s string) bool {
+	if s == "" {
+		return false
+	}
 	for _, c := range s {
 		if c < '0' || c > '9' {
 			return false
@@ -371,6 +463,8 @@ func numeric(s string) bool {
 	return true
 }
 
+// Checks that t's type matches the requirements for populating
+// the type of dst.
 func isParseFunc(t, dst reflect.Type) bool {
 	return t.Kind() == reflect.Func &&
 		t.NumIn() == 2 && t.NumOut() == 2 &&
@@ -379,6 +473,7 @@ func isParseFunc(t, dst reflect.Type) bool {
 		t.Out(1).Implements(reflect.TypeFor[error]())
 }
 
+// Returns a as a possibly nil error. Panics if a is not of error type.
 func valueToError(a reflect.Value) error {
 	if a.IsNil() {
 		return nil
