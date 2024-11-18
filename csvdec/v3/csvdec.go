@@ -141,12 +141,13 @@ func read[T any](r iter.Seq2[[]string, error], header bool) iter.Seq2[T, error] 
 					continue
 				}
 			}
-			var l T
-			if err := populateStruct(&l, line, m); err != nil {
-				yield(zero, err)
-				return
+			var t T
+			if err := populateStruct(&t, line, m); err != nil {
+				if !yield(zero, err) {
+					return
+				}
 			}
-			if !yield(l, nil) {
+			if !yield(t, nil) {
 				return
 			}
 		}

@@ -60,10 +60,6 @@ func CSVReader(r io.Reader, fn func(*csv.Reader)) iter.Seq2[[]string, error] {
 			if err == io.EOF {
 				return
 			}
-			if err != nil {
-				yield(nil, err)
-				return
-			}
 			if !yield(e, nil) {
 				return
 			}
@@ -89,10 +85,6 @@ func CSVFile(file string, fn func(*csv.Reader)) iter.Seq2[[]string, error] {
 		for {
 			e, err := c.Read()
 			if err == io.EOF {
-				return
-			}
-			if err != nil {
-				yield(nil, err)
 				return
 			}
 			if !yield(e, nil) {
