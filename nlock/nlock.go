@@ -1,4 +1,6 @@
 // Package nlock provides a lock that can be locked n times simultaneously.
+//
+// Deprecated: this can be implemented using a channel with n items.
 package nlock
 
 import (
