@@ -67,7 +67,7 @@ func TestAddHLL(t *testing.T) {
 }
 
 func BenchmarkAdd(b *testing.B) {
-	hll := New2(16, func(i int) uint64 { return uint64(i) })
+	hll := New(16, func(i int) uint64 { return uint64(i) })
 	for i := 0; i < b.N; i++ {
 		hll.Add(i)
 	}
@@ -93,10 +93,10 @@ func BenchmarkCount(b *testing.B) {
 	})
 }
 
-func newIntHLL() *HLL2[int] {
+func newIntHLL() *HLL[int] {
 	h := murmur3.New64()
 	w := bnry.NewWriter(h)
-	return New2(16, func(i int) uint64 {
+	return New(16, func(i int) uint64 {
 		h.Reset()
 		w.Write(i)
 		return h.Sum64()
