@@ -179,20 +179,17 @@ func (s *CapMap[K, V]) Map() map[K]V {
 	return s.m
 }
 
-// Update records the map's length and
-// reduces its capacity if its length is too small
-// compared to its highest recorded length.
-//
-// Does not modify the contents of the map,
-// but may change which object is returned by Map.
-func (s *CapMap[K, V]) Update() {
+// Clear clears the contents of this map, reducing its
+// capacity if needed.
+// May change which object is returned by Map.
+func (s *CapMap[K, V]) Clear() {
 	s.c = max(s.c, len(s.m))
 	if s.c > 64 && len(s.m) <= s.c/3 {
 		newCap := s.c / 2
-		m := make(map[K]V, newCap)
-		maps.Copy(m, s.m)
-		s.m = m
+		s.m = make(map[K]V, newCap)
 		s.c = newCap
+	} else {
+		clear(s.m)
 	}
 }
 

@@ -152,13 +152,12 @@ func ExampleCapMap() {
 	counter := NewCapMap[string, int]()
 	for _, x := range data {
 		m := counter.Map()
-		clear(m)
 		countValues(x, m)
-		counter.Update() // Shrink the contained if needed.
 
 		// Do something with m.
 		j, _ := json.Marshal(m)
 		fmt.Println(string(j))
+		counter.Clear()
 	}
 	//Output:
 	//{"a":2,"b":3,"c":1}
