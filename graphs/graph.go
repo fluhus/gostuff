@@ -24,7 +24,7 @@ func New[T comparable]() *Graph[T] {
 }
 
 // AddVertices adds the given values as vertices.
-// Values that already exist at ignored.
+// Values that already exist are ignored.
 func (g *Graph[T]) AddVertices(t ...T) {
 	for _, v := range t {
 		g.v.IndexOf(v)
@@ -47,6 +47,19 @@ func (g *Graph[T]) Edges() iter.Seq[[2]T] {
 		flat := g.v.Elements()
 		for e := range g.e {
 			if !yield([2]T{flat[e[0]], flat[e[1]]}) {
+				return
+			}
+		}
+	}
+}
+
+// Vertices iterates over current set of vertices,
+// by order of addition to the graph.
+func (g *Graph[T]) Vertices() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		flat := g.v.Elements()
+		for _, x := range flat {
+			if !yield(x) {
 				return
 			}
 		}
