@@ -8,42 +8,18 @@ import (
 func TestReader(t *testing.T) {
 	r := NewReader([]byte("amit"), 2)
 	buf := make([]byte, 3)
+	want := []string{"ami", "tam", "it"}
 
-	n, err := r.Read(buf)
-	if err != nil {
-		t.Fatalf("Read() failed: %v", err)
+	for _, w := range want {
+		n, err := r.Read(buf)
+		if err != nil {
+			t.Fatalf("Read() failed: %v", err)
+		}
+		if got := string(buf[:n]); got != w {
+			t.Fatalf("Read()=%q, want %q", got, "ami")
+		}
 	}
-	if n != 3 {
-		t.Fatalf("Read() n=%v, want 3", n)
-	}
-	if string(buf) != "ami" {
-		t.Fatalf("Read()=%q, want %q", buf, "ami")
-	}
-
-	n, err = r.Read(buf)
-	if err != nil {
-		t.Fatalf("Read() failed: %v", err)
-	}
-	if n != 3 {
-		t.Fatalf("Read() n=%v, want 3", n)
-	}
-	if string(buf) != "tam" {
-		t.Fatalf("Read()=%q, want %q", buf, "tam")
-	}
-
-	n, err = r.Read(buf)
-	if err != nil {
-		t.Fatalf("Read() failed: %v", err)
-	}
-	if n != 2 {
-		t.Fatalf("Read() n=%v, want 2", n)
-	}
-	if string(buf[:n]) != "it" {
-		t.Fatalf("Read()=%q, want %q", buf[:n], "it")
-	}
-
-	_, err = r.Read(buf)
-	if err != io.EOF {
+	if _, err := r.Read(buf); err != io.EOF {
 		t.Fatalf("Read() err=%v, want EOF", err)
 	}
 }
@@ -51,37 +27,15 @@ func TestReader(t *testing.T) {
 func TestReader_infinite(t *testing.T) {
 	r := NewReader([]byte("amit"), -1)
 	buf := make([]byte, 3)
+	want := []string{"ami", "tam", "ita", "mit", "ami", "tam", "ita", "mit"}
 
-	n, err := r.Read(buf)
-	if err != nil {
-		t.Fatalf("Read() failed: %v", err)
-	}
-	if n != 3 {
-		t.Fatalf("Read() n=%v, want 3", n)
-	}
-	if string(buf) != "ami" {
-		t.Fatalf("Read()=%q, want %q", buf, "ami")
-	}
-
-	n, err = r.Read(buf)
-	if err != nil {
-		t.Fatalf("Read() failed: %v", err)
-	}
-	if n != 3 {
-		t.Fatalf("Read() n=%v, want 3", n)
-	}
-	if string(buf) != "tam" {
-		t.Fatalf("Read()=%q, want %q", buf, "tam")
-	}
-
-	n, err = r.Read(buf)
-	if err != nil {
-		t.Fatalf("Read() failed: %v", err)
-	}
-	if n != 3 {
-		t.Fatalf("Read() n=%v, want 3", n)
-	}
-	if string(buf[:n]) != "ita" {
-		t.Fatalf("Read()=%q, want %q", buf[:n], "ita")
+	for i, w := range want {
+		n, err := r.Read(buf)
+		if err != nil {
+			t.Fatalf("#%v: Read() failed: %v", i, err)
+		}
+		if got := string(buf[:n]); got != w {
+			t.Fatalf("#%v: Read()=%q, want %q", i, got, "ami")
+		}
 	}
 }

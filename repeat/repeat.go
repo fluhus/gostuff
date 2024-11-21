@@ -9,8 +9,7 @@
 //	parser := myparse.NewParser(r)
 //
 //	(start profiling)
-//	// Parse 1000 lines until non-nil error.
-//	for parser.ParseNext() == nil {}
+//	for range parser.Items() {} // Exhaust parser.
 //	(stop profiling)
 package repeat
 
@@ -26,8 +25,7 @@ type Reader struct {
 // NewReader returns a reader that outputs data n times. If n is negative, repeats
 // infinitely. Copies the contents of data.
 func NewReader(data []byte, n int) *Reader {
-	cp := make([]byte, len(data))
-	copy(cp, data)
+	cp := append(make([]byte, 0, len(data)), data...)
 	return &Reader{data: cp, n: n}
 }
 
