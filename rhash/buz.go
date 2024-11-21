@@ -1,4 +1,4 @@
-// Implementation of 64-bit buzhash.
+// Implementation of buzhash.
 
 package rhash
 
@@ -9,7 +9,7 @@ import (
 type BuzSeed [256]uint64
 
 // Buz implements a buzhash rolling-hash.
-// Implements [hash.Hash64].
+// Implements [hash.Hash64] and [hash.Hash32].
 type Buz struct {
 	h    uint64 // Current state
 	i    int    // Number of bytes written
@@ -30,7 +30,7 @@ func NewBuzWithSeed(n int, seed *BuzSeed) *Buz {
 	return &Buz{b: make([]byte, n), seed: seedCopy}
 }
 
-// BuzRandomSeed returns a random seed fot the buz64 hash.
+// BuzRandomSeed returns a random seed for [NewBuzWithSeed].
 func BuzRandomSeed() *BuzSeed {
 	seed := &BuzSeed{}
 	for i := range seed {

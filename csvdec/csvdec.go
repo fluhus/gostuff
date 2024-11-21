@@ -45,7 +45,7 @@
 // The column part may be:
 //   - empty: use the default behavior
 //   - column name or index: associate this field with the column with this
-//     name or at this index, case sensitively
+//     name or at this 0-based index, case sensitively
 //   - "-": a single hyphen, ignore this field entirely
 //
 // Modifiers may be:
