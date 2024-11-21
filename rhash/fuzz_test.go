@@ -8,7 +8,7 @@ import (
 )
 
 func FuzzBuz64(f *testing.F) {
-	fuzz64(f, func(n int) hash.Hash64 { return NewBuz64(n) })
+	fuzz64(f, func(n int) hash.Hash64 { return NewBuz(n) })
 }
 
 func FuzzRabin64(f *testing.F) {
@@ -16,7 +16,7 @@ func FuzzRabin64(f *testing.F) {
 }
 
 func FuzzBuz32(f *testing.F) {
-	fuzz32(f, func(n int) hash.Hash32 { return NewBuz32(n) })
+	fuzz32(f, func(n int) hash.Hash32 { return NewBuz(n) })
 }
 
 func FuzzRabin32(f *testing.F) {

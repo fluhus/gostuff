@@ -2,36 +2,61 @@
 
 package rhash
 
-// Buz64 implements a buzhash rolling-hash.
+import (
+	"math/rand"
+)
+
+type BuzSeed [256]uint64
+
+// Buz implements a buzhash rolling-hash.
 // Implements [hash.Hash64].
-type Buz64 struct {
-	h uint64 // Current state
-	i int    // Number of bytes written
-	b []byte // Buffer for subtracting old bytes
+type Buz struct {
+	h    uint64 // Current state
+	i    int    // Number of bytes written
+	b    []byte // Buffer for subtracting old bytes
+	seed *BuzSeed
 }
 
-// NewBuz64 returns a new rolling hash with a window size of n.
-func NewBuz64(n int) *Buz64 {
-	return &Buz64{b: make([]byte, n)}
+// NewBuz returns a new rolling hash with a window size of n.
+func NewBuz(n int) *Buz {
+	return &Buz{b: make([]byte, n), seed: defaultBuzSeed}
+}
+
+// NewBuzWithSeed returns a new rolling hash with a window size of n,
+// with the given seed. Seeds can be generated with [BuzRandomSeed].
+func NewBuzWithSeed(n int, seed *BuzSeed) *Buz {
+	seedCopy := &BuzSeed{}
+	*seedCopy = *seed
+	return &Buz{b: make([]byte, n), seed: seedCopy}
+}
+
+// BuzRandomSeed returns a random seed fot the buz64 hash.
+func BuzRandomSeed() *BuzSeed {
+	seed := &BuzSeed{}
+	for i := range seed {
+		seed[i] = rand.Uint64()
+	}
+	return seed
 }
 
 // WriteByte updates the hash with the given byte. Always returns nil.
-func (h *Buz64) WriteByte(b byte) error {
+func (h *Buz) WriteByte(b byte) error {
 	n := len(h.b)
 	i := h.i % n
 	if h.i >= n { // Need to subtract an old character.
-		h.h ^= shift64(buzByteHashes64[h.b[i]], (n-1)%64)
+		h.h ^= shift64(h.seed[h.b[i]], (n-1)%64)
 	}
 	h.h = shift64(h.h, 1)
-	h.h ^= buzByteHashes64[b]
+	h.h ^= h.seed[b]
 	h.b[i] = b
 	h.i++
 
 	return nil
 }
 
-// Write updates the hash with the given bytes. Always returns len(data), nil.
-func (h *Buz64) Write(data []byte) (int, error) {
+// Write updates the hash with the given bytes.
+// Always returns len(data), nil.
+func (h *Buz) Write(data []byte) (int, error) {
 	for _, b := range data {
 		h.WriteByte(b)
 	}
@@ -39,31 +64,35 @@ func (h *Buz64) Write(data []byte) (int, error) {
 }
 
 // Sum64 returns the current hash.
-func (h *Buz64) Sum64() uint64 {
+func (h *Buz) Sum64() uint64 {
 	return h.h
 }
 
+// Sum32 returns the current hash.
+func (h *Buz) Sum32() uint32 {
+	return uint32(h.h)
+}
+
 // BlockSize returns the hash's block size, which is one.
-func (h *Buz64) BlockSize() int {
+func (h *Buz) BlockSize() int {
 	return 1
 }
 
 // Reset resets the hash to its initial state.
-func (h *Buz64) Reset() {
+func (h *Buz) Reset() {
 	h.h = 0
 	h.i = 0
 }
 
 // Size returns the number of bytes Sum will return, which is eight.
-func (h *Buz64) Size() int {
+func (h *Buz) Size() int {
 	return 8
 }
 
 // Sum appends the current hash to b and returns the resulting slice.
-func (h *Buz64) Sum(b []byte) []byte {
+func (h *Buz) Sum(b []byte) []byte {
 	s := h.Sum64()
-	n := h.Size()
-	for i := 0; i < n; i++ {
+	for range h.Size() {
 		b = append(b, byte(s))
 		s >>= 8
 	}
@@ -76,7 +105,7 @@ func shift64(x uint64, n int) uint64 {
 }
 
 // Random single-byte hashes.
-var buzByteHashes64 = []uint64{
+var defaultBuzSeed = &BuzSeed{
 	0x75a494d1541fbc6, 0xd526e3fdd0bea3c7, 0xd04e3eac66b233f, 0xf6f31d3a1a7dc222,
 	0xfc1a9f426c0f84e4, 0xf2ac01cb50518375, 0x500f4db1da25b019, 0x24062ea231ca55bf,
 	0x52afae6d4dc824cc, 0xcc838d5a5f8970b6, 0xabcc40267f2a3806, 0xaf2939d0a84e2828,
