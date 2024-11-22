@@ -6,7 +6,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/fluhus/gostuff/ppln/v2"
+	"github.com/fluhus/gostuff/ppln"
 )
 
 func TestUnreader2_until(t *testing.T) {

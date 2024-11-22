@@ -2,126 +2,125 @@ package ppln
 
 import (
 	"fmt"
+	"iter"
 	"sync"
+	"sync/atomic"
 
 	"github.com/fluhus/gostuff/heaps"
-)
-
-const (
-	// Size of pipeline channel buffers per goroutine.
-	chanLenCoef = 1000
 )
 
 // Serial starts a multi-goroutine transformation pipeline that maintains the
 // order of the inputs.
 //
-// Pusher should call push on every input value. Stop indicates if an error was
-// returned and pushing should stop.
-// Mapper receives an input (a), 0-based input serial number (i), 0-based
+// Input is an iterator over the input values to be transformed.
+// It will be called in a thread-safe manner.
+// Transform receives an input (a), 0-based input serial number (i), 0-based
 // goroutine number (g), and returns the result of processing a.
-// Puller acts on a single result, and will be called by the same
-// order of pusher's input.
+// Output acts on a single result, and will be called by the same
+// order of the input, in a thread-safe manner.
 //
 // If one of the functions returns a non-nil error, the process stops and the
 // error is returned. Otherwise returns nil.
 func Serial[T1 any, T2 any](
 	ngoroutines int,
-	pusher func(push func(T1), stop func() bool) error,
-	mapper func(a T1, i int, g int) (T2, error),
-	puller func(a T2) error) error {
-	if ngoroutines < 0 {
+	input iter.Seq2[T1, error],
+	transform func(a T1, i int, g int) (T2, error),
+	output func(a T2) error) error {
+	if ngoroutines < 1 {
 		panic(fmt.Sprintf("bad number of goroutines: %d", ngoroutines))
 	}
-
-	var err error
+	pull, pstop := iter.Pull2(input)
+	defer pstop()
 
 	// An optimization for a single thread.
-	if ngoroutines == 0 {
+	if ngoroutines == 1 {
 		i := 0
-		pusher(func(a T1) {
-			if err != nil {
-				return
-			}
-			t2, merr := mapper(a, i, 0)
-			if merr != nil {
-				err = merr
-				return
-			}
-			perr := puller(t2)
-			if perr != nil {
-				err = perr
-				return
-			}
+		for {
+			t1, err, ok := pull()
+			ii := i
 			i++
-		}, func() bool { return err != nil })
-		return err
+
+			if !ok {
+				return nil
+			}
+			if err != nil {
+				return err
+			}
+
+			t2, err := transform(t1, ii, 0)
+			if err != nil {
+				return err
+			}
+			if err := output(t2); err != nil {
+				return err
+			}
+		}
 	}
 
-	push := make(chan serialItem[T1], ngoroutines*chanLenCoef)
-	pull := make(chan serialItem[T2], ngoroutines*chanLenCoef)
-	wait := &sync.WaitGroup{}
-	wait.Add(ngoroutines)
+	ilock := &sync.Mutex{}
+	olock := &sync.Mutex{}
+	errs := make(chan error, ngoroutines)
+	stop := &atomic.Bool{}
+	items := &serialHeap[T2]{
+		data: heaps.New(func(a, b serialItem[T2]) bool {
+			return a.i < b.i
+		}),
+	}
 
-	go func() {
-		i := 0
-		perr := pusher(func(a T1) {
-			if err != nil {
-				return
-			}
-			push <- serialItem[T1]{i, a}
-			i++
-		}, func() bool { return err != nil })
-		if perr != nil && err == nil {
-			err = perr
-		}
-		close(push)
-	}()
-	for i := 0; i < ngoroutines; i++ {
-		i := i
-		go func() {
-			for item := range push {
+	i := 0
+	for g := 0; g < ngoroutines; g++ {
+		go func(g int) {
+			for {
+				if stop.Load() {
+					errs <- nil
+					return
+				}
+
+				ilock.Lock()
+				t1, err, ok := pull()
+				ii := i
+				i++
+				ilock.Unlock()
+
+				if !ok {
+					errs <- nil
+					return
+				}
 				if err != nil {
-					continue // Drain channel.
+					stop.Store(true)
+					errs <- err
+					return
 				}
-				t2, merr := mapper(item.data, item.i, i)
-				if merr != nil {
-					if err == nil {
-						err = merr
+
+				t2, err := transform(t1, ii, g)
+				if err != nil {
+					stop.Store(true)
+					errs <- err
+					return
+				}
+
+				olock.Lock()
+				items.put(serialItem[T2]{ii, t2})
+				for items.ok() {
+					err = output(items.pop())
+					if err != nil {
+						olock.Unlock()
+						stop.Store(true)
+						errs <- err
+						return
 					}
-					continue
 				}
-				pull <- serialItem[T2]{item.i, t2}
+				olock.Unlock()
 			}
-			wait.Done()
-		}()
+		}(g)
 	}
-	go func() {
-		items := &serialHeap[T2]{
-			data: heaps.New(func(a, b serialItem[T2]) bool {
-				return a.i < b.i
-			}),
-		}
-		for item := range pull {
-			if err != nil {
-				continue // Drain channel.
-			}
-			items.put(item)
-			for items.ok() {
-				perr := puller(items.pop())
-				if perr != nil && err == nil {
-					err = perr
-				}
-			}
-		}
-		wait.Done()
-	}()
 
-	wait.Wait() // Wait for workers.
-	wait.Add(1)
-	close(pull)
-	wait.Wait() // Wait for pull.
-
-	return err
+	for g := 0; g < ngoroutines; g++ {
+		if err := <-errs; err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // General data with a serial number.
