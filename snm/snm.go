@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"slices"
 
+	"github.com/fluhus/gostuff/gnum"
 	"golang.org/x/exp/constraints"
 	"golang.org/x/exp/maps"
 )
@@ -139,13 +140,8 @@ func SortedKeysFunc[K comparable, V constraints.Ordered](
 	})
 }
 
-// Number is an integer or a float.
-type Number interface {
-	constraints.Integer | constraints.Float
-}
-
 // Cast casts each element in the slice.
-func Cast[TO Number, FROM Number](s []FROM) []TO {
+func Cast[TO gnum.Number, FROM gnum.Number](s []FROM) []TO {
 	return SliceToSlice(s, func(x FROM) TO { return TO(x) })
 }
 
