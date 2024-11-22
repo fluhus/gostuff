@@ -5,7 +5,6 @@ package heaps
 
 import (
 	"golang.org/x/exp/constraints"
-	"golang.org/x/exp/slices"
 )
 
 // Heap is a generic heap.
@@ -151,5 +150,5 @@ func (h *Heap[T]) Fix(i int) {
 
 // Clip removes unused capacity from the heap.
 func (h *Heap[T]) Clip() {
-	h.a = slices.Clip(h.a)
+	h.a = append(make([]T, 0, len(h.a)), h.a...)
 }
