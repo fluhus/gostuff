@@ -42,11 +42,11 @@ func (g *Graph[T]) NumEdges() int {
 }
 
 // Edges iterates over current set of edges.
-func (g *Graph[T]) Edges() iter.Seq[[2]T] {
-	return func(yield func([2]T) bool) {
+func (g *Graph[T]) Edges() iter.Seq2[T, T] {
+	return func(yield func(T, T) bool) {
 		flat := g.v.Elements()
 		for e := range g.e {
-			if !yield([2]T{flat[e[0]], flat[e[1]]}) {
+			if !yield(flat[e[0]], flat[e[1]]) {
 				return
 			}
 		}
