@@ -11,8 +11,8 @@ import (
 	"github.com/fluhus/gostuff/aio"
 )
 
-// Save saves v to the given file, encoded as JSON.
-func Save(file string, v interface{}) error {
+// Write saves v to the given file, encoded as JSON.
+func Write(file string, v interface{}) error {
 	f, err := aio.Create(file)
 	if err != nil {
 		return err
@@ -26,8 +26,8 @@ func Save(file string, v interface{}) error {
 	return f.Close()
 }
 
-// Load loads a JSON encoded value from the given file and populates v with it.
-func Load(file string, v interface{}) error {
+// Read loads a JSON encoded value from the given file and populates v with it.
+func Read(file string, v interface{}) error {
 	f, err := aio.Open(file)
 	if err != nil {
 		return err
