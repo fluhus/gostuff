@@ -8,6 +8,9 @@ import (
 	"regexp"
 	"slices"
 	"strconv"
+	"strings"
+
+	"github.com/fluhus/gostuff/snm"
 )
 
 // RegexpFlagSet defines a regular expression flag with specified name,
@@ -143,6 +146,19 @@ func OneOfFlagSet[T comparable](fs *flag.FlagSet, name string,
 	if len(of) == 0 {
 		panic("called with 0 possible values")
 	}
+
+	// Create usage string.
+	options := strings.Join(snm.SliceToSlice(of, func(t T) string {
+		return fmt.Sprint(t)
+	}), ", ")
+	dflt := ""
+	var zero T
+	if value != zero {
+		dflt = fmt.Sprintf("; default %s", fmt.Sprint(value))
+	}
+	usage = fmt.Sprintf("%s (one of %s%s)",
+		usage, options, dflt)
+
 	v := value
 	fs.Func(name, usage, func(s string) error {
 		_, err := fmt.Sscanln(s, &v)
