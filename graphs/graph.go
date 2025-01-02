@@ -57,8 +57,7 @@ func (g *Graph[T]) Edges() iter.Seq2[T, T] {
 // by order of addition to the graph.
 func (g *Graph[T]) Vertices() iter.Seq[T] {
 	return func(yield func(T) bool) {
-		flat := g.v.Elements()
-		for _, x := range flat {
+		for _, x := range g.v.Elements() {
 			if !yield(x) {
 				return
 			}
