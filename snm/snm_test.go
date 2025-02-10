@@ -160,3 +160,30 @@ func countValues(vals []string, out map[string]int) {
 		out[v]++
 	}
 }
+
+func TestShuffle(t *testing.T) {
+	nums := Slice(10, func(i int) int { return i })
+	found := make([]bool, len(nums))
+	counts := Slice(len(nums), func(i int) []int { return make([]int, len(nums)) })
+	for range 1000 {
+		Shuffle(nums)
+		clear(found)
+		for i, x := range nums {
+			found[x] = true
+			counts[i][x]++
+		}
+		for i, f := range found {
+			if !f {
+				t.Fatalf("did not find %v: %v", i, nums)
+			}
+		}
+	}
+	for i, c := range counts {
+		for j, x := range c {
+			if x < 70 {
+				t.Errorf("count of %v at position %v: %v, want >%v",
+					j, i, x, 70)
+			}
+		}
+	}
+}

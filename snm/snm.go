@@ -3,6 +3,7 @@ package snm
 
 import (
 	"cmp"
+	"math/rand/v2"
 	"slices"
 
 	"github.com/fluhus/gostuff/gnum"
@@ -200,4 +201,13 @@ func (e Enumerator[T]) Elements() []T {
 		result[i] = t
 	}
 	return result
+}
+
+// Shuffle reorders the given slice randomly, with a uniform distribution.
+func Shuffle[S ~[]T, T any](s S) {
+	rng := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
+	for i := range s {
+		r := i + rng.IntN(len(s)-i)
+		s[i], s[r] = s[r], s[i]
+	}
 }
