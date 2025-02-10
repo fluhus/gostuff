@@ -90,21 +90,7 @@ func (g *Graph[T]) DeleteEdge(a, b T) {
 // The components are ordered by the order of addition of their
 // first elements.
 func (g *Graph[T]) ConnectedComponents() [][]T {
-	counts := make([]int, g.NumVertices())
-	for e := range g.e {
-		counts[e[0]]++
-		counts[e[1]]++
-	}
-
-	edges := make([][]int, g.NumVertices())
-	for v, c := range counts {
-		edges[v] = make([]int, 0, c)
-	}
-	for e := range g.e {
-		edges[e[0]] = append(edges[e[0]], e[1])
-		edges[e[1]] = append(edges[e[1]], e[0])
-	}
-
+	edges := g.edgeSlices()
 	m := snm.Slice(g.NumVertices(), func(i int) int { return -1 })
 	queue := &snm.Queue[int]{}
 
@@ -154,4 +140,24 @@ func (g *Graph[T]) toEdge(a, b T) [2]int {
 		return [2]int{ib, ia}
 	}
 	return [2]int{ia, ib}
+}
+
+// Returns a slice representation of this graph's edges.
+func (g *Graph[T]) edgeSlices() [][]int {
+	// Pre-allocate slices.
+	counts := make([]int, g.NumVertices())
+	for e := range g.e {
+		counts[e[0]]++
+		counts[e[1]]++
+	}
+	edges := snm.Slice(len(counts), func(i int) []int {
+		return make([]int, 0, counts[i])
+	})
+
+	// Populate with values.
+	for e := range g.e {
+		edges[e[0]] = append(edges[e[0]], e[1])
+		edges[e[1]] = append(edges[e[1]], e[0])
+	}
+	return edges
 }
