@@ -147,13 +147,18 @@ func Cast[TO gnum.Number, FROM gnum.Number](s []FROM) []TO {
 }
 
 // CapMap is a wrapper over a regular map,
-// for reusing maps in order to reduce garbage generation.
-// The allocated memory for the map is expanded and shrunk as needed.
+// with a Clear function that possibly reallocates the map.
+//
+// This is helpful for code that reuses the same map and clears it
+// between uses,
+// for making sure the map doesn't stay unnecessarily large after
+// one large input.
 type CapMap[K comparable, V any] struct {
 	m map[K]V // Underlying map
 	c int     // Capacity
 }
 
+// NewCapMap returns a new empty CapMap.
 func NewCapMap[K comparable, V any]() *CapMap[K, V] {
 	return &CapMap[K, V]{map[K]V{}, 0}
 }
@@ -163,18 +168,44 @@ func (s *CapMap[K, V]) Map() map[K]V {
 	return s.m
 }
 
-// Clear clears the contents of this map, reducing its
-// capacity if needed.
+// Clear clears the contents of this map,
+// possibly reallocating it with a smaller size.
 // May change which object is returned by Map.
 func (s *CapMap[K, V]) Clear() {
 	s.c = max(s.c, len(s.m))
-	if s.c > 64 && len(s.m) <= s.c/3 {
+	if s.c > 1024 && len(s.m) <= s.c/3 {
 		newCap := s.c / 2
 		s.m = make(map[K]V, newCap)
 		s.c = newCap
 	} else {
 		clear(s.m)
 	}
+}
+
+// ClearShrink returns a with length reset to 0,
+// possibly reallocating it with a smaller capacity.
+//
+// This is helpful for code that reuses the same buffer and clears it
+// between uses,
+// for making sure the buffer doesn't stay unnecessarily large after
+// one large input.
+func ClearShrink[T any](a []T) []T {
+	if cap(a) < 1024 {
+		return a[:0]
+	}
+	if len(a) > cap(a)/4 {
+		return a[:0]
+	}
+	return make([]T, 0, cap(a)/2)
+}
+
+// TightClone returns a shallow clone of a,
+// with a capacity equal to its length.
+func TightClone[T any](a []T) []T {
+	if a == nil {
+		return nil
+	}
+	return append(make([]T, 0, len(a)), a...)
 }
 
 // Enumerator enumerates values by their order of appearance.
