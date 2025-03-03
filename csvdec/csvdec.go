@@ -436,8 +436,8 @@ func populateStruct(a any, vals []string, setters map[int][]setter) error {
 	v := reflect.ValueOf(a).Elem()
 	for i, ss := range setters {
 		if i >= len(vals) {
-			return fmt.Errorf("cannot read column #%v, input has %v columns",
-				i, len(vals))
+			return fmt.Errorf("cannot read column #%v, input has %v columns: %q",
+				i, len(vals), vals)
 		}
 		for _, s := range ss {
 			if err := s(v, vals[i]); err != nil {
