@@ -156,7 +156,7 @@ func OneOfFlagSet[T comparable](fs *flag.FlagSet, name string,
 	if value != zero {
 		dflt = fmt.Sprintf("; default %s", fmt.Sprint(value))
 	}
-	usage = fmt.Sprintf("%s (one of %s%s)",
+	usage = fmt.Sprintf("%s (one of [%s]%s)",
 		usage, options, dflt)
 
 	v := value
@@ -166,7 +166,7 @@ func OneOfFlagSet[T comparable](fs *flag.FlagSet, name string,
 			return err
 		}
 		if slices.Index(of, v) == -1 {
-			return fmt.Errorf("unexpected value for: %v", v)
+			return fmt.Errorf("want one of %v", of)
 		}
 		return nil
 	})
