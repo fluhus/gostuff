@@ -93,3 +93,15 @@ func CSVFile(file string, fn func(*csv.Reader)) iter.Seq2[[]string, error] {
 		}
 	}
 }
+
+// CollectErr collects the given T's in a slice until the error is non-nil.
+func CollectErr[T any](it iter.Seq2[T, error]) ([]T, error) {
+	var a []T
+	for t, err := range it {
+		if err != nil {
+			return a, err
+		}
+		a = append(a, t)
+	}
+	return a, nil
+}
