@@ -1,28 +1,23 @@
 package iterx
 
-import "iter"
+import (
+	"iter"
+	"slices"
+)
 
 // Slice returns an iterator over the slice values.
+//
+// Deprecated: use [slices.Values] instead.
 func Slice[T any](s []T) iter.Seq[T] {
-	return func(yield func(T) bool) {
-		for _, x := range s {
-			if !yield(x) {
-				return
-			}
-		}
-	}
+	return slices.Values(s)
 }
 
 // ISlice returns an iterator over the slice values and their indices,
 // like in a range expression.
+//
+// Deprecated: use [slices.All] instead.
 func ISlice[T any](s []T) iter.Seq2[int, T] {
-	return func(yield func(int, T) bool) {
-		for i, x := range s {
-			if !yield(i, x) {
-				return
-			}
-		}
-	}
+	return slices.All(s)
 }
 
 // Limit returns an iterator that stops after n elements,
