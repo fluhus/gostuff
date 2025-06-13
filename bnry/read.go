@@ -8,6 +8,7 @@ import (
 	"math"
 	"reflect"
 	"slices"
+	"strings"
 
 	"golang.org/x/exp/constraints"
 )
@@ -154,11 +155,20 @@ func readBool(r io.ByteReader, val *bool) error {
 }
 
 func readString(r io.ByteReader, s *string) error {
-	var buf []byte
-	if err := readUint8Slice(r, &buf); err != nil {
+	n, err := binary.ReadUvarint(r)
+	if err != nil {
 		return err
 	}
-	*s = string(buf)
+	bld := &strings.Builder{}
+	bld.Grow(int(n))
+	for range n {
+		b, err := r.ReadByte()
+		if err != nil {
+			return notExpectingEOF(err)
+		}
+		bld.WriteByte(b)
+	}
+	*s = bld.String()
 	return nil
 }
 

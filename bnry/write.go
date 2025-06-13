@@ -110,7 +110,7 @@ func (w *Writer) writeSingle(val any) error {
 		return w.writeStringSlice(val)
 	default:
 		panic(fmt.Sprintf("unsupported type: %v",
-			reflect.TypeOf(val).Name()))
+			reflect.TypeOf(val)))
 	}
 }
 
