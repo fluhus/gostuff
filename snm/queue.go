@@ -1,5 +1,7 @@
 package snm
 
+import "iter"
+
 // Queue is a memory-efficient FIFO container.
 type Queue[T any] struct {
 	q    []T
@@ -29,7 +31,7 @@ func (q *Queue[T]) Dequeue() T {
 	}
 	x := q.q[q.i]
 	var zero T
-	q.q[q.i] = zero // Remove reference to allow GC.
+	q.q[q.i] = zero // Remove element to allow GC.
 	q.n--
 	q.i = (q.i + 1) % len(q.q)
 	return x
@@ -48,4 +50,20 @@ func (q *Queue[T]) Peek() T {
 // Len return the current number of elements in the queue.
 func (q *Queue[T]) Len() int {
 	return q.n
+}
+
+// Seq returns an iterator over the queue's elements,
+// dequeueing each one.
+//
+// It is okay to enqueue elements while iterating,
+// from within the same goroutine.
+// The new elements will be included in the same loop.
+func (q *Queue[T]) Seq() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for q.Len() > 0 {
+			if !yield(q.Dequeue()) {
+				break
+			}
+		}
+	}
 }
