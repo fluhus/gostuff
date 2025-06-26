@@ -71,8 +71,6 @@ import (
 	"strings"
 )
 
-// TODO(amit): Add examples.
-// TODO(amit): Change to 1-based column index?
 // TODO(amit): Struct pointers?
 // TODO(amit): Handle slices?
 
