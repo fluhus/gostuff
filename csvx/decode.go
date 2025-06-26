@@ -1,18 +1,20 @@
-// Package csvdec provides a generic CSV decoder. Wraps the encoding/csv
-// package with a decoder that can populate structs.
+// Package csvx provides convenience wrappers around [encoding/csv].
 //
-// # Accepted Types
+// It provides a set of Decode functions, that populate struct
+// fields with delimiter-separated values.
 //
-// The T type parameter for this package's functions accepts structs.
-// Field may be of types bool, int*, uint*, float* or string
+// # Decode Accepted Types
+//
+// The T type parameter for Decode functions accepts structs.
+// Fields may be of types bool, int*, uint*, float* or string
 // for automatic parsing.
 // For manual parsing with a method, any type is allowed.
 // Unexported fields are ignored.
 //
-// # Default Behavior
+// # Decode Default Behavior
 //
-// [File] and [Reader] match column to field according to their order.
-// For example:
+// [DecodeFile] and [DecodeReader] match column to field according
+// to their order. For example:
 //
 //	type a struct {
 //	  Name   string  // Matches first column
@@ -20,8 +22,8 @@
 //	  Height float64 // Matches third column
 //	}
 //
-// [FileHeader] and [ReaderHeader] match column to field according to
-// the first line and the field's name, case insensitively.
+// [DecodeFileHeader] and [DecodeReaderHeader] match column to field
+// according to the first line and the field's name, case insensitively.
 // For example:
 //
 //	type a struct {
@@ -35,7 +37,7 @@
 // In all functions yielding continues upon parsing errors,
 // so that a caller may choose to skip lines.
 //
-// # Field Tags
+// # Decode Field Tags
 //
 // Field tags can be used to change the default behavior.
 // The format for a field tag is as follows:
@@ -58,20 +60,15 @@
 // A custom parsing method will replace the default parsing.
 // The method's signature must take a string as input,
 // and return the field's type and an error.
-//
-// Deprecated: use package csvx.
-package csvdec
+package csvx
 
 import (
-	"encoding/csv"
 	"fmt"
 	"io"
 	"iter"
 	"reflect"
 	"strconv"
 	"strings"
-
-	"github.com/fluhus/gostuff/iterx"
 )
 
 // TODO(amit): Add examples.
@@ -79,40 +76,40 @@ import (
 // TODO(amit): Struct pointers?
 // TODO(amit): Handle slices?
 
-// File returns an iterator over parsed instances of T,
+// DecodeFile returns an iterator over parsed instances of T,
 // using column numbers for matching columns to fields.
 //
 // fn is an optional function for modifying the CSV parser,
 // for example for changing the delimiter.
-func File[T any](file string, fn func(*csv.Reader)) iter.Seq2[T, error] {
-	return read[T](iterx.CSVFile(file, fn), false)
+func DecodeFile[T any](file string, mods ...ReaderModifier) iter.Seq2[T, error] {
+	return read[T](File(file, mods...), false)
 }
 
-// Reader returns an iterator over parsed instances of T,
+// DecodeReader returns an iterator over parsed instances of T,
 // using column numbers for matching columns to fields.
 //
 // fn is an optional function for modifying the CSV parser,
 // for example for changing the delimiter.
-func Reader[T any](r io.Reader, fn func(*csv.Reader)) iter.Seq2[T, error] {
-	return read[T](iterx.CSVReader(r, fn), false)
+func DecodeReader[T any](r io.Reader, mods ...ReaderModifier) iter.Seq2[T, error] {
+	return read[T](Reader(r, mods...), false)
 }
 
-// FileHeader returns an iterator over parsed instances of T,
+// DecodeFileHeader returns an iterator over parsed instances of T,
 // using the first line for matching columns to fields.
 //
 // fn is an optional function for modifying the CSV parser,
 // for example for changing the delimiter.
-func FileHeader[T any](file string, fn func(*csv.Reader)) iter.Seq2[T, error] {
-	return read[T](iterx.CSVFile(file, fn), true)
+func DecodeFileHeader[T any](file string, mods ...ReaderModifier) iter.Seq2[T, error] {
+	return read[T](File(file, mods...), true)
 }
 
-// ReaderHeader returns an iterator over parsed instances of T,
+// DecodeReaderHeader returns an iterator over parsed instances of T,
 // using the first line for matching columns to fields.
 //
 // fn is an optional function for modifying the CSV parser,
 // for example for changing the delimiter.
-func ReaderHeader[T any](r io.Reader, fn func(*csv.Reader)) iter.Seq2[T, error] {
-	return read[T](iterx.CSVReader(r, fn), true)
+func DecodeReaderHeader[T any](r io.Reader, mods ...ReaderModifier) iter.Seq2[T, error] {
+	return read[T](Reader(r, mods...), true)
 }
 
 // Turns an iterator over string slices into an iterator over T.

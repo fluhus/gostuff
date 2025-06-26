@@ -49,6 +49,8 @@ func LinesFile(file string) iter.Seq2[string, error] {
 // CSVReader iterates over CSV entries from a reader.
 // fn is an optional function for modifying the CSV parser,
 // for example for changing the delimiter.
+//
+// Deprecated: use package csvx.
 func CSVReader(r io.Reader, fn func(*csv.Reader)) iter.Seq2[[]string, error] {
 	return func(yield func([]string, error) bool) {
 		c := csv.NewReader(r)
@@ -70,6 +72,8 @@ func CSVReader(r io.Reader, fn func(*csv.Reader)) iter.Seq2[[]string, error] {
 // CSVFile iterates over CSV entries from a file.
 // fn is an optional function for modifying the CSV parser,
 // for example for changing the delimiter.
+//
+// Deprecated: use package csvx.
 func CSVFile(file string, fn func(*csv.Reader)) iter.Seq2[[]string, error] {
 	return func(yield func([]string, error) bool) {
 		f, err := aio.Open(file)
