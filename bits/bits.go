@@ -5,7 +5,6 @@ import (
 	"iter"
 	mbits "math/bits"
 
-	"github.com/fluhus/gostuff/snm"
 	"golang.org/x/exp/constraints"
 )
 
@@ -38,7 +37,7 @@ func Get[I constraints.Integer](data []byte, n I) int {
 func Sum(data []byte) int {
 	a := 0
 	for _, b := range data {
-		a += byteSums[b]
+		a += mbits.OnesCount8(b)
 	}
 	return a
 }
@@ -67,16 +66,6 @@ func Zeros(data []byte) iter.Seq[int] {
 			}
 		}
 	}
-}
-
-// The result of Sum for each byte value.
-var byteSums []int
-
-// Calculates the bit-sum for each byte value.
-func init() {
-	byteSums = snm.Slice(256, func(i int) int {
-		return mbits.OnesCount(uint(i))
-	})
 }
 
 // Indexes of ones for each byte value.
