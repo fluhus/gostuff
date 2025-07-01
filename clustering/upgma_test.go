@@ -5,8 +5,6 @@ import (
 	"math"
 	"reflect"
 	"testing"
-
-	"github.com/fluhus/gostuff/gnum"
 )
 
 func TestUPGMA(t *testing.T) {
@@ -64,7 +62,7 @@ func BenchmarkUPGMA(b *testing.B) {
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				upgma(n, func(i1, i2 int) float64 {
-					return gnum.Abs(nums[i1] - nums[i2])
+					return math.Abs(nums[i1] - nums[i2])
 				})
 			}
 		})
@@ -77,7 +75,7 @@ func FuzzUPGMA(f *testing.F) {
 		d float64, e float64, f float64, g float64, h float64, i float64) {
 		nums := []float64{a, b, c, d, e, f, g, h, i}
 		upgma(len(nums), func(i1, i2 int) float64 {
-			return gnum.Abs(nums[i1] - nums[i2])
+			return math.Abs(nums[i1] - nums[i2])
 		})
 	})
 }

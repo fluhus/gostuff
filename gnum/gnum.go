@@ -68,7 +68,9 @@ func ArgMin[S ~[]E, E constraints.Ordered](s S) int {
 }
 
 // Abs returns the absolute value of n.
-func Abs[N Number](n N) N {
+//
+// For floats use [math.Abs].
+func Abs[N constraints.Signed](n N) N {
 	if n < 0 {
 		return -n
 	}
@@ -131,7 +133,7 @@ func Entropy[S ~[]N, N Number](a S) float64 {
 	sum := float64(Sum(a))
 	result := 0.0
 	for i, v := range a {
-		if v < 0.0 {
+		if v < 0 {
 			panic(fmt.Sprintf("negative value at position %d: %v",
 				i, v))
 		}

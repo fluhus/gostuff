@@ -3,13 +3,12 @@ package minhash
 import (
 	"fmt"
 	"hash/crc64"
+	"math"
 	"math/rand"
 	"reflect"
 	"slices"
 	"sort"
 	"testing"
-
-	"github.com/fluhus/gostuff/gnum"
 )
 
 func TestCollection(t *testing.T) {
@@ -98,7 +97,7 @@ func TestJaccard(t *testing.T) {
 		}
 		a.Sort()
 		b.Sort()
-		if got := a.Jaccard(b); gnum.Abs(got-test.want) > 0.00001 {
+		if got := a.Jaccard(b); math.Abs(got-test.want) > 0.00001 {
 			t.Errorf("Jaccard(%v,%v)=%f, want %f",
 				test.a, test.b, got, test.want)
 		}
@@ -132,7 +131,7 @@ func TestCollection_largeInput(t *testing.T) {
 		b.Sort()
 		want := float64(test.to1-test.from2+1) / float64(
 			test.to2-test.from1+1)
-		if got := a.Jaccard(b); gnum.Abs(got-want) > want/100 {
+		if got := a.Jaccard(b); math.Abs(got-want) > want/100 {
 			t.Errorf("Jaccard(...)=%f, want %f", got, want)
 		}
 	}
