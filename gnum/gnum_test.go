@@ -1,6 +1,9 @@
 package gnum
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func TestEntropy(t *testing.T) {
 	input1 := []int{1, 2, 3, 4}
@@ -121,6 +124,26 @@ func TestMean(t *testing.T) {
 	}
 }
 
+func TestExpMean(t *testing.T) {
+	tests := []struct {
+		input []int
+		want  float64
+	}{
+		{[]int{1}, 1},
+		{[]int{1, 1}, 1},
+		{[]int{3, 3, 3, 3}, 3},
+		{[]int{10, 1000}, 100},
+		{[]int{10, 100}, math.Sqrt(1000)},
+		{[]int{10, 100, 1000}, 100},
+	}
+	const tolerance = 0.0000001
+	for _, test := range tests {
+		if got := ExpMean(test.input); Diff(got, test.want) > tolerance {
+			t.Errorf("ExpMean(%v)=%v, want %v", test.input, got, test.want)
+		}
+	}
+}
+
 func FuzzSumMean(f *testing.F) {
 	f.Add(0.0, 0.0, 0.0, 0.0)
 	f.Fuzz(func(t *testing.T, a float64, b float64, c float64, d float64) {
@@ -132,6 +155,13 @@ func FuzzSumMean(f *testing.F) {
 		want /= 4
 		if got := Mean(slice); got != want {
 			t.Fatalf("Mean([%v,%v,%v,%v])=%v, want %v", a, b, c, d, got, want)
+		}
+		if a > 0 && b > 0 && c > 0 && d > 0 {
+			const tol = 0.0000001
+			want = math.Pow(a*b*c*d, 0.25)
+			if got := ExpMean(slice); Diff(got, want) > tol {
+				t.Fatalf("ExpMean([%v,%v,%v,%v])=%v, want %v", a, b, c, d, got, want)
+			}
 		}
 	})
 }

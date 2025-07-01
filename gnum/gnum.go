@@ -99,6 +99,19 @@ func Mean[S ~[]N, N Number](a S) float64 {
 	return float64(Sum(a)) / float64(len(a))
 }
 
+// ExpMean returns the exponential average of the slice.
+// Non-positive values result in NaN.
+func ExpMean[S ~[]N, N Number](a S) float64 {
+	if len(a) == 0 {
+		return math.NaN()
+	}
+	sum := 0.0
+	for _, v := range a {
+		sum += math.Log(float64(v))
+	}
+	return math.Exp(sum / float64(len(a)))
+}
+
 // Cov returns the covariance of a and b.
 func Cov[S ~[]N, N Number](a, b S) float64 {
 	assertMatchingLengths(a, b)
