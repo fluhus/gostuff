@@ -163,3 +163,39 @@ func Entropy[S ~[]N, N Number](a S) float64 {
 func Idiv[T constraints.Integer](a, b T) T {
 	return T(math.Round(float64(a) / float64(b)))
 }
+
+// Quantiles returns the elements that divide the given slice
+// at the given ratios.
+//
+// For example, 0.5 returns the middle element,
+// 0.25 returns the element at a quarter of the length, etc.
+// 0 and 1 return the first and last element, respectively.
+func Quantiles[T any](a []T, qq ...float64) []T {
+	if len(qq) == 0 {
+		return nil
+	}
+	if len(a) == 0 {
+		panic("input slice cannot be empty")
+	}
+	result := make([]T, 0, len(qq))
+	n := float64(len(a) - 1)
+	for _, q := range qq {
+		i := int(math.Round(q * n))
+		result = append(result, a[i])
+	}
+	return result
+}
+
+// NQuantiles returns the elements that divide
+// the given slice into n equal parts (up to rounding),
+// including the first and last elements.
+//
+// For example, for n=2 it returns the first element,
+// the middle, and the last element.
+func NQuantiles[T any](a []T, n int) []T {
+	q := make([]float64, n+1)
+	for i := range q {
+		q[i] = float64(i) / float64(n)
+	}
+	return Quantiles(a, q...)
+}

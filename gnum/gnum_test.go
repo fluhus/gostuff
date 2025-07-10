@@ -2,6 +2,7 @@ package gnum
 
 import (
 	"math"
+	"slices"
 	"testing"
 )
 
@@ -164,4 +165,25 @@ func FuzzSumMean(f *testing.F) {
 			}
 		}
 	})
+}
+
+func TestQuantiles(t *testing.T) {
+	input := []int{1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144}
+	q := []float64{0.3, 0.5, 0, 1, 0.9}
+	want1 := []int{3, 8, 1, 144, 89}
+	want2 := []int{3, 13, 1, 144, 89}
+	got := Quantiles(input, q...)
+	if !slices.Equal(got, want1) && !slices.Equal(got, want2) {
+		t.Fatalf("Quantiles(%v,%v)=%v, want %v or %v",
+			input, q, got, want1, want2)
+	}
+}
+
+func TestNQuantiles(t *testing.T) {
+	input := []int{1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144}
+	want := []int{1, 5, 21, 144}
+	got := NQuantiles(input, 3)
+	if !slices.Equal(got, want) {
+		t.Fatalf("Quantiles(%v,3)=%v, want %v", input, got, want)
+	}
 }
