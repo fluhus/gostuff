@@ -12,7 +12,7 @@ import (
 )
 
 // Write saves v to the given file, encoded as JSON.
-func Write(file string, v interface{}) error {
+func Write(file string, v any) error {
 	f, err := aio.Create(file)
 	if err != nil {
 		return err
@@ -27,13 +27,20 @@ func Write(file string, v interface{}) error {
 }
 
 // Read loads a JSON encoded value from the given file and populates v with it.
-func Read(file string, v interface{}) error {
+func Read(file string, v any) error {
 	f, err := aio.Open(file)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 	return json.NewDecoder(f).Decode(v)
+}
+
+// ReadAs reads a JSON encoded value of type T and returns it.
+func ReadAs[T any](file string) (T, error) {
+	var t T
+	err := Read(file, &t)
+	return t, err
 }
 
 // Iter returns an iterator over sequential JSON values in a file.
