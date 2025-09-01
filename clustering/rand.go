@@ -2,6 +2,9 @@ package clustering
 
 import (
 	"fmt"
+	"slices"
+
+	"github.com/fluhus/gostuff/sets"
 )
 
 // AdjustedRandIndex compares 2 taggings of the data for similarity. A score of
@@ -24,11 +27,11 @@ func AdjustedRandIndex(tags1, tags2 []int) float64 {
 }
 
 // randIndex returns the RI part of the adjusted index.
-func randIndex(tags1, tags2 []intSet) float64 {
+func randIndex(tags1, tags2 [][]int) float64 {
 	r := 0
 	for _, t1 := range tags1 {
 		for _, t2 := range tags2 {
-			r += choose2(t1.intersect(t2))
+			r += choose2(sets.SortedIntersectionLen(t1, t2))
 		}
 	}
 	return float64(r)
@@ -36,7 +39,7 @@ func randIndex(tags1, tags2 []intSet) float64 {
 
 // expectedRandIndex returns the expected index according to hypergeometrical
 // distribution.
-func expectedRandIndex(tags1, tags2 []intSet) float64 {
+func expectedRandIndex(tags1, tags2 [][]int) float64 {
 	p1 := 0
 	n := 0
 	for _, tags := range tags1 {
@@ -52,7 +55,7 @@ func expectedRandIndex(tags1, tags2 []intSet) float64 {
 }
 
 // maxRandIndex returns the maximal possible index.
-func maxRandIndex(tags1, tags2 []intSet) float64 {
+func maxRandIndex(tags1, tags2 [][]int) float64 {
 	p := 0
 	for _, tags := range tags1 {
 		p += choose2(len(tags))
@@ -67,50 +70,21 @@ func choose2(n int) int {
 	return n * (n - 1) / 2
 }
 
-// ----- INT SET --------------------------------------------------------------
-
-// intSet is a set of integers.
-type intSet map[int]struct{}
-
 // tagsToSets converts a list of tags to a list of sets of indexes, one list
 // for each tag.
-func tagsToSets(tags []int) []intSet {
+func tagsToSets(tags []int) [][]int {
 	// Make map from tag to its set.
-	sets := map[int]intSet{}
+	sets := map[int][]int{}
 	for i, tag := range tags {
-		if sets[tag] == nil {
-			sets[tag] = intSet{}
-		}
-		sets[tag].add(i)
+		sets[tag] = append(sets[tag], i)
 	}
 
 	// Convert map to slice.
-	result := make([]intSet, 0, len(sets))
+	result := make([][]int, 0, len(sets))
 	for _, set := range sets {
+		slices.Sort(set)
 		result = append(result, set)
 	}
 
-	return result
-}
-
-// add adds a number to the set.
-func (is intSet) add(i int) {
-	is[i] = struct{}{}
-}
-
-// contains checks if a set contains the given element.
-func (is intSet) contains(i int) bool {
-	_, ok := is[i]
-	return ok
-}
-
-// intersect returns the size of the intersection of the 2 sets.
-func (is intSet) intersect(other intSet) int {
-	result := 0
-	for i := range is {
-		if other.contains(i) {
-			result++
-		}
-	}
 	return result
 }
