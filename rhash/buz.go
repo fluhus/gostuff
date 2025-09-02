@@ -6,7 +6,7 @@ import (
 	"math/rand"
 )
 
-type BuzSeed [256]uint64
+type BuzSeed = [256]uint64
 
 // Buz implements a buzhash rolling-hash.
 // Implements [hash.Hash64] and [hash.Hash32].
