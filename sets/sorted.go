@@ -2,13 +2,11 @@ package sets
 
 import (
 	"cmp"
-
-	"golang.org/x/exp/constraints"
 )
 
 // SortedIntersection returns the intersection of
 // two sorted and dereplicated slices a and b.
-func SortedIntersection[T constraints.Ordered](a, b []T) []T {
+func SortedIntersection[T cmp.Ordered](a, b []T) []T {
 	var result []T
 	i, j := 0, 0
 	for i < len(a) && j < len(b) {
@@ -28,7 +26,7 @@ func SortedIntersection[T constraints.Ordered](a, b []T) []T {
 
 // SortedUnion returns the union of
 // two sorted and dereplicated slices a and b.
-func SortedUnion[T constraints.Ordered](a, b []T) []T {
+func SortedUnion[T cmp.Ordered](a, b []T) []T {
 	var result []T
 	i, j := 0, 0
 	for i < len(a) && j < len(b) {
@@ -53,7 +51,7 @@ func SortedUnion[T constraints.Ordered](a, b []T) []T {
 
 // SortedIntersectionLen returns the length of the intersection of
 // two sorted and dereplicated slices a and b.
-func SortedIntersectionLen[T constraints.Ordered](a, b []T) int {
+func SortedIntersectionLen[T cmp.Ordered](a, b []T) int {
 	result := 0
 	i, j := 0, 0
 	for i < len(a) && j < len(b) {
@@ -73,7 +71,7 @@ func SortedIntersectionLen[T constraints.Ordered](a, b []T) int {
 
 // SortedUnionLen returns the length of the union of
 // two sorted and dereplicated slices a and b.
-func SortedUnionLen[T constraints.Ordered](a, b []T) int {
+func SortedUnionLen[T cmp.Ordered](a, b []T) int {
 	result := 0
 	i, j := 0, 0
 	for i < len(a) && j < len(b) {
