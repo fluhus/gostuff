@@ -187,3 +187,22 @@ func TestNQuantiles(t *testing.T) {
 		t.Fatalf("Quantiles(%v,3)=%v, want %v", input, got, want)
 	}
 }
+
+func TestLogFactorial(t *testing.T) {
+	tests := [][]int{
+		{0, 1}, {1, 1}, {2, 2}, {3, 6}, {4, 24}, {5, 120}, {6, 720},
+	}
+	for _, test := range tests {
+		got := math.Exp(LogFactorial(test[0]))
+		want := float64(test[1])
+		if Diff(got, want) > want*0.05 {
+			t.Errorf("lf(%v)=%v, want %v", test[0], got, test[1])
+		}
+	}
+}
+
+func BenchmarkLogFactorial(b *testing.B) {
+	for i := range b.N {
+		LogFactorial(i)
+	}
+}

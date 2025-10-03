@@ -199,3 +199,19 @@ func NQuantiles[T any](a []T, n int) []T {
 	}
 	return Quantiles(a, q...)
 }
+
+// LogFactorial returns an approximation of log(n!),
+// calculated in constant time.
+func LogFactorial(n int) float64 {
+	if n < 0 {
+		panic(fmt.Sprintf("n cannot be negative: %v", n))
+	}
+	if n == 0 || n == 1 {
+		return 0
+	}
+	// Stirling's approximation.
+	const halfLog2pi = 0x1.d67f1c864beb4p-01 // 0.5*math.Log(2*math.Pi)
+	nf := float64(n)
+	logn := math.Log(nf)
+	return halfLog2pi + 0.5*logn + nf*(logn-1)
+}
