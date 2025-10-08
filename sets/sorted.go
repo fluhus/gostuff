@@ -5,7 +5,7 @@ import (
 )
 
 // SortedIntersection returns the intersection of
-// two sorted and dereplicated slices a and b.
+// two sorted slices a and b.
 func SortedIntersection[T cmp.Ordered](a, b []T) []T {
 	var result []T
 	i, j := 0, 0
@@ -25,7 +25,7 @@ func SortedIntersection[T cmp.Ordered](a, b []T) []T {
 }
 
 // SortedUnion returns the union of
-// two sorted and dereplicated slices a and b.
+// two sorted slices a and b.
 func SortedUnion[T cmp.Ordered](a, b []T) []T {
 	var result []T
 	i, j := 0, 0
@@ -50,7 +50,7 @@ func SortedUnion[T cmp.Ordered](a, b []T) []T {
 }
 
 // SortedIntersectionLen returns the length of the intersection of
-// two sorted and dereplicated slices a and b.
+// two sorted slices a and b.
 func SortedIntersectionLen[T cmp.Ordered](a, b []T) int {
 	result := 0
 	i, j := 0, 0
@@ -70,7 +70,7 @@ func SortedIntersectionLen[T cmp.Ordered](a, b []T) int {
 }
 
 // SortedUnionLen returns the length of the union of
-// two sorted and dereplicated slices a and b.
+// two sorted slices a and b.
 func SortedUnionLen[T cmp.Ordered](a, b []T) int {
 	result := 0
 	i, j := 0, 0

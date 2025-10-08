@@ -15,6 +15,9 @@ func TestSorted(t *testing.T) {
 		{[]int{1}, []int{2}, []int{1, 2}, nil},
 		{[]int{2}, []int{1}, []int{1, 2}, nil},
 		{[]int{1, 3, 5}, []int{3, 4, 5, 6}, []int{1, 3, 4, 5, 6}, []int{3, 5}},
+
+		{[]int{1, 1}, []int{1, 2}, []int{1, 1, 2}, []int{1}},
+		{[]int{1, 2, 2, 3}, []int{2, 3, 3, 4}, []int{1, 2, 2, 3, 3, 4}, []int{2, 3}},
 	}
 	for _, test := range tests {
 		i := SortedIntersection(test.a, test.b)
