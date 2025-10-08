@@ -7,7 +7,7 @@ import (
 	"github.com/fluhus/gostuff/snm"
 )
 
-// BFS iterates over this graphs nodes in a breadth-first ordering,
+// BFS iterates over this graph's nodes in a breadth-first ordering,
 // including start.
 func (g *Graph[T]) BFS(start T) iter.Seq[T] {
 	return func(yield func(T) bool) {
@@ -22,8 +22,7 @@ func (g *Graph[T]) BFS(start T) iter.Seq[T] {
 		q := &snm.Queue[int]{}
 		q.Enqueue(istart)
 
-		for q.Len() > 0 {
-			v := q.Dequeue()
+		for v := range q.Seq() {
 			if !yield(elems[v]) {
 				return
 			}
@@ -38,7 +37,7 @@ func (g *Graph[T]) BFS(start T) iter.Seq[T] {
 	}
 }
 
-// DFS iterates over this graphs nodes in a depth-first ordering,
+// DFS iterates over this graph's nodes in a depth-first ordering,
 // including start.
 func (g *Graph[T]) DFS(start T) iter.Seq[T] {
 	return func(yield func(T) bool) {
