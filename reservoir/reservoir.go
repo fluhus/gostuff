@@ -24,15 +24,15 @@ func New[T any](n int) *Sampler[T] {
 }
 
 // Add maybe adds t to the selected sample.
-func (r *Sampler[T]) Add(t T) {
-	r.n++
-	if len(r.Elements) < cap(r.Elements) {
-		r.Elements = append(r.Elements, t)
+func (s *Sampler[T]) Add(t T) {
+	s.n++
+	if len(s.Elements) < cap(s.Elements) {
+		s.Elements = append(s.Elements, t)
 		return
 	}
-	i := r.r.IntN(r.n)
-	if i >= len(r.Elements) {
+	i := s.r.IntN(s.n)
+	if i >= len(s.Elements) {
 		return
 	}
-	r.Elements[i] = t
+	s.Elements[i] = t
 }
