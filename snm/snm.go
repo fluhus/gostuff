@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"math/rand/v2"
 	"slices"
+	"sort"
 
 	"github.com/fluhus/gostuff/gnum"
 	"golang.org/x/exp/constraints"
@@ -139,6 +140,24 @@ func SortedKeysFunc[K comparable, V constraints.Ordered](
 	return SortedFunc(maps.Keys(m), func(a, b K) int {
 		return cmp(m[a], m[b])
 	})
+}
+
+// SortByKey sorts a by the results of applying key to each element.
+func SortByKey[T any, K cmp.Ordered](a []T, key func(T) K) {
+	sort.Sort(&sbk[T, K]{a, SliceToSlice(a, key)})
+}
+
+// Sort interface for [SortByKey].
+type sbk[T any, K cmp.Ordered] struct {
+	a []T
+	k []K
+}
+
+func (a *sbk[T, K]) Len() int           { return len(a.a) }
+func (a *sbk[T, K]) Less(i, j int) bool { return a.k[i] < a.k[j] }
+func (a *sbk[T, K]) Swap(i, j int) {
+	a.a[i], a.a[j] = a.a[j], a.a[i]
+	a.k[i], a.k[j] = a.k[j], a.k[i]
 }
 
 // Cast casts each element in the slice.

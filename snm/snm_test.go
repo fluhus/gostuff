@@ -1,8 +1,11 @@
 package snm
 
 import (
+	"cmp"
 	"encoding/json"
 	"fmt"
+	"math"
+	"math/rand/v2"
 	"slices"
 	"testing"
 
@@ -52,7 +55,7 @@ func TestMapToMap_equalKeys(t *testing.T) {
 }
 
 func TestDefaultMap(t *testing.T) {
-	m := NewDefaultMap[int, string](func(i int) string {
+	m := NewDefaultMap(func(i int) string {
 		return fmt.Sprint(i + 1)
 	})
 	if got, want := m.Get(2), "3"; got != want {
@@ -186,4 +189,56 @@ func TestShuffle(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestSortByKey_int(t *testing.T) {
+	input := []int{5, 3, 8, 6, 3, 2}
+	want := []int{8, 6, 5, 3, 3, 2}
+	got := slices.Clone(input)
+	SortByKey(got, func(i int) int { return -i })
+	if !slices.Equal(got, want) {
+		t.Fatalf("sortByKey(%v)=%v, want %v",
+			input, got, want)
+	}
+}
+
+func TestSortByKey_string(t *testing.T) {
+	input := []string{"hello", "oi", "bonjour", "shalom", "salam"}
+	want := []string{"salam", "hello", "shalom", "oi", "bonjour"}
+	got := slices.Clone(input)
+	SortByKey(got, func(s string) string { return s[1:] })
+	if !slices.Equal(got, want) {
+		t.Fatalf("sortByKey(%v)=%v, want %v",
+			input, got, want)
+	}
+}
+
+func BenchmarkSortByKey(b *testing.B) {
+	a := Slice(1000, func(i int) int {
+		return rand.Int()
+	})
+	b.Run("SortFunc", func(b *testing.B) {
+		aa := slices.Clone(a)
+		for b.Loop() {
+			copy(aa, a)
+			slices.SortFunc(aa, func(a, b int) int {
+				return cmp.Compare(math.Log(float64(a)), math.Log(float64(b)))
+			})
+			if !slices.IsSorted(aa) {
+				b.Fatalf("slice not sorted")
+			}
+		}
+	})
+	b.Run("SortByKey", func(b *testing.B) {
+		aa := slices.Clone(a)
+		for b.Loop() {
+			copy(aa, a)
+			SortByKey(aa, func(i int) float64 {
+				return math.Log(float64(i))
+			})
+			if !slices.IsSorted(aa) {
+				b.Fatalf("slice not sorted")
+			}
+		}
+	})
 }
