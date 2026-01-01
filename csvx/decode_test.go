@@ -149,21 +149,21 @@ type basicItem struct {
 }
 
 type taggedItem struct {
-	Stringy string `csvdec:"1"`
-	Inty    int    `csvdec:"intu"`
+	Stringy string `csvx:"1"`
+	Inty    int    `csvx:"intu"`
 	Floaty  float64
 }
 
 type missingItem struct {
 	Stringy string
-	Inty    int     `csvdec:"intu,optional"`
-	Floaty  float64 `csvdec:",optional"`
-	Nothing string  `csvdec:"-"`
+	Inty    int     `csvx:"intu,optional"`
+	Floaty  float64 `csvx:",optional"`
+	Nothing string  `csvx:"-"`
 }
 
 type parseItem struct {
-	Stringy string `csvdec:"1,CheckString"`
-	Inty    int    `csvdec:",ParseInt,allowempty"`
+	Stringy string `csvx:"1,CheckString"`
+	Inty    int    `csvx:",ParseInt,allowempty"`
 	Floaty  float64
 }
 
@@ -179,21 +179,21 @@ func (t parseItem) CheckString(s string) (string, error) {
 }
 
 type sameColItem struct {
-	Stringy string `csvdec:"0"`
-	Inty    int    `csvdec:"0"`
+	Stringy string `csvx:"0"`
+	Inty    int    `csvx:"0"`
 }
 
 type numberedItem struct {
-	Stringy string `csvdec:"1"`
-	Inty    int    `csvdec:"0"`
+	Stringy string `csvx:"1"`
+	Inty    int    `csvx:"0"`
 }
 
 type somewhatNumberedItem struct {
 	Stringy string
-	Nothing int `csvdec:"-"`
+	Nothing int `csvx:"-"`
 	Inty    int
-	Floaty  float64 `csvdec:"3"`
-	Parsey  int     `csvdec:",ParseInt"`
+	Floaty  float64 `csvx:"3"`
+	Parsey  int     `csvx:",ParseInt"`
 }
 
 func (t somewhatNumberedItem) ParseInt(s string) (int, error) {
@@ -201,7 +201,7 @@ func (t somewhatNumberedItem) ParseInt(s string) (int, error) {
 }
 
 type badParserItem1 struct {
-	Stringy string `csvdec:",Parse"`
+	Stringy string `csvx:",Parse"`
 }
 
 func (badParserItem1) Parse(string) string {
@@ -209,7 +209,7 @@ func (badParserItem1) Parse(string) string {
 }
 
 type badParserItem2 struct {
-	Stringy string `csvdec:",Parse"`
+	Stringy string `csvx:",Parse"`
 }
 
 func (badParserItem2) Parse(string) (int, error) {
@@ -217,7 +217,7 @@ func (badParserItem2) Parse(string) (int, error) {
 }
 
 type badParserItem3 struct {
-	Stringy string `csvdec:",Parse"`
+	Stringy string `csvx:",Parse"`
 }
 
 func (badParserItem3) Parse(int) (string, error) {
@@ -225,7 +225,7 @@ func (badParserItem3) Parse(int) (string, error) {
 }
 
 type badParserItem4 struct {
-	Stringy string `csvdec:",Parse1"`
+	Stringy string `csvx:",Parse1"`
 }
 
 func (badParserItem4) Parse(string) (string, error) {

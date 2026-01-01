@@ -42,7 +42,7 @@
 // Field tags can be used to change the default behavior.
 // The format for a field tag is as follows:
 //
-//	Field int `csvdec:"column,modifier1,modifier2..."`
+//	Field int `csvx:"column,modifier1,modifier2..."`
 //
 // The column part may be:
 //   - empty: use the default behavior
@@ -174,7 +174,7 @@ func matchColToField(t reflect.Type, cols []string) (map[int][]setter, error) {
 		}
 		name, m, mi := strings.ToLower(f.Name), ci, cif
 		allowEmpty, optional, parseFunc := false, false, false
-		parts := strings.Split(f.Tag.Get("csvdec"), ",")
+		parts := strings.Split(f.Tag.Get("csvx"), ",")
 		if tag := parts[0]; tag != "" {
 			if tag == "-" {
 				continue
@@ -320,7 +320,7 @@ func matchColToFieldNoHeader(t reflect.Type) (map[int][]setter, error) {
 		}
 		name := fmt.Sprint(cur)
 		allowEmpty, parseFunc := false, false
-		parts := strings.Split(f.Tag.Get("csvdec"), ",")
+		parts := strings.Split(f.Tag.Get("csvx"), ",")
 		if tag := parts[0]; tag != "" {
 			if tag == "-" {
 				continue
