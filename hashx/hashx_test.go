@@ -32,6 +32,7 @@ func TestInt(t *testing.T) {
 
 func TestBytesString(t *testing.T) {
 	s := "abcdefghijklmnopqrstuvwxyz"
+	b := []byte(s)
 	hashes := sets.Set[uint64]{}
 	hx := New()
 	n := 0
@@ -40,7 +41,7 @@ func TestBytesString(t *testing.T) {
 			n++
 			ss := s[j : i+1]
 			h1 := hx.String(ss)
-			h2 := hx.Bytes([]byte(ss))
+			h2 := hx.Bytes(b[j : i+1])
 			if h1 != h2 {
 				t.Errorf("String(%s) != Bytes(%s): %v, %v", ss, ss, h1, h2)
 			}
