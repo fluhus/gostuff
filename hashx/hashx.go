@@ -34,10 +34,7 @@ func (h *Hashx) Bytes(b []byte) uint64 {
 
 // String returns the hash value of the given string.
 func (h *Hashx) String(s string) uint64 {
-	// TODO(amit): Optimize this?
-	h.h.Reset()
-	io.WriteString(h.h, s)
-	return h.h.Sum64()
+	return h.Bytes(unsafe.Slice(unsafe.StringData(s), len(s)))
 }
 
 // IntHashx returns the hash value of the given integer,
