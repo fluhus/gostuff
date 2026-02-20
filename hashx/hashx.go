@@ -3,7 +3,7 @@ package hashx
 
 import (
 	"hash"
-	"io"
+	"unsafe"
 
 	"github.com/spaolacci/murmur3"
 	"golang.org/x/exp/constraints"

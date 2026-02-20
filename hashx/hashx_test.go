@@ -29,3 +29,25 @@ func TestInt(t *testing.T) {
 		t.Errorf("len(hashes)=%v, want %v", len(hashes), want)
 	}
 }
+
+func TestBytesString(t *testing.T) {
+	s := "abcdefghijklmnopqrstuvwxyz"
+	hashes := sets.Set[uint64]{}
+	hx := New()
+	n := 0
+	for i := range s {
+		for j := range i {
+			n++
+			ss := s[j : i+1]
+			h1 := hx.String(ss)
+			h2 := hx.Bytes([]byte(ss))
+			if h1 != h2 {
+				t.Errorf("String(%s) != Bytes(%s): %v, %v", ss, ss, h1, h2)
+			}
+			hashes.Add(h1)
+		}
+	}
+	if len(hashes) != n {
+		t.Errorf("len(hashes)=%v, want %v", len(hashes), n)
+	}
+}
