@@ -224,7 +224,11 @@ func TightClone[T any](a []T) []T {
 	if a == nil {
 		return nil
 	}
-	return append(make([]T, 0, len(a)), a...)
+	// Using copy is faster than:
+	// append(make([]T, 0, len(a)), a...)
+	b := make([]T, len(a))
+	copy(b, a)
+	return b
 }
 
 // Enumerator enumerates values by their order of appearance.
