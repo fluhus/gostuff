@@ -191,6 +191,20 @@ func TestShuffle(t *testing.T) {
 	}
 }
 
+func BenchmarkShuffle(b *testing.B) {
+	a := Slice(10000, func(i int) int { return rand.Int() })
+	b.Run("snm.Shuffle", func(b *testing.B) {
+		for b.Loop() {
+			Shuffle(a)
+		}
+	})
+	b.Run("rand.Shuffle", func(b *testing.B) {
+		for b.Loop() {
+			rand.Shuffle(len(a), func(i, j int) { a[i], a[j] = a[j], a[i] })
+		}
+	})
+}
+
 func TestSortByKey_int(t *testing.T) {
 	input := []int{5, 3, 8, 6, 3, 2}
 	want := []int{8, 6, 5, 3, 3, 2}
