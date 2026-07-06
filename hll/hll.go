@@ -32,6 +32,7 @@ package hll
 
 import (
 	"fmt"
+	"hash/maphash"
 	"math"
 )
 
@@ -55,6 +56,22 @@ func New[T any](logSize int, h func(T) uint64) *HLL[T] {
 	return &HLL[T]{
 		counters: make([]byte, m),
 		h:        h,
+		nbits:    logSize,
+		m:        m,
+		mask:     uint64(m - 1),
+	}
+}
+
+// NewComparable creates a new HyperLogLog counter for a comparable type.
+// The counter will use 2^logSize bytes.
+func NewComparable[T comparable](logSize int) *HLL[T] {
+	if logSize < 4 {
+		panic(fmt.Sprintf("logSize=%v, should be at least 4", logSize))
+	}
+	m := 1 << logSize
+	return &HLL[T]{
+		counters: make([]byte, m),
+		h:        func(t T) uint64 { return maphash.Comparable(hashSeed, t) },
 		nbits:    logSize,
 		m:        m,
 		mask:     uint64(m - 1),
@@ -143,3 +160,6 @@ func (h *HLL[T]) AddHLL(other *HLL[T]) {
 func (h *HLL[T]) LogSize() int {
 	return h.nbits
 }
+
+// Used for [NewComparable] hash.
+var hashSeed = maphash.MakeSeed()
