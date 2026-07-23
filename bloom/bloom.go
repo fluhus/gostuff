@@ -6,14 +6,11 @@ import (
 	"hash"
 	"io"
 	"math"
-	_ "unsafe"
+	"math/rand/v2"
 
 	"github.com/fluhus/gostuff/bnry"
 	"github.com/spaolacci/murmur3"
 )
-
-//go:linkname fastrand runtime.fastrand
-func fastrand() uint32
 
 // Filter is a single bloom filter.
 type Filter struct {
@@ -149,7 +146,7 @@ func (f *Filter) Decode(r io.ByteReader) error {
 // New creates a new bloom filter with the given parameters. Number of
 // bits is rounded up to the nearest multiple of 8.
 //
-// See NewOptimal for an alternative way to decide on the parameters.
+// See [NewOptimal] for an alternative way to decide on the parameters.
 func New(bits int, k int) *Filter {
 	if bits < 1 {
 		panic(fmt.Sprintf("number of bits should be at least 1, got %v", bits))
@@ -162,7 +159,7 @@ func New(bits int, k int) *Filter {
 		b: make([]byte, ((bits-1)/8)+1),
 		h: make([]hash.Hash64, k),
 	}
-	result.SetSeed(fastrand())
+	result.SetSeed(rand.Uint32())
 	return result
 }
 
