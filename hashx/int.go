@@ -9,6 +9,17 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+// IntHashx returns the hash value of the given integer,
+// using the given Hashx instance.
+//
+// Deprecated: use [Hashx.Int] instead.
+func IntHashx[I constraints.Integer](h *Hashx, i I) uint64 {
+	return h.Int(i)
+}
+
+// Int returns the hash value of the given integer.
+func Int[I constraints.Integer](i I) uint64 { return dflt.Int(i) }
+
 // Int returns the hash value of the given integer.
 func (h *Hashx) Int[I constraints.Integer](i I) uint64 {
 	return h.intBinary(i)
